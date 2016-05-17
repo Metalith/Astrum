@@ -1,0 +1,6 @@
+build/
+external/
+common/
+*.cson
+*.o
+main

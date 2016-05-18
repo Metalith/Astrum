@@ -29,26 +29,57 @@ using namespace noise;
 
 #include <chunk.hpp>
 
-std::string UpdateVersion();
+
 bool		CreateWindow();
 void		Draw();
+std::string UpdateVersion();
 
 std::vector<GLfloat> vertices;
 std::vector<GLfloat> normals;
 std::vector<GLfloat> bary;
 std::vector<Chunk> ChunkList;
+
+typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
+displayModes mode = WIREFRAME;
 int SIZE = 0;
 
 TwBar *bar;
 
-int main( void )
+int main()
 {
+	if (!CreateWindow())
+		return -1;
+	srand(time(NULL));
+	Chunk::setSeed(rand());
+	for (int i = -SIZE; i <= SIZE; i++)
+		for (int j = -SIZE; j <= SIZE; j++)
+			ChunkList+=Chunk(i, 0, j);
+	std::vector<GLfloat> temp;
+	for (std::vector<Chunk>::iterator it = ChunkList.begin(); it != ChunkList.end(); ++it) {
+		temp = it->getVertices();
+		vertices.insert(vertices.end(), temp.begin(), temp.end());
+		temp = it->getNormals();
+		normals.insert(normals.end(), temp.begin(), temp.end());
+	}
+	for (unsigned int i = 0; i < vertices.size(); i+=3)
+		bary += 1,0,0,
+				0,1,0,
+				0,0,1;
+
+	Draw();
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	return 0;
+}
+
+bool CreateWindow() {
 	// Initialise GLFW
 	if( !glfwInit() )
 	{
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
-		return -1;
+		return false;
 	}
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
@@ -63,7 +94,7 @@ int main( void )
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
 		glfwTerminate();
-		return -1;
+		return false;
 	}
     glfwMakeContextCurrent(window);
 
@@ -98,31 +129,25 @@ int main( void )
     glfwPollEvents();
     glfwSetCursorPos(window, 1024/2, 768/2);
 
-	srand(time(NULL));
-	Chunk::setSeed(rand());
-	for (int i = -SIZE; i <= SIZE; i++)
-		for (int j = -SIZE; j <= SIZE; j++)
-			ChunkList+=Chunk(i, 0, j);
-	std::vector<GLfloat> temp;
-	for (std::vector<Chunk>::iterator it = ChunkList.begin(); it != ChunkList.end(); ++it) {
-		temp = it->getVertices();
-		vertices.insert(vertices.end(), temp.begin(), temp.end());
-		temp = it->getNormals();
-		normals.insert(normals.end(), temp.begin(), temp.end());
-	}
-	for (unsigned int i = 0; i < vertices.size(); i+=3)
-		bary += 1,0,0,
-				0,1,0,
-				0,0,1;
+	return true;
+}
 
+void Draw() {
 	// Dark blue background
-	glClearColor(0.4f, 0.2f, 0.2f, 0.0f);
+	glClearColor(0.2f, 0.2f, 0.4f, 0.0f);
 
 	// Enable depth test
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDepthFunc(GL_LESS);
+	// glDepthFunc(GL_LESS);
+	// Enable depth test
+// glEnable(GL_DEPTH_TEST);
+// Accept fragment if it closer to the camera than the former one
+// glDepthFunc(GL_LESS);
+
+// Cull triangles which normal is not towards the camera
+// glEnable(GL_CULL_FACE);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -150,9 +175,9 @@ int main( void )
 	glUseProgram(programID);
 
 	GLint objectColorLoc = glGetUniformLocation(programID, "objectColor");
-    GLint lightColorLoc  = glGetUniformLocation(programID, "lightColor");
-    GLint lightPosLoc    = glGetUniformLocation(programID, "lightPos");
-    // GLint viewPosLoc     = glGetUniformLocation(programID, "viewPos");
+	GLint lightColorLoc  = glGetUniformLocation(programID, "lightColor");
+	GLint lightPosLoc    = glGetUniformLocation(programID, "lightPos");
+	// GLint viewPosLoc     = glGetUniformLocation(programID, "viewPos");
 	// Get a handle for our "MVP" uniform
 	GLuint ProjMatrixID = glGetUniformLocation(programID, "projection");
 	GLuint ViewMatrixID = glGetUniformLocation(programID, "view");
@@ -162,31 +187,42 @@ int main( void )
 	int nbFrames = 0;
 	int fps = 0;
 	int vsize = vertices.size();
-    int csize = ChunkList.size();
-    int numVoxels = csize * 16 * 16 * 16;
+	int csize = ChunkList.size();
+	int numVoxels = csize * 16 * 16 * 16;
 	bar = TwNewBar("Debug");
-    TwDefine(" Debug size='240 240' valueswidth=100 "); // Message added to the help bar.
-    TwAddVarRO(bar, "size", TW_TYPE_INT32, &SIZE,
-  					" label='Chunk Size' ");
-    TwAddVarRO(bar, "Chunks", TW_TYPE_INT32, &csize,
-  					" label='Chunk List' ");
-    TwAddVarRO(bar, "vertices", TW_TYPE_INT32, &vsize,
-  					" label='Vertices' ");
-    TwAddVarRO(bar, "Voxels", TW_TYPE_INT32, &numVoxels,
-  					" label='Voxels' ");
-    TwAddVarRO(bar, "FPS", TW_TYPE_INT32, &fps,
-  					" label='FPS' ");
+	TwDefine(" Debug size='240 240' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
+	TwAddVarRO(bar, "size", TW_TYPE_INT32, &SIZE,
+					" label='Chunk Size' ");
+	TwAddVarRO(bar, "Chunks", TW_TYPE_INT32, &csize,
+					" label='Chunk List' ");
+	TwAddVarRO(bar, "vertices", TW_TYPE_INT32, &vsize,
+					" label='Vertices' ");
+	TwAddVarRO(bar, "Voxels", TW_TYPE_INT32, &numVoxels,
+					" label='Voxels' ");
+	TwAddVarRO(bar, "FPS", TW_TYPE_INT32, &fps,
+					" label='FPS' ");
+	TwAddSeparator(bar, NULL, NULL);
+
+	TwEnumVal dmEV[] = { {SHADED, "Shaded"}, {WIREFRAME, "Wireframe"}, {POINTS, "Points"} };
+	TwType dmType;
+
+	// Defining season enum type
+	dmType = TwDefineEnum("dmType", dmEV, 3);
+	// Adding season to bar
+	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
+
+
 	do{
 		 // Measure speed
-      	double currentTime = glfwGetTime();
-      	nbFrames++;
-      	if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
-          // printf and reset timer
-          printf("%f ms/frame\n", 1000.0/double(nbFrames));
-          fps = nbFrames;
-          nbFrames = 0;
-          lastTime += 1.0;
-      	}
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
+		  // printf and reset timer
+		  printf("%f ms/frame\n", 1000.0/double(nbFrames));
+		  fps = nbFrames;
+		  nbFrames = 0;
+		  lastTime += 1.0;
+		}
 		// Clear the screen
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -200,10 +236,10 @@ int main( void )
 
 		// Send our transformation to the currently bound shader,
 		// in the "MVP" uniform
-        glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-        glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
-        glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
-        // glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
+		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
+		glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
+		glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
+		// glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
 		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
@@ -250,8 +286,8 @@ int main( void )
 		glDisableVertexAttribArray(2);
 		// Draw GUI
 		TwDraw();
-	    glfwSwapBuffers(window);
-	    glfwPollEvents();
+		glfwSwapBuffers(window);
+		glfwPollEvents();
 
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
@@ -262,12 +298,7 @@ int main( void )
 	glDeleteBuffers(1, &barybuffer);
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &VertexArrayID);
-	// Close OpenGL window and terminate GLFW
-	glfwTerminate();
-
-	return 0;
 }
-
 std::string UpdateVersion() {
 	int v;
 	std::fstream myfile("VERSION", std::ios::in | std::ios::out);

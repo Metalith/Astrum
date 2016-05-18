@@ -3,4 +3,5 @@ external/
 common/
 *.cson
 *.o
+*.gch
 main

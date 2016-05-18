@@ -22,7 +22,7 @@ public:
  	static void setSeed(int s);
 private:
 	static int seed;
-    static const int CHUNK_SIZE = 4;
+    static const int CHUNK_SIZE = 16;
 
     char corners;
     boost::tuple<int,int,int> position;

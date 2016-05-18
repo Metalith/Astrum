@@ -4,7 +4,7 @@ project (Astrum)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(OpenGL REQUIRED)
-FIND_PACKAGE( Boost 1.59 COMPONENTS REQUIRED )
+FIND_PACKAGE( Boost 1.61 COMPONENTS REQUIRED )
 
 find_library(NOISE_LIBRARY
    	NAMES libnoise.so
@@ -16,27 +16,25 @@ find_path(NOISE_INCLUDE_DIR
   	PATHS /usr/include /usr/local/include
 )
 
-# Compile external dependencies 
+# Compile external dependencies
 add_subdirectory (external)
 
 include_directories(
 	${Boost_INCLUDE_DIR}
 	${NOISE_INCLUDE_DIR}
 	external/AntTweakBar-1.16/include/
-	external/glfw-3.0.3/include/GLFW/
-	external/glm-0.9.4.0/
-	external/glew-1.9.0/include/
+    external/glfw-3.1.2/include/GLFW/
+	external/glm-0.9.7.1/
+	external/glew-1.13.0/include/
 	.
 )
 
-link_directories(${NOISE_LIBRARY})
-
 set(ALL_LIBS
-	${OPENGL_LIBRARY}
 	${Boost_LIBRARIES}
 	${NOISE_LIBRARY}
-	GLFW_303
-	GLEW_190
+    ${OPENGL_LIBRARY}
+	glfw
+	GLEW_1130
 )
 
 add_definitions(

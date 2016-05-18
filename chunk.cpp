@@ -37,8 +37,8 @@ void Chunk::Generate() {
 	for(boost::unordered_map<boost::tuple<int,int,int>, unsigned char>::iterator it=voxels.begin(); it!=voxels.end(); ++it) {
 		int x = it->first.get<0>();
    		int y = it->first.get<1>();
-   		int z = it->first.get<2>();   														  	
-   		if (voxels.find(boost::make_tuple(x+1,y,z)) == voxels.end()) { 
+   		int z = it->first.get<2>();
+   		if (voxels.find(boost::make_tuple(x+1,y,z)) == voxels.end()) {
    			vertices+=	x + 0.5, y + 0.5, z + 0.5, // RIGHT FACE +X
 				  		x + 0.5, y - 0.5, z + 0.5,
 				  		x + 0.5, y + 0.5, z - 0.5,
@@ -55,17 +55,17 @@ void Chunk::Generate() {
 					  	x - 0.5, y + 0.5, z - 0.5,
 					  	x - 0.5, y + 0.5, z + 0.5;
 			for (int i = 0; i < 6; i++) normals+=0,1,0;
-		}							  	
+		}
    		if (voxels.find(boost::make_tuple(x,y,z+1)) == voxels.end()) {
    			vertices+=	x + 0.5, y + 0.5, z + 0.5, // FRONT FACE +Z
 					  	x - 0.5, y + 0.5, z + 0.5,
 					  	x + 0.5, y - 0.5, z + 0.5,
 					  	x - 0.5, y + 0.5, z + 0.5,
 					  	x - 0.5, y - 0.5, z + 0.5,
-					  	x + 0.5, y - 0.5, z + 0.5;							  		
+					  	x + 0.5, y - 0.5, z + 0.5;
 			for (int i = 0; i < 6; i++) normals+=0,0,1;
 		}
-		if (voxels.find(boost::make_tuple(x-1,y,z)) == voxels.end()) { 
+		if (voxels.find(boost::make_tuple(x-1,y,z)) == voxels.end()) {
    			vertices+=	x - 0.5, y + 0.5, z + 0.5,
 				  		x - 0.5, y + 0.5, z - 0.5, // LEFT FACE -X
 				  		x - 0.5, y - 0.5, z + 0.5,
@@ -82,14 +82,14 @@ void Chunk::Generate() {
 					  	x + 0.5, y - 0.5, z - 0.5,
 					  	x - 0.5, y - 0.5, z + 0.5;
 			for (int i = 0; i < 6; i++) normals+=0,-1,0;
-		}							  	
+		}
    		if (voxels.find(boost::make_tuple(x,y,z-1)) == voxels.end()) {
    			vertices+=	x + 0.5, y + 0.5, z - 0.5, // BACK FACE -Z
 					  	x + 0.5, y - 0.5, z - 0.5,
 					  	x - 0.5, y + 0.5, z - 0.5,
 					  	x - 0.5, y - 0.5, z - 0.5,
 					  	x - 0.5, y + 0.5, z - 0.5,
-					  	x + 0.5, y - 0.5, z - 0.5;							  		
+					  	x + 0.5, y - 0.5, z - 0.5;
 			for (int i = 0; i < 6; i++) normals+=0,0,-1;
 		}
    	}

@@ -41,8 +41,62 @@ int SIZE = 0;
 
 TwBar *bar;
 
-int main() {
-	if (!CreateWindow()) return -1;
+int main( void )
+{
+	// Initialise GLFW
+	if( !glfwInit() )
+	{
+		fprintf( stderr, "Failed to initialize GLFW\n" );
+		getchar();
+		return -1;
+	}
+
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Open a window and create its OpenGL context
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.0." + UpdateVersion() + " - Voxel Generation").c_str(), NULL, NULL);
+	if( window == NULL ){
+		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+    glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+	glfwSwapInterval(0);
+	// Initialize AntTweakBar
+	TwInit(TW_OPENGL_CORE, NULL);
+
+	TwWindowSize(1024, 768);
+	// Create a tweak bar
+
+	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
+	glfwSetMouseButtonCallback(window, (GLFWmousebuttonfun)TwEventMouseButtonGLFW); // - Directly redirect GLFW mouse button events to AntTweakBar
+	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);          // - Directly redirect GLFW mouse position events to AntTweakBar
+	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    // - Directly redirect GLFW mouse wheel events to AntTweakBar
+	glfwSetKeyCallback(window, (GLFWkeyfun)TwEventKeyGLFW);                         // - Directly redirect GLFW key events to AntTweakBar
+	glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW);                      // - Directly redirect GLFW char events to AntTweakBar
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    // Hide the mouse and enable unlimited mouvement
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // Set the mouse at the center of the screen
+    glfwPollEvents();
+    glfwSetCursorPos(window, 1024/2, 768/2);
 
 	srand(time(NULL));
 	Chunk::setSeed(rand());
@@ -56,85 +110,20 @@ int main() {
 		temp = it->getNormals();
 		normals.insert(normals.end(), temp.begin(), temp.end());
 	}
-	for (int i = 0; i < vertices.size(); i+=3)
+	for (unsigned int i = 0; i < vertices.size(); i+=3)
 		bary += 1,0,0,
 				0,1,0,
 				0,0,1;
-	Draw();
-	// Close GUI and OpenGL window, and terminate GLFW
-	TwTerminate();
-	// Close OpenGL window and terminate GLFW
-	glfwTerminate();
-	return 0;
-}
 
-std::string UpdateVersion() {
-	int v;
-	std::fstream myfile("VERSION", std::ios::in | std::ios::out);
-	myfile >> v;
-	myfile.clear();
-	myfile.seekp(0,std::ios::beg);
-	myfile << ++v;
-	myfile.close();
-	return std::to_string(v);}
+	// Dark blue background
+	glClearColor(0.4f, 0.2f, 0.2f, 0.0f);
 
-bool CreateWindow() {
-	// Initialise GLFW
-	if( !glfwInit() ) {
-		fprintf( stderr, "Failed to initialize GLFW\n" );
-		return -1;
-	}
-
-	glfwWindowHint(GLFW_SAMPLES, 8);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.0." + UpdateVersion() + " - Voxel Generation").c_str(), NULL, NULL);
-	if( window == NULL ){
-		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
-		glfwTerminate();
-		return false;
-	}
-	glfwMakeContextCurrent(window);
-	glfwSetWindowPos(window, 300, 100);
-
-	// Initialize GLEW
-	glewExperimental = true; // Needed for core profile
-	if (glewInit() != GLEW_OK) {
-		fprintf(stderr, "Failed to initialize GLEW\n");
-		return false;
-	}
-	glfwSwapInterval(0);
-	glfwSetCursorPos(window, 1024/2, 768/2);
-
-	// glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_CULL_FACE);
+	// Enable depth test
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glDepthFunc(GL_LESS);
 
- 	// Initialize AntTweakBar
-    TwInit(TW_OPENGL_CORE, NULL);
-
-	TwWindowSize(1024, 768);
-    // Create a tweak bar
-
-    // Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
-	glfwSetMouseButtonCallback(window, (GLFWmousebuttonfun)TwEventMouseButtonGLFW); // - Directly redirect GLFW mouse button events to AntTweakBar
-	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);          // - Directly redirect GLFW mouse position events to AntTweakBar
-	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    // - Directly redirect GLFW mouse wheel events to AntTweakBar
-	glfwSetKeyCallback(window, (GLFWkeyfun)TwEventKeyGLFW);                         // - Directly redirect GLFW key events to AntTweakBar
-	glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW);                      // - Directly redirect GLFW char events to AntTweakBar
-
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-	return true;}
-
-void Draw() {
-	glClearColor(0.4f, 0.2f, 0.2f, 0.0f);
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
@@ -163,7 +152,7 @@ void Draw() {
 	GLint objectColorLoc = glGetUniformLocation(programID, "objectColor");
     GLint lightColorLoc  = glGetUniformLocation(programID, "lightColor");
     GLint lightPosLoc    = glGetUniformLocation(programID, "lightPos");
-        GLint viewPosLoc     = glGetUniformLocation(programID, "viewPos");
+    // GLint viewPosLoc     = glGetUniformLocation(programID, "viewPos");
 	// Get a handle for our "MVP" uniform
 	GLuint ProjMatrixID = glGetUniformLocation(programID, "projection");
 	GLuint ViewMatrixID = glGetUniformLocation(programID, "view");
@@ -214,7 +203,7 @@ void Draw() {
         glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
         glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
         glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
-        glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
+        // glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
 		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
@@ -273,4 +262,19 @@ void Draw() {
 	glDeleteBuffers(1, &barybuffer);
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &VertexArrayID);
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	return 0;
+}
+
+std::string UpdateVersion() {
+	int v;
+	std::fstream myfile("VERSION", std::ios::in | std::ios::out);
+	myfile >> v;
+	myfile.clear();
+	myfile.seekp(0,std::ios::beg);
+	myfile << ++v;
+	myfile.close();
+	return std::to_string(v);
 }

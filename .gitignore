@@ -1,6 +1,5 @@
 build/
 external/
-common/
 *.cson
 *.o
 *.gch

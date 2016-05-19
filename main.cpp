@@ -29,19 +29,22 @@ using namespace noise;
 
 #include <chunk.hpp>
 
-
 bool		CreateWindow();
 void		Draw();
 std::string UpdateVersion();
+void 		setShading();
 
 std::vector<GLfloat> vertices;
 std::vector<GLfloat> normals;
 std::vector<GLfloat> bary;
 std::vector<Chunk> ChunkList;
 
+GLuint shadeProgramID;
+GLuint wireProgramID;
+
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 displayModes mode = WIREFRAME;
-int SIZE = 0;
+int SIZE = 4;
 
 TwBar *bar;
 
@@ -50,7 +53,7 @@ int main()
 	if (!CreateWindow())
 		return -1;
 	srand(time(NULL));
-	Chunk::setSeed(rand());
+	Chunk::setSeed(0);
 	for (int i = -SIZE; i <= SIZE; i++)
 		for (int j = -SIZE; j <= SIZE; j++)
 			ChunkList+=Chunk(i, 0, j);
@@ -96,7 +99,7 @@ bool CreateWindow() {
 		glfwTerminate();
 		return false;
 	}
-    glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window);
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
@@ -122,12 +125,12 @@ bool CreateWindow() {
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // Hide the mouse and enable unlimited mouvement
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+ 	// Hide the mouse and enable unlimited mouvement
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // Set the mouse at the center of the screen
-    glfwPollEvents();
-    glfwSetCursorPos(window, 1024/2, 768/2);
+	// Set the mouse at the center of the screen
+	glfwPollEvents();
+	glfwSetCursorPos(window, 1024/2, 768/2);
 
 	return true;
 }
@@ -139,15 +142,8 @@ void Draw() {
 	// Enable depth test
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// glDepthFunc(GL_LESS);
-	// Enable depth test
-	// glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	// glDepthFunc(GL_LESS);
-
-	// Cull triangles which normal is not towards the camera
-	// glEnable(GL_CULL_FACE);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -169,19 +165,21 @@ void Draw() {
 	glBufferData(GL_ARRAY_BUFFER, bary.size() * sizeof(GLfloat), &bary[0], GL_STATIC_DRAW);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders( "Voxel.vs", "Voxel.fs" );
+	shadeProgramID = LoadShaders( "Voxel.vs", "Voxel.fs" );
+	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
 
-	// Use our shader
-	glUseProgram(programID);
-
-	GLint objectColorLoc = glGetUniformLocation(programID, "objectColor");
-	GLint lightColorLoc  = glGetUniformLocation(programID, "lightColor");
-	GLint lightPosLoc    = glGetUniformLocation(programID, "lightPos");
-	// GLint viewPosLoc     = glGetUniformLocation(programID, "viewPos");
+	GLint objectColorLoc = glGetUniformLocation(shadeProgramID, "objectColor");
+	GLint lightColorLoc  = glGetUniformLocation(shadeProgramID, "lightColor");
+	GLint lightPosLoc    = glGetUniformLocation(shadeProgramID, "lightPos");
+	// GLint viewPosLoc     = glGetUniformLocation(shadeProgramID, "viewPos");
 	// Get a handle for our "MVP" uniform
-	GLuint ProjMatrixID = glGetUniformLocation(programID, "projection");
-	GLuint ViewMatrixID = glGetUniformLocation(programID, "view");
-	GLuint ModelMatrixID = glGetUniformLocation(programID, "model");
+	GLuint sProjMatrixID = glGetUniformLocation(shadeProgramID, "projection");
+	GLuint sViewMatrixID = glGetUniformLocation(shadeProgramID, "view");
+	GLuint sModelMatrixID = glGetUniformLocation(shadeProgramID, "model");
+
+	GLuint wProjMatrixID = glGetUniformLocation(wireProgramID, "projection");
+	GLuint wViewMatrixID = glGetUniformLocation(wireProgramID, "view");
+	GLuint wModelMatrixID = glGetUniformLocation(wireProgramID, "model");
 
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
@@ -234,15 +232,56 @@ void Draw() {
 		glm::mat4 ViewMatrix = getViewMatrix();
 		glm::mat4 ProjMatrix = ProjectionMatrix;
 
-		// Send our transformation to the currently bound shader,
-		// in the "MVP" uniform
-		glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-		glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
-		glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
-		// glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
-		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		switch(mode) {
+			case SHADED:
+				// Enable depth test
+				glEnable(GL_DEPTH_TEST);
+				glEnable(GL_CULL_FACE);
+				glUseProgram(shadeProgramID);
+				// Send our transformation to the currently bound shader,
+				// in the "MVP" uniform
+				glUniform3f(objectColorLoc, 0.6f, 0.2f, 0.31f);
+				glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
+				glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
+				// glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
+				glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
+				glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+				glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+				// 3rd attribute buffer : normals
+				glEnableVertexAttribArray(1);
+				glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+				glVertexAttribPointer(
+					1,                                // attribute
+					3,                                // size
+					GL_FLOAT,                         // type
+					GL_FALSE,                         // normalized?
+					0,                                // stride
+					(void*)0                          // array buffer offset
+				);
+
+				break;
+			case POINTS:
+			case WIREFRAME:
+				glDisable(GL_DEPTH_TEST);
+				glDisable(GL_CULL_FACE);
+				glUseProgram(wireProgramID);
+				glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
+				glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+				glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+				glEnableVertexAttribArray(2);
+				glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
+				glVertexAttribPointer(
+					2,                                // attribute
+					3,                                // size
+					GL_FLOAT,                         // type
+					GL_FALSE,                         // normalized?
+					0,                                // stride
+					(void*)0                          // array buffer offset
+				);
+				break;
+		}
+
 
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
@@ -256,31 +295,9 @@ void Draw() {
 			(void*)0            // array buffer offset
 		);
 
-		// 3rd attribute buffer : normals
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(
-			1,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
-
-		glEnableVertexAttribArray(2);
-		glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
-		glVertexAttribPointer(
-			2,                                // attribute
-			3,                                // size
-			GL_FLOAT,                         // type
-			GL_FALSE,                         // normalized?
-			0,                                // stride
-			(void*)0                          // array buffer offset
-		);
-
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
+		if (mode != POINTS) glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
+		else glDrawArrays(GL_POINTS, 0, vertices.size());
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
@@ -296,9 +313,10 @@ void Draw() {
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &normalbuffer);
 	glDeleteBuffers(1, &barybuffer);
-	glDeleteProgram(programID);
+	glDeleteProgram(shadeProgramID);
 	glDeleteVertexArrays(1, &VertexArrayID);
 }
+
 std::string UpdateVersion() {
 	int v;
 	std::fstream myfile("VERSION", std::ios::in | std::ios::out);
@@ -308,4 +326,8 @@ std::string UpdateVersion() {
 	myfile << ++v;
 	myfile.close();
 	return std::to_string(v);
+}
+
+void setShading() {
+
 }

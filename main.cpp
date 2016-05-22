@@ -100,7 +100,7 @@ bool CreateWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.0." + UpdateVersion() + " - Voxel Generation").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.1." + UpdateVersion() + " - Voxel Generation").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();

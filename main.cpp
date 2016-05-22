@@ -16,8 +16,8 @@ GLFWwindow* window;
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
-#include <common/shader.hpp>
-#include <common/controls.hpp>
+#include "common/shader.hpp"
+#include "common/controls.hpp"
 
 #include <boost/unordered_map.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -27,11 +27,11 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <noise/noise.h>
 using namespace noise;
 
-#include <chunk.hpp>
+#include "chunk.hpp"
 
 bool		CreateWindow();
 void		Draw();
-std::string UpdateVersion();
+std::string	UpdateVersion();
 void 		setShading();
 
 std::vector<GLfloat> vertices;
@@ -39,28 +39,36 @@ std::vector<GLfloat> normals;
 std::vector<GLfloat> bary;
 std::vector<Chunk> ChunkList;
 
+std::vector<GLfloat> centers;
+
 GLuint shadeProgramID;
 GLuint wireProgramID;
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 displayModes mode = WIREFRAME;
-int SIZE = 4;
+int SIZE = 1;
 
 TwBar *bar;
 
-int main()
-{
-	if (!CreateWindow())
-		return -1;
+int main() {
+	typedef struct p {
+		int x, y, z;
+		p(int x, int y, int z): x(x), y(y), z(z) {}
+	} Position;
+	std::cout << Position(2, 3, 4).x;
+	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	Chunk::setSeed(0);
 	for (int i = -SIZE; i <= SIZE; i++)
 		for (int j = -SIZE; j <= SIZE; j++)
-			ChunkList+=Chunk(i, 0, j);
+			for (int k = -SIZE; k <= SIZE; k++)
+				ChunkList+=Chunk(i, j, k);
 	std::vector<GLfloat> temp;
 	for (std::vector<Chunk>::iterator it = ChunkList.begin(); it != ChunkList.end(); ++it) {
 		temp = it->getVertices();
 		vertices.insert(vertices.end(), temp.begin(), temp.end());
+		temp = it->getCenters();
+		centers.insert(centers.end(), temp.begin(), temp.end());
 		temp = it->getNormals();
 		normals.insert(normals.end(), temp.begin(), temp.end());
 	}
@@ -125,7 +133,7 @@ bool CreateWindow() {
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
- 	// Hide the mouse and enable unlimited mouvement
+	// Hide the mouse and enable unlimited mouvement
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Set the mouse at the center of the screen
@@ -164,6 +172,11 @@ void Draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
 	glBufferData(GL_ARRAY_BUFFER, bary.size() * sizeof(GLfloat), &bary[0], GL_STATIC_DRAW);
 
+	GLuint centerbuffer;
+	glGenBuffers(1, &centerbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, centerbuffer);
+	glBufferData(GL_ARRAY_BUFFER, centers.size() * sizeof(GLfloat), &centers[0], GL_STATIC_DRAW);
+
 	// Create and compile our GLSL program from the shaders
 	shadeProgramID = LoadShaders( "Voxel.vs", "Voxel.fs" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
@@ -181,6 +194,8 @@ void Draw() {
 	GLuint wViewMatrixID = glGetUniformLocation(wireProgramID, "view");
 	GLuint wModelMatrixID = glGetUniformLocation(wireProgramID, "model");
 
+	GLint wireColorLoc = glGetUniformLocation(wireProgramID, "objectColor");
+
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	int fps = 0;
@@ -190,15 +205,15 @@ void Draw() {
 	bar = TwNewBar("Debug");
 	TwDefine(" Debug size='240 240' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
 	TwAddVarRO(bar, "size", TW_TYPE_INT32, &SIZE,
-					" label='Chunk Size' ");
+			" label='Chunk Size' ");
 	TwAddVarRO(bar, "Chunks", TW_TYPE_INT32, &csize,
-					" label='Chunk List' ");
+			" label='Chunk List' ");
 	TwAddVarRO(bar, "vertices", TW_TYPE_INT32, &vsize,
-					" label='Vertices' ");
+			" label='Vertices' ");
 	TwAddVarRO(bar, "Voxels", TW_TYPE_INT32, &numVoxels,
-					" label='Voxels' ");
+			" label='Voxels' ");
 	TwAddVarRO(bar, "FPS", TW_TYPE_INT32, &fps,
-					" label='FPS' ");
+			" label='FPS' ");
 	TwAddSeparator(bar, NULL, NULL);
 
 	TwEnumVal dmEV[] = { {SHADED, "Shaded"}, {WIREFRAME, "Wireframe"}, {POINTS, "Points"} };
@@ -211,15 +226,15 @@ void Draw() {
 
 
 	do{
-		 // Measure speed
+		// Measure speed
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if ( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
-		  // printf and reset timer
-		  printf("%f ms/frame\n", 1000.0/double(nbFrames));
-		  fps = nbFrames;
-		  nbFrames = 0;
-		  lastTime += 1.0;
+			// printf and reset timer
+			printf("%f ms/frame\n", 1000.0/double(nbFrames));
+			fps = nbFrames;
+			nbFrames = 0;
+			lastTime += 1.0;
 		}
 		// Clear the screen
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -252,14 +267,13 @@ void Draw() {
 				glEnableVertexAttribArray(1);
 				glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
 				glVertexAttribPointer(
-					1,                                // attribute
-					3,                                // size
-					GL_FLOAT,                         // type
-					GL_FALSE,                         // normalized?
-					0,                                // stride
-					(void*)0                          // array buffer offset
+						1,                                // attribute
+						3,                                // size
+						GL_FLOAT,                         // type
+						GL_FALSE,                         // normalized?
+						0,                                // stride
+						(void*)0                          // array buffer offset
 				);
-
 				break;
 			case POINTS:
 			case WIREFRAME:
@@ -269,15 +283,16 @@ void Draw() {
 				glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 				glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 				glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+				glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
 				glEnableVertexAttribArray(2);
 				glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
 				glVertexAttribPointer(
-					2,                                // attribute
-					3,                                // size
-					GL_FLOAT,                         // type
-					GL_FALSE,                         // normalized?
-					0,                                // stride
-					(void*)0                          // array buffer offset
+						2,                                // attribute
+						3,                                // size
+						GL_FLOAT,                         // type
+						GL_FALSE,                         // normalized?
+						0,                                // stride
+						(void*)0                          // array buffer offset
 				);
 				break;
 		}
@@ -287,17 +302,31 @@ void Draw() {
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
+				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
 		);
 
 		// Draw the triangle !
 		if (mode != POINTS) glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
 		else glDrawArrays(GL_POINTS, 0, vertices.size());
+
+		if (mode != SHADED) {
+			glUniform3f(wireColorLoc, 1.0f, 1.0f, 0.3f);
+			glBindBuffer(GL_ARRAY_BUFFER, centerbuffer);
+			glVertexAttribPointer(
+					0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+					3,                  // size
+					GL_FLOAT,           // type
+					GL_FALSE,           // normalized?
+					0,                  // stride
+					(void*)0            // array buffer offset
+			);
+			glDrawArrays(GL_POINTS, 0, centers.size());
+		}
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
@@ -308,7 +337,7 @@ void Draw() {
 
 	} // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0 );
+			glfwWindowShouldClose(window) == 0 );
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &normalbuffer);
@@ -326,8 +355,4 @@ std::string UpdateVersion() {
 	myfile << ++v;
 	myfile.close();
 	return std::to_string(v);
-}
-
-void setShading() {
-
 }

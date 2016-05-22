@@ -3,6 +3,8 @@ out vec4 color;
 
 in vec3 vBC;
 
+uniform vec3 objectColor;
+
 float edgeFactor(){
     vec3 d = fwidth(vBC);
     vec3 a3 = smoothstep(vec3(0.0), d*1.5, vBC);
@@ -11,5 +13,5 @@ float edgeFactor(){
 
 void main()
 {
-    color = vec4(0.3, 1.0, 0.3, (1.0-edgeFactor())*0.95);
+    color = vec4(objectColor, (1.0-edgeFactor())*0.95);
 }

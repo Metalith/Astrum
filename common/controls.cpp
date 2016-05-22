@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <math.h>
 extern GLFWwindow* window; // The "extern" keyword here is to access the variable "window" declared in tutorialXXX.cpp. This is a hack to keep the tutorials simple. Please avoid this.
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
@@ -60,20 +61,20 @@ void computeMatricesFromInputs(){
 
 	// Compute new orientation
 	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
-	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
-	// std::cout << horizontalAngle << " " << verticalAngle << std::endl;
+	if (fabs(verticalAngle) <= 1.57f || verticalAngle * float(768/2 - ypos) < 0) verticalAngle = fmod(verticalAngle + mouseSpeed * float( 768/2 - ypos ),3.14f);
+	//std::cout << horizontalAngle << " " << verticalAngle << std::endl;
 	// Direction : Spherical coordinates to Cartesian coordinates conversion
 	glm::vec3 direction(
-		cos(verticalAngle) * sin(horizontalAngle),
-		sin(verticalAngle),
-		cos(verticalAngle) * cos(horizontalAngle)
+			cos(verticalAngle) * sin(horizontalAngle),
+			sin(verticalAngle),
+			cos(verticalAngle) * cos(horizontalAngle)
 	);
 
 	// Right vector
 	glm::vec3 right = glm::vec3(
-		sin(horizontalAngle - 3.14f/2.0f),
-		0,
-		cos(horizontalAngle - 3.14f/2.0f)
+			sin(horizontalAngle - 3.14f/2.0f),
+			0,
+			cos(horizontalAngle - 3.14f/2.0f)
 	);
 
 	// Up vector
@@ -118,11 +119,11 @@ void computeMatricesFromInputs(){
 	// Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	ProjectionMatrix = glm::perspective(FoV, 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
-	ViewMatrix       = glm::lookAt(
-								position,           // Camera is here
-								position+direction, // and looks here : at the same position, plus "direction"
-								up                  // Head is up (set to 0,-1,0 to look upside-down)
-						   );
+	ViewMatrix = glm::lookAt(
+		position,           // Camera is here
+		position+direction, // and looks here : at the same position, plus "direction"
+		up                  // Head is up (set to 0,-1,0 to look upside-down)
+	);
 
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;

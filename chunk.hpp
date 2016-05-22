@@ -3,52 +3,65 @@
 
 #include <vector>
 #include <glfw3.h>
-
-#include <boost/unordered_map.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <unordered_map>
 
 class Chunk
 {
-public:
-    Chunk(int x, int y, int z);
-    ~Chunk();
+	public:
+		static const int CHUNK_SIZE = 32;
 
-    void Update(float dt);
-    void Generate();
+		Chunk(int x, int y, int z);
+		~Chunk();
 
- 	std::vector<GLfloat> getVertices();
- 	std::vector<GLfloat> getNormals();
+		void Update(float dt);
+		void Generate();
 
- 	static void setSeed(int s);
-private:
-	static int seed;
-    static const int CHUNK_SIZE = 16;
+		std::vector<GLfloat> getVertices();
+		std::vector<GLfloat> getNormals();
+		std::vector<GLfloat> getCenters();
 
-    char corners;
-    boost::tuple<int,int,int> position;
+		static void setSeed(int s);
+	private:
+		static int seed;
 
-    std::vector<GLfloat> vertices;
-	std::vector<GLfloat> normals;
+		struct Position {
+			int x, y, z;
+			Position(int x, int y, int z): x(x), y(y), z(z) {}
+		};
 
-	struct ihash : std::unary_function<boost::tuple<int,int,int>, std::size_t> {
-    std::size_t operator()(boost::tuple<int,int,int> const& p) const
-    {
-        std::size_t seed = 0;
-        boost::hash_combine( seed, p.get<0>() );
-        boost::hash_combine( seed, p.get<1>() );
-        boost::hash_combine( seed, p.get<2>() );
-        return seed;
-    }};
+		struct Voxel {
+			char corners;
+			Position position;
+			Voxel(): position({0,0,0}) {}
+			Voxel(int x, int y, int z): position({x, y, z}) {}
+			Voxel(Voxel const& v): position({v.position.x, v.position.y, v.position.z }) {}
+		};
 
-	struct iequal_to : std::binary_function<boost::tuple<int,int,int>, boost::tuple<int,int,int>, bool> {
-    bool operator()(boost::tuple<int,int,int> const& x, boost::tuple<int,int,int> const& y) const
-    {
-        return ( x.get<0>()==y.get<0>() &&
-                 x.get<1>()==y.get<1>() &&
-                 x.get<2>()==y.get<2>());
-    }};
+		std::vector<GLfloat> vertices;
+		std::vector<GLfloat> normals;
+		std::vector<GLfloat> centers;
 
-	boost::unordered_map<boost::tuple<int,int,int>, unsigned char, ihash, iequal_to> voxels;
+		float SDF(float x, float y, float z);
+
+		struct ihash : std::unary_function<Position, std::size_t> {
+			std::size_t operator()(Position const& p) const
+			{
+				std::size_t seed = 0;
+				boost::hash_combine( seed, p.x );
+				boost::hash_combine( seed, p.y );
+				boost::hash_combine( seed, p.z );
+				return seed;
+		}};
+
+		struct iequal_to : std::binary_function<Position, Position, bool> {
+			bool operator()(Position const& x, Position const& y) const
+			{
+				return (x.x == y.x &&
+						x.y == y.y &&
+						x.z == y.z);
+		}};
+
+		std::unordered_map<Position, Voxel, ihash, iequal_to> voxels;
 };
 
 #endif

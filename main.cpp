@@ -46,16 +46,11 @@ GLuint wireProgramID;
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 displayModes mode = WIREFRAME;
-int SIZE = 1;
+int SIZE = 0;
 
 TwBar *bar;
 
 int main() {
-	typedef struct p {
-		int x, y, z;
-		p(int x, int y, int z): x(x), y(y), z(z) {}
-	} Position;
-	std::cout << Position(2, 3, 4).x;
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	Chunk::setSeed(0);
@@ -201,7 +196,7 @@ void Draw() {
 	int fps = 0;
 	int vsize = vertices.size();
 	int csize = ChunkList.size();
-	int numVoxels = csize * 16 * 16 * 16;
+	int numVoxels = csize;
 	bar = TwNewBar("Debug");
 	TwDefine(" Debug size='240 240' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
 	TwAddVarRO(bar, "size", TW_TYPE_INT32, &SIZE,

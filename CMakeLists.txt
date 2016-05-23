@@ -51,6 +51,10 @@ file(GLOB headers
 	"common/*.hpp"
 	"chunk.hpp"
 	"chunk.cpp"
+	"qef.cpp"
+	"qef.h"
+	"svd.h"
+	"svd.cpp"
 )
 add_executable(main
 	main.cpp

@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <glfw3.h>
+#include "qef.h"
+#include <glm/glm.hpp>
+using namespace glm;
 
 class Chunk
 {
@@ -22,26 +25,36 @@ class Chunk
 		static void setSeed(int s);
 	private:
 		static int seed;
-
-		struct Position {
-			int x, y, z;
-		};
+		const int edgevmap[12][2] {{0,4},{1,5},{2,6},{3,7},{0,2},{1,3},{4,6},{5,7},{0,1},{2,3},{4,5},{6,7}};
+		const vec3 cornerOffset[8]= {	vec3(-0.5, -0.5, -0.5),
+												vec3(-0.5, -0.5,  0.5),
+												vec3(-0.5,  0.5, -0.5),
+												vec3(-0.5,  0.5,  0.5),
+												vec3(0.5,  -0.5, -0.5),
+												vec3(0.5,  -0.5,  0.5),
+												vec3(0.5,   0.5, -0.5),
+												vec3(0.5,   0.5,  0.5)	};
 
 		struct Voxel {
-			char corners;
-			Position position;
-			Voxel(): corners(0), position({0,0,0}) {}
-			Voxel(int x, int y, int z): corners(0), position({x, y, z}) {}
-			Voxel(Voxel const& v): corners(v.corners), position({v.position.x, v.position.y, v.position.z }) {}
+			char			corners;
+			vec3			position;
+			vec3			drawPos;
+			vec3			averageNormal;
+			svd::QefData	qef;
+			Voxel(): corners(0), position(vec3(0,0,0)) {}
+			Voxel(vec3 p): corners(0), position(p) {}
+			Voxel(Voxel const& v): corners(v.corners), position(vec3(v.position.x, v.position.y, v.position.z)), qef(v.qef), drawPos(v.drawPos), averageNormal(v.averageNormal) {}
 		};
 
 		std::vector<GLfloat> vertices;
 		std::vector<GLfloat> normals;
 		std::vector<GLfloat> centers;
 		std::vector<Voxel> voxels;
-		Position position;
+		vec3 position;
 
-		float SDF(float x, float y, float z);
+		float SDF(vec3 v);
+		vec3 CalculateSurfaceNormal(const vec3& p);
+		vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1);
 };
 
 #endif

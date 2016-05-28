@@ -7,13 +7,13 @@ find_package(OpenGL REQUIRED)
 FIND_PACKAGE( Boost 1.61 COMPONENTS REQUIRED )
 
 find_library(NOISE_LIBRARY
-   	NAMES libnoise.so
-  	PATHS /usr/lib /usr/local/lib
+	NAMES libnoise.so
+	PATHS /usr/lib /usr/local/lib
 )
 
 find_path(NOISE_INCLUDE_DIR
-  	NAMES libnoise/noise.h noise/noise.h
-  	PATHS /usr/include /usr/local/include
+	NAMES libnoise/noise.h noise/noise.h
+	PATHS /usr/include /usr/local/include
 )
 
 # Compile external dependencies
@@ -23,7 +23,7 @@ include_directories(
 	${Boost_INCLUDE_DIR}
 	${NOISE_INCLUDE_DIR}
 	external/AntTweakBar-1.16/include/
-    external/glfw-3.1.2/include/GLFW/
+	external/glfw-3.1.2/include/GLFW/
 	external/glm-0.9.7.1/
 	external/glew-1.13.0/include/
 	.
@@ -32,7 +32,7 @@ include_directories(
 set(ALL_LIBS
 	${Boost_LIBRARIES}
 	${NOISE_LIBRARY}
-    ${OPENGL_LIBRARY}
+	${OPENGL_LIBRARY}
 	glfw
 	GLEW_1130
 )
@@ -55,6 +55,8 @@ file(GLOB headers
 	"qef.h"
 	"svd.h"
 	"svd.cpp"
+	"octree.hpp"
+	"octree.cpp"
 )
 add_executable(main
 	main.cpp
@@ -66,6 +68,6 @@ target_link_libraries(main
 )
 
 add_custom_command(
-   TARGET main POST_BUILD
-   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/main${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/"
+	TARGET main POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/main${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/"
 )

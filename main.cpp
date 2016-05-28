@@ -28,18 +28,19 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 using namespace noise;
 
 #include "chunk.hpp"
+#include "octree.hpp"
 
 bool		CreateWindow();
 void		Draw();
 std::string	UpdateVersion();
 void 		setShading();
 
-std::vector<GLfloat> vertices;
 std::vector<GLfloat> normals;
 std::vector<GLfloat> bary;
 std::vector<Chunk> ChunkList;
-
-std::vector<GLfloat> centers;
+std::vector<Octree> OctreeList;
+std::vector<GLfloat> vertices;
+std::vector<int> indices;
 
 GLuint shadeProgramID;
 GLuint wireProgramID;
@@ -53,24 +54,18 @@ TwBar *bar;
 int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
-	Chunk::setSeed(0);
+	//Chunk::setSeed(0);
 	for (int i = -SIZE; i <= SIZE; i++)
 		for (int j = -SIZE; j <= SIZE; j++)
-			for (int k = -SIZE; k <= SIZE; k++)
-				ChunkList+=Chunk(i, j, k);
-	std::vector<GLfloat> temp;
-	for (std::vector<Chunk>::iterator it = ChunkList.begin(); it != ChunkList.end(); ++it) {
-		temp = it->getVertices();
-		vertices.insert(vertices.end(), temp.begin(), temp.end());
-		temp = it->getCenters();
-		centers.insert(centers.end(), temp.begin(), temp.end());
-		temp = it->getNormals();
-		normals.insert(normals.end(), temp.begin(), temp.end());
+			for (int k = -SIZE; k <= SIZE; k++) {
+				OctreeList += Octree(vec3(i * 32, j * 32, k * 32),64);
+				std::cout<<"Generated Octree at " << i << " " << j << " " << k << std::endl;
+			}
+	for (auto& oct_ : OctreeList) {
+		auto* oct = &oct_;
+		GenerateMeshFromOctree(oct, vertices, indices);
+		//vertices.insrt(vertices.end(), temp.begin(), temp.end());
 	}
-	for (unsigned int i = 0; i < vertices.size(); i+=3)
-		bary += 1,0,0,
-				0,1,0,
-				0,0,1;
 
 	Draw();
 	// Close OpenGL window and terminate GLFW
@@ -95,7 +90,7 @@ bool CreateWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.1." + UpdateVersion() + " - Voxel Generation").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.1." + UpdateVersion() + " - Meshing").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -131,7 +126,7 @@ bool CreateWindow() {
 	// Hide the mouse and enable unlimited mouvement
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	// Set the mouse at the center of the screen
+	// Set the mouse at the vertex of the screen
 	glfwPollEvents();
 	glfwSetCursorPos(window, 1024/2, 768/2);
 
@@ -157,33 +152,12 @@ void Draw() {
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
 
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), &normals[0], GL_STATIC_DRAW);
+	GLuint indexbuffer;
+	glGenBuffers(1, &indexbuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
-	GLuint barybuffer;
-	glGenBuffers(1, &barybuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
-	glBufferData(GL_ARRAY_BUFFER, bary.size() * sizeof(GLfloat), &bary[0], GL_STATIC_DRAW);
-
-	GLuint centerbuffer;
-	glGenBuffers(1, &centerbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, centerbuffer);
-	glBufferData(GL_ARRAY_BUFFER, centers.size() * sizeof(GLfloat), &centers[0], GL_STATIC_DRAW);
-
-	// Create and compile our GLSL program from the shaders
-	shadeProgramID = LoadShaders( "Voxel.vs", "Voxel.fs" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
-
-	GLint objectColorLoc = glGetUniformLocation(shadeProgramID, "objectColor");
-	GLint lightColorLoc  = glGetUniformLocation(shadeProgramID, "lightColor");
-	GLint lightPosLoc    = glGetUniformLocation(shadeProgramID, "lightPos");
-	// GLint viewPosLoc     = glGetUniformLocation(shadeProgramID, "viewPos");
-	// Get a handle for our "MVP" uniform
-	GLuint sProjMatrixID = glGetUniformLocation(shadeProgramID, "projection");
-	GLuint sViewMatrixID = glGetUniformLocation(shadeProgramID, "view");
-	GLuint sModelMatrixID = glGetUniformLocation(shadeProgramID, "model");
 
 	GLuint wProjMatrixID = glGetUniformLocation(wireProgramID, "projection");
 	GLuint wViewMatrixID = glGetUniformLocation(wireProgramID, "view");
@@ -194,7 +168,7 @@ void Draw() {
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	int fps = 0;
-	int vsize = vertices.size();
+	int vsize = vertices.size() / 3.0;
 	int csize = ChunkList.size();
 	int numVoxels = csize;
 	bar = TwNewBar("Debug");
@@ -219,6 +193,7 @@ void Draw() {
 	// Adding season to bar
 	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
 
+glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
 	do{
 		// Measure speed
@@ -242,58 +217,15 @@ void Draw() {
 		glm::mat4 ViewMatrix = getViewMatrix();
 		glm::mat4 ProjMatrix = ProjectionMatrix;
 
-		switch(mode) {
-			case SHADED:
-				// Enable depth test
-				glEnable(GL_DEPTH_TEST);
-				glEnable(GL_CULL_FACE);
-				glUseProgram(shadeProgramID);
-				// Send our transformation to the currently bound shader,
-				// in the "MVP" uniform
-				glUniform3f(objectColorLoc, 0.6f, 0.2f, 0.31f);
-				glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f);
-				glUniform3f(lightPosLoc,    40.0f, 50.0f, 30.0f);
-				// glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
-				glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
-				glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-				glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		glUseProgram(wireProgramID);
+		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
+		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
 
-				// 3rd attribute buffer : normals
-				glEnableVertexAttribArray(1);
-				glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-				glVertexAttribPointer(
-						1,                                // attribute
-						3,                                // size
-						GL_FLOAT,                         // type
-						GL_FALSE,                         // normalized?
-						0,                                // stride
-						(void*)0                          // array buffer offset
-				);
-				break;
-			case POINTS:
-			case WIREFRAME:
-				glDisable(GL_DEPTH_TEST);
-				glDisable(GL_CULL_FACE);
-				glUseProgram(wireProgramID);
-				glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
-				glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-				glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-				glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
-				glEnableVertexAttribArray(2);
-				glBindBuffer(GL_ARRAY_BUFFER, barybuffer);
-				glVertexAttribPointer(
-						2,                                // attribute
-						3,                                // size
-						GL_FLOAT,                         // type
-						GL_FALSE,                         // normalized?
-						0,                                // stride
-						(void*)0                          // array buffer offset
-				);
-				break;
-		}
-
-
-		// 1rst attribute buffer : vertices
+		glUniform3f(wireColorLoc, 1.0f, 1.0f, 0.3f);
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
@@ -303,28 +235,10 @@ void Draw() {
 				GL_FALSE,           // normalized?
 				0,                  // stride
 				(void*)0            // array buffer offset
-		);
-
-		// Draw the triangle !
-		if (mode != POINTS) glDrawArrays(GL_TRIANGLES, 0, vertices.size()); // 12*3 indices starting at 0 -> 12 triangles
-		else glDrawArrays(GL_POINTS, 0, vertices.size());
-
-		if (mode != SHADED) {
-			glUniform3f(wireColorLoc, 1.0f, 1.0f, 0.3f);
-			glBindBuffer(GL_ARRAY_BUFFER, centerbuffer);
-			glVertexAttribPointer(
-					0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
-					3,                  // size
-					GL_FLOAT,           // type
-					GL_FALSE,           // normalized?
-					0,                  // stride
-					(void*)0            // array buffer offset
-			);
-			glDrawArrays(GL_POINTS, 0, centers.size());
-		}
+				);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
 		// Draw GUI
 		TwDraw();
 		glfwSwapBuffers(window);
@@ -335,8 +249,6 @@ void Draw() {
 			glfwWindowShouldClose(window) == 0 );
 	// Cleanup VBO and shader
 	glDeleteBuffers(1, &vertexbuffer);
-	glDeleteBuffers(1, &normalbuffer);
-	glDeleteBuffers(1, &barybuffer);
 	glDeleteProgram(shadeProgramID);
 	glDeleteVertexArrays(1, &VertexArrayID);
 }

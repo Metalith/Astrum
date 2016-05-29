@@ -63,7 +63,7 @@ int main() {
 			}
 	for (auto& oct_ : OctreeList) {
 		auto* oct = &oct_;
-		GenerateMeshFromOctree(oct, vertices, indices);
+		GenerateMeshFromOctree(oct, vertices, normals, indices);
 		//vertices.insrt(vertices.end(), temp.begin(), temp.end());
 	}
 
@@ -138,11 +138,13 @@ void Draw() {
 	glClearColor(0.2f, 0.2f, 0.4f, 0.0f);
 
 	// Enable depth test
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_PROGRAM_POINT_SIZE);
-
+	//glEnable (GL_BLEND);
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glDepthFunc(GL_LESS);
+	//glEnable(GL_PROGRAM_POINT_SIZE);
+glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
@@ -151,6 +153,11 @@ void Draw() {
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
+
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat), &normals[0], GL_STATIC_DRAW);
 
 	GLuint indexbuffer;
 	glGenBuffers(1, &indexbuffer);
@@ -193,8 +200,6 @@ void Draw() {
 	// Adding season to bar
 	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
 
-glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-
 	do{
 		// Measure speed
 		double currentTime = glfwGetTime();
@@ -217,19 +222,26 @@ glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		glm::mat4 ViewMatrix = getViewMatrix();
 		glm::mat4 ProjMatrix = ProjectionMatrix;
 
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
 		glUseProgram(wireProgramID);
 		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 		glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
 
-		glUniform3f(wireColorLoc, 1.0f, 1.0f, 0.3f);
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glVertexAttribPointer(
 				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+				);
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(
+				1,                  // attribute. No particular reason for 0, but must match the layout in the shader.
 				3,                  // size
 				GL_FLOAT,           // type
 				GL_FALSE,           // normalized?

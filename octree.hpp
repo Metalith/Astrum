@@ -49,5 +49,5 @@ class Octree {
 		static std::vector<GLfloat> Vertices;
 		bool GenerateVertex();
 };
-void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<int>& indexBuffer);
+void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer);
 #endif

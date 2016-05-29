@@ -216,7 +216,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1) {
 
 // ----------------------------------------------------------------------------
 
-void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer)
+void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer)
 {	
 	if (!node)
 	{
@@ -227,7 +227,7 @@ void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			GenerateVertexIndices(node->nodes[i], vertexBuffer);
+			GenerateVertexIndices(node->nodes[i], vertexBuffer, normalBuffer);
 		}
 	}
 
@@ -241,7 +241,8 @@ void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer)
 		}
 		if (v->index > -1) {
 			v->index = vertexBuffer.size() / 3;
-			vertexBuffer+=v->position.x, v->position.y, v->position.z;
+			vertexBuffer+=v->position.x, v->position.y, v->position.z;	
+			normalBuffer+=v->averageNormal.x, v->averageNormal.y, v->averageNormal.z;
 		}
 	}
 }
@@ -471,7 +472,7 @@ void ContourCellProc(Octree* node, std::vector<int>& indexBuffer)
 
 // ----------------------------------------------------------------------------
 
-void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<int>& indexBuffer)
+void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer)
 {
 	if (!node)
 	{
@@ -481,6 +482,6 @@ void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, st
 	vertexBuffer.clear();
 	indexBuffer.clear();
 
-	GenerateVertexIndices(node, vertexBuffer);
+	GenerateVertexIndices(node, vertexBuffer, normalBuffer);
 	ContourCellProc(node, indexBuffer);
 }

@@ -55,10 +55,11 @@ int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	//Chunk::setSeed(0);
+	setSDF();
 	for (int i = -SIZE; i <= SIZE; i++)
 		for (int j = -SIZE; j <= SIZE; j++)
 			for (int k = -SIZE; k <= SIZE; k++) {
-				OctreeList += Octree(vec3(i * 32, j * 32, k * 32),64);
+				OctreeList += Octree(vec3(i * 32, j * 32, k * 32), 256);
 				std::cout<<"Generated Octree at " << i << " " << j << " " << k << std::endl;
 			}
 	for (auto& oct_ : OctreeList) {
@@ -199,7 +200,7 @@ glEnable(GL_DEPTH_TEST);
 	dmType = TwDefineEnum("dmType", dmEV, 3);
 	// Adding season to bar
 	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
-
+//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	do{
 		// Measure speed
 		double currentTime = glfwGetTime();

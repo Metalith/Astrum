@@ -89,7 +89,7 @@ const int processEdgeMask[3][4] = {{3,2,1,0},{7,5,6,4},{11,10,9,8}} ;
 std::vector<GLfloat> Octree::Vertices;
 
 Octree::Octree() {
-	this->position = vec3(10,10,10);
+	this->position = vec3(10.f,10.f,10.0f);
 }
 Octree::Octree(vec3 position, int size) {
 	this->position = position;
@@ -98,7 +98,11 @@ Octree::Octree(vec3 position, int size) {
 	if (size > 1)
 		for (int i = 0; i < 8; i++) {
 			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2)),size/2);
-			nodes[i]=node;
+			if ((node->type == Node_Leaf && node->vertex) || node->type != Node_Leaf) nodes[i]=node;
+			else {
+				delete node;
+				nodes[i]=nullptr;
+			}
 		}
 	else
 		GenerateVertex();
@@ -117,7 +121,7 @@ bool Octree::GenerateVertex() {
 		corners |= (material << c);
 	}
 	if (corners == 0 || corners == 255) {
-		vertex = new Vertex();
+		vertex = nullptr;
 		return false;
 	}
 
@@ -135,8 +139,8 @@ bool Octree::GenerateVertex() {
 		const int m1 = (corners >> c1) & 1;
 		const int m2 = (corners >> c2) & 1;
 
-		if ((m1 == 0 && m2 == 1) ||
-				(m1 == 1 && m2 == 0))
+		if ((m1 == 0 && m2 == 0) ||
+				(m1 == 1 && m2 == 1))
 		{
 			// no zero crossing on this edge
 			continue;
@@ -168,10 +172,7 @@ bool Octree::GenerateVertex() {
 		const auto& mp = qef.getMassPoint();
 		vertex->position = vec3(mp.x, mp.y, mp.z);
 	}
-	//std::cout << vertex.position.x << " " << vertex.position.y << " " << vertex.position.z << std::endl;
 	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
-	vertex->index = Vertices.size();
-	Vertices+=vertex->position.x, vertex->position.y, vertex->position.z;
 }
 
 void setSDF() {
@@ -180,7 +181,7 @@ void setSDF() {
 	testModule.SetPersistence (0.25);
 }
 
-float SDF(vec3 p) { return testModule.GetValue(p.x / 32.0f, p.y / 32.0f, p.z / 32.0f); }
+float SDF(vec3 p) { return  testModule.GetValue(p.x / 32.0f, p.y / 32.0f, p.z / 32.0f); } 
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
 	const float H = 0.001f;
@@ -239,11 +240,9 @@ void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer, std
 			printf("Error! Could not add vertex!\n");
 			exit(EXIT_FAILURE);
 		}
-		if (v->index > -1) {
 			v->index = vertexBuffer.size() / 3;
 			vertexBuffer+=v->position.x, v->position.y, v->position.z;	
 			normalBuffer+=v->averageNormal.x, v->averageNormal.y, v->averageNormal.z;
-		}
 	}
 }
 

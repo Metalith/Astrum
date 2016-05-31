@@ -478,9 +478,6 @@ void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, st
 		return;
 	}
 
-	vertexBuffer.clear();
-	indexBuffer.clear();
-
 	GenerateVertexIndices(node, vertexBuffer, normalBuffer);
 	ContourCellProc(node, indexBuffer);
 }

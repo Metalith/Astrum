@@ -49,8 +49,6 @@ add_definitions(
 file(GLOB headers
 	"common/*.cpp"
 	"common/*.hpp"
-	"chunk.hpp"
-	"chunk.cpp"
 	"qef.cpp"
 	"qef.h"
 	"svd.h"

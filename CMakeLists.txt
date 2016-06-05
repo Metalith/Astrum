@@ -55,6 +55,8 @@ file(GLOB headers
 	"svd.cpp"
 	"octree.hpp"
 	"octree.cpp"
+	"chunk.hpp"
+	"chunk.cpp"
 )
 add_executable(main
 	main.cpp

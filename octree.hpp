@@ -4,6 +4,7 @@
 #include "svd.h"
 #include "qef.h"
 #include <vector>
+#include <functional>
 #include <glfw3.h>
 #include <glm/glm.hpp>
 using namespace glm;
@@ -29,6 +30,8 @@ struct Vertex {
 	Vertex(Vertex const& v): index(v.index), corners(v.corners), position(vec3(v.position.x, v.position.y, v.position.z)), qef(v.qef), averageNormal(v.averageNormal) {}
 };
 
+typedef std::function<bool(const ivec3&, const ivec3&)> FindNodesFunc;
+
 class Octree {
 	public:
 		vec3 position;
@@ -38,12 +41,13 @@ class Octree {
 
 		Vertex* vertex;
 		Octree();
+		Octree(vec3 position, std::vector<Octree*>& nodes, int size);
 		Octree(vec3 position, int size);
 
 		std::vector<GLfloat> getVertices();
 	private:
 		static int seed;
-		static vec3 cornerOffset[8];	
+		static vec3 cornerOffset[8];
 		const int edgevmap[12][2] {{0,4},{1,5},{2,6},{3,7},{0,2},{1,3},{4,6},{5,7},{0,1},{2,3},{4,5},{6,7}};
 
 		static std::vector<GLfloat> Vertices;
@@ -51,4 +55,5 @@ class Octree {
 };
 void setSDF();
 void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer);
+void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes);
 #endif

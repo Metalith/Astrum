@@ -21,13 +21,13 @@ vec3 CalculateSurfaceNormal(const vec3& p);
 
 int Octree::seed = 0;
 vec3 Octree::cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
-								vec3(-0.5, -0.5,  0.5),
-								vec3(-0.5,  0.5, -0.5),
-								vec3(-0.5,  0.5,  0.5),
-								vec3(0.5,  -0.5, -0.5),
-								vec3(0.5,  -0.5,  0.5),
-								vec3(0.5,   0.5, -0.5),
-								vec3(0.5,   0.5,  0.5)	};
+	vec3(-0.5, -0.5,  0.5),
+	vec3(-0.5,  0.5, -0.5),
+	vec3(-0.5,  0.5,  0.5),
+	vec3(0.5,  -0.5, -0.5),
+	vec3(0.5,  -0.5,  0.5),
+	vec3(0.5,   0.5, -0.5),
+	vec3(0.5,   0.5,  0.5)	};
 
 const float QEF_ERROR = 1e-6f;
 const int QEF_SWEEPS = 4;
@@ -41,16 +41,16 @@ const int MATERIAL_SOLID = 1;
 // ----------------------------------------------------------------------------
 // data from the original DC impl, drives the contouring process
 
-const int edgevmap[12][2] = 
+const int edgevmap[12][2] =
 {
-	{0,4},{1,5},{2,6},{3,7},	// x-axis 
+	{0,4},{1,5},{2,6},{3,7},	// x-axis
 	{0,2},{1,3},{4,6},{5,7},	// y-axis
 	{0,1},{2,3},{4,5},{6,7}		// z-axis
 };
 
 const int edgemask[3] = { 5, 3, 6 } ;
 
-const int vertMap[8][3] = 
+const int vertMap[8][3] =
 {
 	{0,0,0},
 	{0,0,1},
@@ -108,6 +108,29 @@ Octree::Octree(vec3 position, int size) {
 		GenerateVertex();
 }
 
+Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  int size) {
+	this->position=position;
+	this->size=size;
+	this->type=Node_Internal;
+	if (size > 1) {
+		for (int i = 0; i < 8; i++) {
+			bool found = false;
+			this->nodes[i] = nullptr;
+			vec3 newPos = position+(cornerOffset[i] * vec3(size/2.f));
+			for (int j = 0; j < nodes.size(); j++)
+				if (newPos ==  nodes[j]->position) {
+					this->nodes[i] = nodes[j];
+					nodes.erase(nodes.begin() + j);
+					found = true;
+					break;
+				}
+
+			if (!found && size > 2) {
+				this->nodes[i] = new Octree(newPos, nodes, size/2);
+			}
+		}
+	}
+}
 std::vector<GLfloat> Octree::getVertices(){ return Vertices;}
 
 bool Octree::GenerateVertex() {
@@ -181,7 +204,7 @@ void setSDF() {
 	testModule.SetPersistence (0.25);
 }
 
-float SDF(vec3 p) { return  testModule.GetValue(p.x / 32.0f, p.y / 32.0f, p.z / 32.0f); } 
+float SDF(vec3 p) { return testModule.GetValue(p.x / 32.0f, 0.0, p.z / 32.0f) * 16.0f + p.y; }
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
 	const float H = 0.001f;
@@ -218,7 +241,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1) {
 // ----------------------------------------------------------------------------
 
 void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer)
-{	
+{
 	if (!node)
 	{
 		return;
@@ -240,9 +263,9 @@ void GenerateVertexIndices(Octree* node, std::vector<GLfloat>& vertexBuffer, std
 			printf("Error! Could not add vertex!\n");
 			exit(EXIT_FAILURE);
 		}
-			v->index = vertexBuffer.size() / 3;
-			vertexBuffer+=v->position.x, v->position.y, v->position.z;	
-			normalBuffer+=v->averageNormal.x, v->averageNormal.y, v->averageNormal.z;
+		v->index = vertexBuffer.size() / 3;
+		vertexBuffer+=v->position.x, v->position.y, v->position.z;
+		normalBuffer+=v->averageNormal.x, v->averageNormal.y, v->averageNormal.z;
 	}
 }
 
@@ -269,12 +292,12 @@ void ContourProcessEdge(Octree* node[4], int dir, std::vector<int>& indexBuffer)
 		{
 			minSize = node[i]->size;
 			minIndex = i;
-			flip = m1 != MATERIAL_AIR; 
+			flip = m1 != MATERIAL_AIR;
 		}
 
 		indices[i] = node[i]->vertex->index;
 
-		signChange[i] = 
+		signChange[i] =
 			(m1 == MATERIAL_AIR && m2 != MATERIAL_AIR) ||
 			(m1 != MATERIAL_AIR && m2 == MATERIAL_AIR);
 	}
@@ -314,9 +337,9 @@ void ContourEdgeProc(Octree* node[4], int dir, std::vector<int>& indexBuffer)
 	}
 
 	if (node[0]->type != Node_Internal &&
-		node[1]->type != Node_Internal &&
-		node[2]->type != Node_Internal &&
-		node[3]->type != Node_Internal)
+			node[1]->type != Node_Internal &&
+			node[2]->type != Node_Internal &&
+			node[3]->type != Node_Internal)
 	{
 		ContourProcessEdge(node, dir, indexBuffer);
 	}
@@ -325,7 +348,7 @@ void ContourEdgeProc(Octree* node[4], int dir, std::vector<int>& indexBuffer)
 		for (int i = 0; i < 2; i++)
 		{
 			Octree* edgeNodes[4];
-			const int c[4] = 
+			const int c[4] =
 			{
 				edgeProcEdgeMask[dir][i][0],
 				edgeProcEdgeMask[dir][i][1],
@@ -359,16 +382,16 @@ void ContourFaceProc(Octree* node[2], int dir, std::vector<int>& indexBuffer)
 		return;
 	}
 
-	if (node[0]->type == Node_Internal || 
-		node[1]->type == Node_Internal)
+	if (node[0]->type == Node_Internal ||
+			node[1]->type == Node_Internal)
 	{
 		for (int i = 0; i < 4; i++)
 		{
 			Octree* faceNodes[2];
-			const int c[2] = 
+			const int c[2] =
 			{
-				faceProcFaceMask[dir][i][0], 
-				faceProcFaceMask[dir][i][1], 
+				faceProcFaceMask[dir][i][0],
+				faceProcFaceMask[dir][i][1],
 			};
 
 			for (int j = 0; j < 2; j++)
@@ -385,7 +408,7 @@ void ContourFaceProc(Octree* node[2], int dir, std::vector<int>& indexBuffer)
 
 			ContourFaceProc(faceNodes, faceProcFaceMask[dir][i][2], indexBuffer);
 		}
-		
+
 		const int orders[2][4] =
 		{
 			{ 0, 0, 1, 1 },
@@ -406,7 +429,7 @@ void ContourFaceProc(Octree* node[2], int dir, std::vector<int>& indexBuffer)
 			for (int j = 0; j < 4; j++)
 			{
 				if (node[order[j]]->type == Node_Leaf ||
-					node[order[j]]->type == Node_Psuedo)
+						node[order[j]]->type == Node_Psuedo)
 				{
 					edgeNodes[j] = node[order[j]];
 				}
@@ -441,7 +464,7 @@ void ContourCellProc(Octree* node, std::vector<int>& indexBuffer)
 		{
 			Octree* faceNodes[2];
 			const int c[2] = { cellProcFaceMask[i][0], cellProcFaceMask[i][1] };
-			
+
 			faceNodes[0] = node->nodes[c[0]];
 			faceNodes[1] = node->nodes[c[1]];
 
@@ -451,7 +474,7 @@ void ContourCellProc(Octree* node, std::vector<int>& indexBuffer)
 		for (int i = 0; i < 6; i++)
 		{
 			Octree* edgeNodes[4];
-			const int c[4] = 
+			const int c[4] =
 			{
 				cellProcEdgeMask[i][0],
 				cellProcEdgeMask[i][1],
@@ -480,4 +503,30 @@ void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, st
 
 	GenerateVertexIndices(node, vertexBuffer, normalBuffer);
 	ContourCellProc(node, indexBuffer);
+}
+
+void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes)
+{
+	if (!node)
+	{
+		return;
+	}
+
+	const ivec3 min = ivec3(node->position - vec3(node->size / 2.0f));
+	//std::cout << min.x << " " << min.y << " " << min.z << std::endl;
+	const ivec3 max = ivec3(node->position + vec3(node->size / 2.0f));
+	if (!func(min, max))
+	{
+		return;
+	}
+
+	if (node->type == Node_Leaf)
+	{
+		nodes.push_back(node);
+	}
+	else
+	{
+		for (int i = 0; i < 8; i++)
+			Octree_FindNodes(node->nodes[i], func, nodes);
+	}
 }

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <tuple>
+#include <unordered_map>
 
 #include <AntTweakBar.h>
 
@@ -28,6 +30,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 using namespace noise;
 
 #include "octree.hpp"
+#include "chunk.hpp"
 
 bool		CreateWindow();
 void		Draw();
@@ -39,6 +42,7 @@ std::vector<GLfloat> normals;
 std::vector<GLfloat> bary;
 std::vector<int> indices;
 std::vector<Octree> OctreeList;
+std::vector<Chunk*> ChunkList;
 
 GLuint shadeProgramID;
 GLuint wireProgramID;
@@ -52,17 +56,16 @@ TwBar *bar;
 int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
-	//Chunk::setSeed(0);
 	setSDF();
 	for (int i = -SIZE; i <= SIZE; i++)
-		for (int j = -SIZE; j <= SIZE; j++)
 			for (int k = -SIZE; k <= SIZE; k++) {
-				OctreeList += Octree(vec3(i * 32, j * 32, k * 32), 32);
-				std::cout<<"Generated Octree at " << i << " " << j << " " << k << std::endl;
+				ChunkList += new Chunk(i, 0, k);
+				std::cout<<"Generated Chunk at " << i  << std::endl;
 			}
-	for (auto& oct_ : OctreeList) {
-		auto* oct = &oct_;
-		GenerateMeshFromOctree(oct, vertices, normals, indices);
+	for (auto chunk : ChunkList) {
+		chunk->update();
+		chunk->generateMesh(vertices, normals, indices);
+		chunk->generateSeamMesh(vertices, normals, indices);
 	}
 
 	Draw();
@@ -179,13 +182,14 @@ void Draw() {
 	int nbFrames = 0;
 	int fps = 0;
 	int vsize = vertices.size() / 3.0;
-	int csize = OctreeList.size();
+	int chunk_size = static_cast<int>(Chunk::CHUNK_SIZE);
+	int csize = ChunkList.size();
 	bar = TwNewBar("Debug");
 	TwDefine(" Debug size='240 240' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
-	TwAddVarRO(bar, "size", TW_TYPE_INT32, &SIZE,
-			" label='Octree Size' ");
-	TwAddVarRO(bar, "Octrees", TW_TYPE_INT32, &csize,
-			" label='Octree List' ");
+	TwAddVarRO(bar, "size", TW_TYPE_INT32, &chunk_size,
+			" label='Chunk Size' ");
+	TwAddVarRO(bar, "Chunks", TW_TYPE_INT32, &csize,
+			" label='Chunk List' ");
 	TwAddVarRO(bar, "vertices", TW_TYPE_INT32, &vsize,
 			" label='Vertices' ");
 	TwAddVarRO(bar, "FPS", TW_TYPE_INT32, &fps,
@@ -264,7 +268,7 @@ void Draw() {
 				glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
 				break;
 		}
-		if (mode == POINTS) glDrawArrays(GL_POINTS, 0, vertices.size()); // 12*3 indices
+		if (mode == POINTS) glDrawArrays(GL_POINTS, 0, vertices.size() / 3);
 		else glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 		glDisableVertexAttribArray(0);
 		// Draw GUI

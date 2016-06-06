@@ -57,15 +57,19 @@ int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	setSDF();
-	for (int i = -SIZE; i <= SIZE; i++)
+	for (int i = -SIZE; i <= SIZE; i++) //TODO: Speed up chunk generation. Severely limiting.
+		for (int j = -SIZE; j <= SIZE; j++)
 			for (int k = -SIZE; k <= SIZE; k++) {
-				ChunkList += new Chunk(i, 0, k);
-				std::cout<<"Generated Chunk at " << i  << std::endl;
+				ChunkList += new Chunk(i, j, k);
+				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
 			}
+	int p = 0;
+	std::cout << "Generating Mesh" << std::endl;
 	for (auto chunk : ChunkList) {
 		chunk->update();
 		chunk->generateMesh(vertices, normals, indices);
 		chunk->generateSeamMesh(vertices, normals, indices);
+		std::cout << 100 * float(++p) / float(ChunkList.size()) << "%" <<  std::endl;
 	}
 
 	Draw();

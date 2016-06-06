@@ -20,7 +20,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1);
 vec3 CalculateSurfaceNormal(const vec3& p);
 
 int Octree::seed = 0;
-vec3 Octree::cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
+vec3 cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
 	vec3(-0.5, -0.5,  0.5),
 	vec3(-0.5,  0.5, -0.5),
 	vec3(-0.5,  0.5,  0.5),
@@ -86,10 +86,7 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3,2,1,0},{7,5,6,4},{11,10,9,8}} ;
 
-std::vector<GLfloat> Octree::Vertices;
-
 Octree::Octree() {
-	this->position = vec3(10.f,10.f,10.0f);
 }
 Octree::Octree(vec3 position, int size) {
 	this->position = position;
@@ -112,26 +109,43 @@ Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  int size) {
 	this->position=position;
 	this->size=size;
 	this->type=Node_Internal;
-	if (size > 1) {
-		for (int i = 0; i < 8; i++) {
-			bool found = false;
-			this->nodes[i] = nullptr;
-			vec3 newPos = position+(cornerOffset[i] * vec3(size/2.f));
-			for (int j = 0; j < nodes.size(); j++)
-				if (newPos ==  nodes[j]->position) {
-					this->nodes[i] = nodes[j];
-					nodes.erase(nodes.begin() + j);
-					found = true;
+	for (auto node : nodes) {
+		bool placed = false;
+		Octree* currentNode = this;
+		while (!placed) {
+			vec3 childPos = (node->position - currentNode->position);
+			if (childPos.x > 0) childPos.x = 0.5;
+			else childPos.x = -0.5;
+			if (childPos.y > 0) childPos.y = 0.5;
+			else childPos.y = -0.5;
+			if (childPos.z > 0) childPos.z = 0.5;
+			else childPos.z = -0.5;
+			for(int i = 0; i < 8; i++) {
+				if (childPos == cornerOffset[i]) {
+					vec3 newPos = currentNode->position+(cornerOffset[i] * vec3(currentNode->size/2.f));
+					if (newPos == node->position) {
+						currentNode->nodes[i] = node;
+						placed = true;
+					} else if(!currentNode->nodes[i]) {
+						currentNode->nodes[i] = new Octree();
+						int newSize = currentNode->size / 2.f;
+						if (newSize == 1) {
+							printf("Error! Could not place node!\n");
+							exit(EXIT_FAILURE);
+						}
+						currentNode = currentNode->nodes[i];
+						currentNode->position = newPos;
+						currentNode->size = newSize;
+						currentNode->type=Node_Internal;
+					} else {
+						currentNode = currentNode->nodes[i];
+					}
 					break;
 				}
-
-			if (!found && size > 2) {
-				this->nodes[i] = new Octree(newPos, nodes, size/2);
 			}
 		}
 	}
 }
-std::vector<GLfloat> Octree::getVertices(){ return Vertices;}
 
 bool Octree::GenerateVertex() {
 	this->type = Node_Leaf;
@@ -204,7 +218,7 @@ void setSDF() {
 	testModule.SetPersistence (0.25);
 }
 
-float SDF(vec3 p) { return testModule.GetValue(p.x / 32.0f, 0.0, p.z / 32.0f) * 16.0f + p.y; }
+float SDF(vec3 p) { return testModule.GetValue(p.x / 4.0f, p.y / 4.0f, p.z / 4.0f); }
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
 	const float H = 0.001f;

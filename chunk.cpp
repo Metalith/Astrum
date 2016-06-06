@@ -81,6 +81,7 @@ void Chunk::update() {
 			seamNodes.insert(end(seamNodes), begin(chunkNodes), end(chunkNodes));
 		}
 	}
+	//this->seam = nullptr;
 	this->seam = new Octree(vec3(seamValues), seamNodes, CHUNK_SIZE*2);
 }
 

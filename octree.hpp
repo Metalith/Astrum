@@ -36,13 +36,13 @@ class Octree {
 	public:
 		vec3 position;
 		Octree* nodes[8] {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-		int size;
+		float size;
 		OctreeNodeType	type;
 
 		Vertex* vertex;
 		Octree();
-		Octree(vec3 position, std::vector<Octree*>& nodes, int size);
-		Octree(vec3 position, int size);
+		Octree(vec3 position, std::vector<Octree*>& nodes, float size);
+		Octree(vec3 position, float size, float LOD);
 
 	private:
 		static int seed;

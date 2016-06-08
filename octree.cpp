@@ -1,4 +1,5 @@
 #include "octree.hpp"
+#include "chunk.hpp"
 
 module::Perlin testModule;
 
@@ -88,13 +89,13 @@ const int processEdgeMask[3][4] = {{3,2,1,0},{7,5,6,4},{11,10,9,8}} ;
 
 Octree::Octree() {
 }
-Octree::Octree(vec3 position, int size) {
+Octree::Octree(vec3 position, float size, float LOD) {
 	this->position = position;
 	this->size=size;
 	this->type = Node_Internal;
-	if (size > 1)
+	if (size > LOD)
 		for (int i = 0; i < 8; i++) {
-			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2)),size/2);
+			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2.f)),size/2.f, LOD);
 			if ((node->type == Node_Leaf && node->vertex) || node->type != Node_Leaf) nodes[i]=node;
 			else {
 				delete node;
@@ -105,7 +106,7 @@ Octree::Octree(vec3 position, int size) {
 		GenerateVertex();
 }
 
-Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  int size) {
+Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  float size) {
 	this->position=position;
 	this->size=size;
 	this->type=Node_Internal;
@@ -128,11 +129,11 @@ Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  int size) {
 						placed = true;
 					} else if(!currentNode->nodes[i]) {
 						currentNode->nodes[i] = new Octree();
-						int newSize = currentNode->size / 2.f;
-						if (newSize == 1) {
-							printf("Error! Could not place node!\n");
-							exit(EXIT_FAILURE);
-						}
+						float newSize = currentNode->size / 2.f;
+						//if (newSize == 1) {
+							//printf("Error! Could not place node!\n");
+							//exit(EXIT_FAILURE);
+						//}
 						currentNode = currentNode->nodes[i];
 						currentNode->position = newPos;
 						currentNode->size = newSize;
@@ -152,8 +153,7 @@ bool Octree::GenerateVertex() {
 
 	int corners = 0;
 	for (int c = 0; c < 8; c++)
-	{
-		float density = SDF(position + cornerOffset[c]);
+	{	float density = SDF(position + (cornerOffset[c] * this->size));
 		char material = density < 0 ? 1 : 0;
 		corners |= (material << c);
 	}
@@ -183,8 +183,8 @@ bool Octree::GenerateVertex() {
 			continue;
 		}
 
-		const vec3 p1 = position + cornerOffset[c1];
-		const vec3 p2 = position + cornerOffset[c2];
+		const vec3 p1 = position + (cornerOffset[c1] * this->size);
+		const vec3 p2 = position + (cornerOffset[c2] * this->size);
 		const vec3 p = ApproximateZeroCrossingPosition(p1, p2);
 		const vec3 n = CalculateSurfaceNormal(p);
 
@@ -200,8 +200,8 @@ bool Octree::GenerateVertex() {
 	vertex->position = vec3(qefPosition.x, qefPosition.y, qefPosition.z);
 	vertex->qef = qef.getData();
 
-	const vec3 min = position + vec3(-0.5);
-	const vec3 max = position + vec3(0.5);
+	const vec3 min = position + (vec3(-0.5) * this->size);
+	const vec3 max = position + (vec3(0.5) * this->size);
 	if (vertex->position.x < min.x || vertex->position.x > max.x ||
 			vertex->position.y < min.y || vertex->position.y > max.y ||
 			vertex->position.z < min.z || vertex->position.z > max.z)
@@ -209,6 +209,7 @@ bool Octree::GenerateVertex() {
 		const auto& mp = qef.getMassPoint();
 		vertex->position = vec3(mp.x, mp.y, mp.z);
 	}
+	//vertex->position = position; //Minecraft-like style
 	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
 }
 
@@ -218,7 +219,8 @@ void setSDF() {
 	testModule.SetPersistence (0.25);
 }
 
-float SDF(vec3 p) { return testModule.GetValue(p.x / 4.0f, p.y / 4.0f, p.z / 4.0f); }
+float SDF(vec3 p) { return testModule.GetValue(p.x / Chunk::CHUNK_SIZE, 0.0, p.z / Chunk::CHUNK_SIZE) + (2 * p.y/Chunk::CHUNK_SIZE); }
+//float SDF(vec3 p) { return p.y; }
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
 	const float H = 0.001f;
@@ -527,7 +529,7 @@ void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& n
 	}
 
 	const ivec3 min = ivec3(node->position - vec3(node->size / 2.0f));
-	//std::cout << min.x << " " << min.y << " " << min.z << std::endl;
+	std::cout << min.x << " " << min.y << " " << min.z << std::endl;
 	const ivec3 max = ivec3(node->position + vec3(node->size / 2.0f));
 	if (!func(min, max))
 	{

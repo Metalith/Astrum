@@ -1,3 +1,12 @@
+/**
+ * @file	main.cpp
+ * @Author	Caleb Daniels
+ * @Date	June, 2016
+ * @brief	Tests out Landscape generation
+ *
+ * Generates several chunks and draws them
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -57,12 +66,16 @@ int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	setSDF();
-	for (int i = -SIZE; i <= SIZE; i++) //TODO: Speed up chunk generation. Severely limiting.
-		for (int j = -SIZE; j <= SIZE; j++)
-			for (int k = -SIZE; k <= SIZE; k++) {
-				ChunkList += new Chunk(i, j, k);
-				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
-			}
+	//for (int i = -SIZE; i <= SIZE; i++) //TODO: Speed up chunk generation. Severely limiting.
+		////for (int j = -1; j <= 1; j++)
+			//for (int k = -SIZE; k <= SIZE; k++) {
+				ChunkList += new Chunk(0, 0, 0, 1.f);
+				//std::cout<<"Generated Chunk at " << i  << " " << 0 << " " << k << std::endl;
+			//}
+				//ChunkList += new Chunk(0, 0, 1, 4.f);
+
+	//Loop for generating mesh from chunk
+	//TODO: Set up LOD
 	int p = 0;
 	std::cout << "Generating Mesh" << std::endl;
 	for (auto chunk : ChunkList) {
@@ -95,7 +108,7 @@ bool CreateWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.1." + UpdateVersion() + " - Meshing").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.2." + UpdateVersion() + " - Level of Detail").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -112,7 +125,7 @@ bool CreateWindow() {
 		glfwTerminate();
 		return -1;
 	}
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL_CORE, NULL);
 
@@ -203,9 +216,7 @@ void Draw() {
 	TwEnumVal dmEV[] = { {SHADED, "Shaded"}, {WIREFRAME, "Wireframe"}, {POINTS, "Points"} };
 	TwType dmType;
 
-	// Defining season enum type
 	dmType = TwDefineEnum("dmType", dmEV, 3);
-	// Adding season to bar
 	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
 
 	do{
@@ -225,10 +236,11 @@ void Draw() {
 
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
-		glm::mat4 ProjectionMatrix = getProjectionMatrix();
-		glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(float(SIZE) / 2.0f, float(SIZE) / 2.0f, float(SIZE) / 2.0f));
+		glm::mat4 ProjMatrix = getProjectionMatrix();
+		//glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(float(SIZE) / 2.0f, float(SIZE) / 2.0f, float(SIZE) / 2.0f));
+		//glm::mat4 ModelMatrix = glm::scale(glm::mat4(1.0), vec3(1 / float(Chunk::CHUNK_SIZE),1 / float(Chunk::CHUNK_SIZE),1 / float(Chunk::CHUNK_SIZE)));
+		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 ViewMatrix = getViewMatrix();
-		glm::mat4 ProjMatrix = ProjectionMatrix;
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

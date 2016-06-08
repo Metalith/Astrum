@@ -9,11 +9,10 @@ using namespace glm;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 std::vector<Chunk*> Chunk::ChunkList;
-const int CHUNK_SIZE = 32;
 typedef std::function<bool(const ivec3&, const ivec3&)> FilterNodesFunc;
 
-Chunk::Chunk(int x, int y, int z) {
-	this->root = new Octree(vec3(x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE), CHUNK_SIZE);
+Chunk::Chunk(int x, int y, int z, float LOD) {
+	this->root = new Octree(vec3(x * CHUNK_SIZE, y * CHUNK_SIZE, z * CHUNK_SIZE), CHUNK_SIZE, LOD);
 	this->position = ivec3(x, y, z);
 	ChunkList+=this;
 }

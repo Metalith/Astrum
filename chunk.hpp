@@ -11,7 +11,7 @@ class Chunk {
 		static const int CHUNK_SIZE = 32;
 		static std::vector<Chunk*> ChunkList;
 
-		Chunk(int x, int y, int z);
+		Chunk(int x, int y, int z, float LOD);
 		// TODO:Function to update this particular chunk. Unsure what argument to take at this time. In charge of stitching though.
 		/**
 			Updates this particular chunk with stitching and removing voxels

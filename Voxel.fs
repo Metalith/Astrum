@@ -2,7 +2,7 @@
 out vec4 color;
 
 in vec3 vertexNormal;
-
+in float logz;
 uniform vec3 objectColor;
 
 void main()
@@ -11,4 +11,5 @@ void main()
 	float d = dot(vertexNormal, -lightDir);
 	d = max(0.2, d);
 	color = vec4(objectColor*d,1);
+	 /*gl_FragDepth = logz;*/
 }

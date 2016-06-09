@@ -9,7 +9,7 @@ extern GLFWwindow* window; // The "extern" keyword here is to access the variabl
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 extern displayModes mode;
-
+extern bool showBounds;
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -91,19 +91,6 @@ void computeMatricesFromInputs(){
 	if (glfwGetKey( window, GLFW_KEY_A ) == GLFW_PRESS){
 		position -= right * deltaTime * speed;
 	}
-	if (glfwGetKey( window, GLFW_KEY_SPACE ) == GLFW_PRESS){
-		lookAtOrigin();
-	}
-	if (glfwGetKey( window, GLFW_KEY_1 ) == GLFW_PRESS){
-		mode = SHADED;
-	}
-	if (glfwGetKey( window, GLFW_KEY_2 ) == GLFW_PRESS){
-		mode = WIREFRAME;
-	}
-	if (glfwGetKey( window, GLFW_KEY_3 ) == GLFW_PRESS){
-		mode = POINTS;
-	}
-
 	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
 
 	// Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
@@ -127,3 +114,12 @@ void lookAtOrigin() {
 glm::vec3 getPosition()			{	return position;		}
 glm::mat4 getViewMatrix()		{	return ViewMatrix;		}
 glm::mat4 getProjectionMatrix() {	return ProjectionMatrix;}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_SPACE && action ==  GLFW_PRESS) lookAtOrigin();
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS) mode = SHADED;
+	if (key == GLFW_KEY_2 && action == GLFW_PRESS) mode = WIREFRAME;
+	if (key == GLFW_KEY_3 && action == GLFW_PRESS) mode = POINTS;
+	if (key == GLFW_KEY_4 && action == GLFW_PRESS) showBounds = !showBounds;
+}

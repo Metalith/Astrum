@@ -58,7 +58,8 @@ GLuint wireProgramID;
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 displayModes mode = SHADED;
-int SIZE = 80;
+bool showBounds = false;
+int SIZE = 4;
 
 TwBar *bar;
 
@@ -123,7 +124,6 @@ bool CreateWindow() {
 		return -1;
 	}
 	glfwSwapInterval(1);
-	// m
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL_CORE, NULL);
 
@@ -134,7 +134,7 @@ bool CreateWindow() {
 	glfwSetMouseButtonCallback(window, (GLFWmousebuttonfun)TwEventMouseButtonGLFW); // - Directly redirect GLFW mouse button events to AntTweakBar
 	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);          // - Directly redirect GLFW mouse position events to AntTweakBar
 	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    // - Directly redirect GLFW mouse wheel events to AntTweakBar
-	glfwSetKeyCallback(window, (GLFWkeyfun)TwEventKeyGLFW);                         // - Directly redirect GLFW key events to AntTweakBar
+	glfwSetKeyCallback(window, key_callback);                         // - Directly redirect GLFW key events to AntTweakBar
 	glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW);                      // - Directly redirect GLFW char events to AntTweakBar
 
 	// Ensure we can capture the escape key being pressed below
@@ -208,7 +208,6 @@ void Draw() {
 	int csize = ChunkList.size();
 	float pos[3] {0.0, 0.0, 0.0};
 	int chunkPos[3] {0, 0, 0};
-	bool showBounds = true;
 	bar = TwNewBar("Debug");
 	TwDefine(" Debug size='240 250' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
 	TwAddVarRO(bar, "size", TW_TYPE_INT32, &chunk_size,
@@ -226,7 +225,7 @@ void Draw() {
 
 	dmType = TwDefineEnum("dmType", dmEV, 3);
 	TwAddVarRO(bar, "Display", dmType, &mode, NULL);
-	TwAddVarRO(bar, "Octree", TW_TYPE_BOOLCPP, &showBounds," true='SHOW' false='HIDDEN' ");
+	TwAddVarRW(bar, "Octree", TW_TYPE_BOOLCPP, &showBounds,NULL);
 	TwAddSeparator(bar, NULL, NULL);
 	TwAddVarRO(bar, "PosX", TW_TYPE_FLOAT, &pos[0],
 			" label='World X' ");
@@ -254,8 +253,6 @@ void Draw() {
 		// Clear the screen
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-
-		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
 		pos[0]  = getPosition().x;
 		pos[1]  = getPosition().y;
@@ -344,6 +341,7 @@ void Draw() {
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteProgram(shadeProgramID);
 	glDeleteVertexArrays(1, &VertexArrayID);
+	TwTerminate();
 }
 
 std::string UpdateVersion() {

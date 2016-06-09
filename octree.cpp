@@ -93,16 +93,23 @@ Octree::Octree(vec3 position, float size, float LOD) {
 	this->position = position;
 	this->size=size;
 	this->type = Node_Internal;
-	if (size > LOD)
+	if (size > LOD) {
 		for (int i = 0; i < 8; i++) {
 			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2.f)),size/2.f, LOD);
-			if ((node->type == Node_Leaf && node->vertex) || node->type != Node_Leaf) nodes[i]=node;
+			if ((node->type == Node_Leaf && node->vertex) || (node->type != Node_Leaf && node->hasChildren)) {
+				nodes[i]=node;
+				this->hasChildren = true;
+			}
 			else {
 				delete node;
 				nodes[i]=nullptr;
 			}
+			//if (node->type != Node_Leaf && !node->hasChildren) {
+				//delete node;
+				//nodes[i]=nullptr;
+			//}
 		}
-	else
+	} else
 		GenerateVertex();
 }
 
@@ -521,6 +528,43 @@ void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, st
 	ContourCellProc(node, indexBuffer);
 }
 
+void GenerateBoundsFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer)
+{
+	if (!node)
+	{
+		return;
+	}
+	for(int i = 0; i < 8; i++)
+		GenerateBoundsFromOctree(node->nodes[i], vertexBuffer);
+	vertexBuffer+=	node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size), // RIGHT FACE +X
+					node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size);
+
+	vertexBuffer+=	node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size), // LEFT FACE +X
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size);
+
+	vertexBuffer+=	node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size), // TOP FACE +Y
+					node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y + (0.5 * node->size), node->position.z - (0.5 * node->size);
+
+	vertexBuffer+=	node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size), // TOP FACE +Y
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z + (0.5 * node->size),
+					node->position.x - (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size),
+					node->position.x + (0.5 * node->size), node->position.y - (0.5 * node->size), node->position.z - (0.5 * node->size);
+}
+
 void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes)
 {
 	if (!node)
@@ -529,7 +573,7 @@ void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& n
 	}
 
 	const ivec3 min = ivec3(node->position - vec3(node->size / 2.0f));
-	std::cout << min.x << " " << min.y << " " << min.z << std::endl;
+	//std::cout << min.x << " " << min.y << " " << min.z << std::endl;
 	const ivec3 max = ivec3(node->position + vec3(node->size / 2.0f));
 	if (!func(min, max))
 	{

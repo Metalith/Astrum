@@ -20,14 +20,6 @@ using namespace glm;
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
 
-glm::mat4 getViewMatrix(){
-	return ViewMatrix;
-}
-glm::mat4 getProjectionMatrix(){
-	return ProjectionMatrix;
-}
-
-
 // Initial position : on +Z
 glm::vec3 position = glm::vec3( 0, 0, -5 );
 // Initial horizontal angle : toward -Z
@@ -131,3 +123,7 @@ void lookAtOrigin() {
 	horizontalAngle = 0 * 3.14f;
 	verticalAngle = 0 * 3.14f;
 }
+
+glm::vec3 getPosition()			{	return position;		}
+glm::mat4 getViewMatrix()		{	return ViewMatrix;		}
+glm::mat4 getProjectionMatrix() {	return ProjectionMatrix;}

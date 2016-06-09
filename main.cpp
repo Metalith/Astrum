@@ -48,7 +48,7 @@ void 		setShading();
 
 std::vector<GLfloat> vertices;
 std::vector<GLfloat> normals;
-std::vector<GLfloat> bary;
+std::vector<GLfloat> bounds;
 std::vector<int> indices;
 std::vector<Octree> OctreeList;
 std::vector<Chunk*> ChunkList;
@@ -58,7 +58,7 @@ GLuint wireProgramID;
 
 typedef enum { SHADED, WIREFRAME, POINTS } displayModes;
 displayModes mode = SHADED;
-int SIZE = 1;
+int SIZE = 80;
 
 TwBar *bar;
 
@@ -66,22 +66,19 @@ int main() {
 	if (!CreateWindow()) return -1;
 	srand(time(NULL));
 	setSDF();
-	//for (int i = -SIZE; i <= SIZE; i++) //TODO: Speed up chunk generation. Severely limiting.
-		////for (int j = -1; j <= 1; j++)
-			//for (int k = -SIZE; k <= SIZE; k++) {
-				ChunkList += new Chunk(0, 0, 0, 1.f);
-				//std::cout<<"Generated Chunk at " << i  << " " << 0 << " " << k << std::endl;
-			//}
-				//ChunkList += new Chunk(0, 0, 1, 4.f);
-
+	for (int i = -SIZE; i <= SIZE; i++) //TODO: Speed up chunk generation. Severely limiting.
+		for (int j = -1; j <= 1; j++)
+			for (int k = -SIZE; k <= SIZE; k++) {
+				ChunkList += new Chunk(i, j, k, min(float(pow(2, floor(max(abs(i), abs(k)) / 2.f) + 1.f)), 16.f));
+				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
+			}
 	//Loop for generating mesh from chunk
-	//TODO: Set up LOD
 	int p = 0;
 	std::cout << "Generating Mesh" << std::endl;
 	for (auto chunk : ChunkList) {
-		chunk->update();
+		chunk->generateSeam();
 		chunk->generateMesh(vertices, normals, indices);
-		chunk->generateSeamMesh(vertices, normals, indices);
+		chunk->generateBounds(bounds);
 		std::cout << 100 * float(++p) / float(ChunkList.size()) << "%" <<  std::endl;
 	}
 
@@ -108,7 +105,7 @@ bool CreateWindow() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.2." + UpdateVersion() + " - Level of Detail").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.2." + UpdateVersion() + " - Debug View").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -126,6 +123,7 @@ bool CreateWindow() {
 		return -1;
 	}
 	glfwSwapInterval(1);
+	// m
 	// Initialize AntTweakBar
 	TwInit(TW_OPENGL_CORE, NULL);
 
@@ -160,6 +158,8 @@ void Draw() {
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
@@ -179,6 +179,11 @@ void Draw() {
 	glGenBuffers(1, &indexbuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexbuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
+
+	GLuint boundbuffer;
+	glGenBuffers(1, &boundbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, boundbuffer);
+	glBufferData(GL_ARRAY_BUFFER, bounds.size() * sizeof(GLfloat), &bounds[0], GL_STATIC_DRAW);
 
 	shadeProgramID = LoadShaders( "Voxel.vs", "Voxel.fs" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
@@ -201,8 +206,11 @@ void Draw() {
 	int vsize = vertices.size() / 3.0;
 	int chunk_size = static_cast<int>(Chunk::CHUNK_SIZE);
 	int csize = ChunkList.size();
+	float pos[3] {0.0, 0.0, 0.0};
+	int chunkPos[3] {0, 0, 0};
+	bool showBounds = true;
 	bar = TwNewBar("Debug");
-	TwDefine(" Debug size='240 240' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
+	TwDefine(" Debug size='240 250' valueswidth=100 color='125 255 255' refresh=0.1"); // Message added to the help bar.
 	TwAddVarRO(bar, "size", TW_TYPE_INT32, &chunk_size,
 			" label='Chunk Size' ");
 	TwAddVarRO(bar, "Chunks", TW_TYPE_INT32, &csize,
@@ -217,8 +225,21 @@ void Draw() {
 	TwType dmType;
 
 	dmType = TwDefineEnum("dmType", dmEV, 3);
-	TwAddVarRW(bar, "Display", dmType, &mode, NULL);
-
+	TwAddVarRO(bar, "Display", dmType, &mode, NULL);
+	TwAddVarRO(bar, "Octree", TW_TYPE_BOOLCPP, &showBounds," true='SHOW' false='HIDDEN' ");
+	TwAddSeparator(bar, NULL, NULL);
+	TwAddVarRO(bar, "PosX", TW_TYPE_FLOAT, &pos[0],
+			" label='World X' ");
+	TwAddVarRO(bar, "PosY", TW_TYPE_FLOAT, &pos[1],
+			" label='World Y' ");
+	TwAddVarRO(bar, "PosZ", TW_TYPE_FLOAT, &pos[2],
+			" label='World Z' ");
+	TwAddVarRO(bar, "ChunkX", TW_TYPE_INT32, &chunkPos[0],
+			" label='Chunk X' ");
+	TwAddVarRO(bar, "ChunkY", TW_TYPE_INT32, &chunkPos[1],
+			" label='Chunk Y' ");
+	TwAddVarRO(bar, "ChunkZ", TW_TYPE_INT32, &chunkPos[2],
+			" label='Chunk Z' ");
 	do{
 		// Measure speed
 		double currentTime = glfwGetTime();
@@ -236,9 +257,13 @@ void Draw() {
 
 		// Compute the MVP matrix from keyboard and mouse input
 		computeMatricesFromInputs();
+		pos[0]  = getPosition().x;
+		pos[1]  = getPosition().y;
+		pos[2]  = getPosition().z;
+		chunkPos[0]  = ((abs(pos[0]) + Chunk::CHUNK_SIZE / 2) / Chunk::CHUNK_SIZE) * ((pos[0] > 0) ? 1 : -1);
+		chunkPos[1]  = ((abs(pos[1]) + Chunk::CHUNK_SIZE / 2) / Chunk::CHUNK_SIZE) * ((pos[1] > 0) ? 1 : -1);
+		chunkPos[2]  = ((abs(pos[2]) + Chunk::CHUNK_SIZE / 2) / Chunk::CHUNK_SIZE) * ((pos[2] > 0) ? 1 : -1);
 		glm::mat4 ProjMatrix = getProjectionMatrix();
-		//glm::mat4 ModelMatrix = glm::translate(glm::mat4(1.0), glm::vec3(float(SIZE) / 2.0f, float(SIZE) / 2.0f, float(SIZE) / 2.0f));
-		//glm::mat4 ModelMatrix = glm::scale(glm::mat4(1.0), vec3(1 / float(Chunk::CHUNK_SIZE),1 / float(Chunk::CHUNK_SIZE),1 / float(Chunk::CHUNK_SIZE)));
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 ViewMatrix = getViewMatrix();
 
@@ -257,7 +282,6 @@ void Draw() {
 				glUseProgram(shadeProgramID);
 
 				glUniform3f(objectColorLoc, 0.6f, 1.0f, 0.31f);
-				// glUniform3f(viewPosLoc,     getCamPosition().x, getCamPosition().y, getCamPosition().z);
 				glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 				glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 				glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
@@ -281,12 +305,32 @@ void Draw() {
 				glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
 				glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 				glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-				glUniform3f(wireColorLoc, 0.2f, 1.0f, 0.3f);
+				glUniform4f(wireColorLoc, 0.2f, 1.0f, 0.3f, 1.0f);
 				break;
 		}
 		if (mode == POINTS) glDrawArrays(GL_POINTS, 0, vertices.size() / 3);
 		else glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 		glDisableVertexAttribArray(0);
+		if (showBounds) {
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, boundbuffer);
+			glVertexAttribPointer(
+					0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+					3,                  // size
+					GL_FLOAT,           // type
+					GL_FALSE,           // normalized?
+					0,                  // stride
+					(void*)0            // array buffer offset
+			);
+
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+			glUseProgram(wireProgramID);
+			glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
+			glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+			glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+			glUniform4f(wireColorLoc, 1.f, 1.f, 1.f, 0.4f);
+			glDrawArrays(GL_LINES, 0, bounds.size() / 3); // 12*3 indices starting at 0 -> 12 triangles
+		}
 		// Draw GUI
 		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		TwDraw();

@@ -16,7 +16,7 @@ Chunk::Chunk(int x, int y, int z, float LOD) {
 	this->position = ivec3(x, y, z);
 	ChunkList+=this;
 }
-void Chunk::update() {
+void Chunk::generateSeam() {
 	const ivec3 baseChunkPos = this->position;
 	const ivec3 seamValues = ivec3(root->position) + ivec3(static_cast<int>(CHUNK_SIZE) / 2);
 	const ivec3 OFFSETS[8] =
@@ -80,7 +80,6 @@ void Chunk::update() {
 			seamNodes.insert(end(seamNodes), begin(chunkNodes), end(chunkNodes));
 		}
 	}
-	//this->seam = nullptr;
 	this->seam = new Octree(vec3(seamValues), seamNodes, CHUNK_SIZE*2);
 }
 
@@ -93,10 +92,12 @@ std::vector<Octree*> Chunk::findNodes(FilterNodesFunc filterFunc)
 
 void Chunk::generateMesh(std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer) {
 	GenerateMeshFromOctree(root, vertexBuffer, normalBuffer, indexBuffer);
+	GenerateMeshFromOctree(seam, vertexBuffer, normalBuffer, indexBuffer);
 }
 
-void Chunk::generateSeamMesh(std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer) {
-	GenerateMeshFromOctree(seam, vertexBuffer, normalBuffer, indexBuffer);
+
+void Chunk::generateBounds(std::vector<GLfloat>& vertexBuffer) {
+	GenerateBoundsFromOctree(root, vertexBuffer);
 }
 Chunk* Chunk::getChunk(vec3 position) {
 	for (auto chunk : ChunkList)

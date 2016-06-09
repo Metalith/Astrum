@@ -37,6 +37,7 @@ class Octree {
 		vec3 position;
 		Octree* nodes[8] {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 		float size;
+		bool hasChildren = false;
 		OctreeNodeType	type;
 
 		Vertex* vertex;
@@ -50,5 +51,6 @@ class Octree {
 };
 void setSDF();
 void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer);
+void GenerateBoundsFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer);
 void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes);
 #endif

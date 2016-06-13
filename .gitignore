@@ -4,4 +4,4 @@ bin/
 *.cson
 *.o
 *.gch
-
+tags

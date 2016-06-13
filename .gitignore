@@ -1,6 +1,7 @@
 build/
-external/
+lib/
+bin/
 *.cson
 *.o
 *.gch
-main
+

@@ -17,16 +17,16 @@ find_path(NOISE_INCLUDE_DIR
 )
 
 # Compile external dependencies
-add_subdirectory (external)
+add_subdirectory (lib)
 
 include_directories(
 	${Boost_INCLUDE_DIR}
 	${NOISE_INCLUDE_DIR}
-	external/AntTweakBar-1.16/include/
-	external/glfw-3.1.2/include/GLFW/
-	external/glm-0.9.7.1/
-	external/glew-1.13.0/include/
-	.
+	lib/AntTweakBar-1.16/include/
+	lib/glfw-3.1.2/include/GLFW/
+	lib/glm-0.9.7.1/
+	lib/glew-1.13.0/include/
+	src/
 )
 
 set(ALL_LIBS
@@ -43,23 +43,23 @@ add_definitions(
 	-DTW_NO_DIRECT3D
 	-DGLEW_STATIC
 	-D_CRT_SECURE_NO_WARNINGS
+	-Wall
+	-lboost_filesystem
+	-lboost_system
 )
 
-# Cartographer
 file(GLOB headers
-	"common/*.cpp"
-	"common/*.hpp"
-	"qef.cpp"
-	"qef.h"
-	"svd.h"
-	"svd.cpp"
-	"octree.hpp"
-	"octree.cpp"
-	"chunk.hpp"
-	"chunk.cpp"
+	"src/common/*.cpp"
+	"src/common/*.hpp"
+	"src/dc/*.cpp"
+	"src/dc/*.h"
+	"src/systems/*.cpp"
+	"src/systems/*.hpp"
+	"engine.cpp"
+	"engine.hpp"
 )
 add_executable(main
-	main.cpp
+	src/main.cpp
 	${headers}
 )
 target_link_libraries(main
@@ -69,5 +69,5 @@ target_link_libraries(main
 
 add_custom_command(
 	TARGET main POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/main${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/"
+	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/main${CMAKE_EXECUTABLE_SUFFIX}" "${CMAKE_CURRENT_SOURCE_DIR}/bin"
 )

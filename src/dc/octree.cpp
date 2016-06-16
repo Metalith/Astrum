@@ -1,5 +1,4 @@
 #include "octree.hpp"
-#include "systems/chunk.hpp"
 
 module::Perlin testModule;
 
@@ -225,7 +224,7 @@ void setSDF() {
 	testModule.SetPersistence (0.25);
 }
 
-float SDF(vec3 p) { return testModule.GetValue(p.x / Chunk::CHUNK_SIZE, 0.0, p.z / Chunk::CHUNK_SIZE) + (2 * p.y/Chunk::CHUNK_SIZE); }
+float SDF(vec3 p) { return testModule.GetValue(p.x / 32, 0.0, p.z / 32) + (2 * p.y / 32); }
 //float SDF(vec3 p) { return p.y; }
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
@@ -518,7 +517,7 @@ void ContourCellProc(Octree* node, std::vector<int>& indexBuffer)
 
 void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer)
 {
-	if (!node)
+	if (node == nullptr)
 	{
 		return;
 	}
@@ -566,7 +565,7 @@ void GenerateBoundsFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer)
 
 void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes)
 {
-	if (!node)
+	if (node == nullptr)
 	{
 		return;
 	}

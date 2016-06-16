@@ -43,9 +43,7 @@ add_definitions(
 	-DTW_NO_DIRECT3D
 	-DGLEW_STATIC
 	-D_CRT_SECURE_NO_WARNINGS
-	-Wall
-	-lboost_filesystem
-	-lboost_system
+
 )
 
 file(GLOB headers
@@ -55,8 +53,8 @@ file(GLOB headers
 	"src/dc/*.h"
 	"src/systems/*.cpp"
 	"src/systems/*.hpp"
-	"engine.cpp"
-	"engine.hpp"
+	"src/engine.cpp"
+	"src/engine.hpp"
 )
 add_executable(main
 	src/main.cpp

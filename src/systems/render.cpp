@@ -15,9 +15,9 @@ using namespace glm;
 #include "systems/render.hpp"
 #include "systems/system.hpp"
 #include "components/mesh.hpp"
+#include "components/player.hpp"
+#include "components/transform.hpp"
 #include "engine.hpp"
-
-#include "common/controls.hpp"
 
 GLuint objectColorLoc;
 GLuint sProjMatrixID;
@@ -26,6 +26,9 @@ GLuint sModelMatrixID;
 
 GLuint shadeProgramID;
 GLuint wireProgramID;
+
+mat4 ProjectionMatrix;
+mat4 ViewMatrix;
 
 double lastTime = glfwGetTime();
 int nbFrames = 0;
@@ -36,6 +39,7 @@ GLuint LoadShaders(const std::string& vertex_file_path,const std::string& fragme
 RenderSystem::RenderSystem() {
 	std::cout << "New System :: Render!" << std::endl;
 	setComponent<Mesh>();
+	setComponent<Player>();
 	this->window = glfwGetCurrentContext();
 
 	glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
@@ -46,6 +50,7 @@ RenderSystem::RenderSystem() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable (GL_BLEND);
+	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 
@@ -56,6 +61,8 @@ RenderSystem::RenderSystem() {
 	sProjMatrixID = glGetUniformLocation(shadeProgramID, "projection");
 	sViewMatrixID = glGetUniformLocation(shadeProgramID, "view");
 	sModelMatrixID = glGetUniformLocation(shadeProgramID, "model");
+
+	ProjectionMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 4000.0f);
 }
 
 void RenderSystem::update() {
@@ -72,17 +79,24 @@ void RenderSystem::update() {
 	//// Dark blue background
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	computeMatricesFromInputs();
+	glm::vec3 direction(0,0,1);
+	glm::vec3 right(1,0,0);
 
-	glm::mat4 ProjMatrix = getProjectionMatrix();
+	direction =  direction * tPlayer->orientation;
+	right = right * tPlayer->orientation;
+	glm::vec3 up = glm::cross( direction, right );
+
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
-	glm::mat4 ViewMatrix = getViewMatrix();
-
+	glm::mat4 ViewMatrix = lookAt(
+		tPlayer->position,           // Camera is at player
+		tPlayer->position + direction, // and looks here : at the same position, plus "direction"
+		up // Head is up : cross of direction and right
+	);
 	glUseProgram(shadeProgramID);
 
 
 	glUniform3f(objectColorLoc, 0.6f, 1.0f, 0.31f);
-	glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjMatrix[0][0]);
+	glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 	glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 	glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 
@@ -100,6 +114,11 @@ void RenderSystem::update() {
 }
 
 void RenderSystem::addEntity(int e) {
+	Transform* tmp = nullptr;
+	if ((tmp = System::engine->getComponent<Transform>(e)) != nullptr) {
+		tPlayer = tmp;
+		return;
+	}
 	System::addEntity(e);
 	Mesh* m = engine->getComponent<Mesh>(e);
 

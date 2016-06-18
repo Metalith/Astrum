@@ -225,7 +225,8 @@ void setSDF() {
 }
 
 float SDF(vec3 p) { return testModule.GetValue(p.x / 32, 0.0, p.z / 32) + (2 * p.y / 32); }
-//float SDF(vec3 p) { return p.y; }
+//float SDF(vec3 p) { return testModule.GetValue(p.x / 4, p.y / 4, p.z / 4); }
+//float SDF(vec3 p) { return p.y + 1.0f; }
 
 vec3 CalculateSurfaceNormal(const vec3& p) {
 	const float H = 0.001f;

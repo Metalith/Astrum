@@ -9,14 +9,14 @@
 Engine* System::engine;
 
 const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 1.0f;
+const float LOD = 4.f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;
 	int e = 0;
 	Mesh* mesh;
 	Octree* octree;
-	int SIZE = 1;
+	int SIZE = 2;
 	for (int i = SIZE; i >= -SIZE; i--) //TODO: Speed up chunk generation. Severely limiting.
 		for (int j = 1; j >= -1; j--)
 			for (int k = SIZE; k >= -SIZE; k--) {

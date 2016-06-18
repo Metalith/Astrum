@@ -17,6 +17,7 @@ void Engine::update() {
 				for (int id : sys->getIDs()) {
 					if (id == c->getID()) {
 						sys->addEntity(e);
+						break;
 					}
 				}
 			}

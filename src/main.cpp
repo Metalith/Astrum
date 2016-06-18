@@ -9,17 +9,19 @@
 
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
 
 #include <AntTweakBar.h>
 
 #include <GL/glew.h>
 
-
-#include "common/controls.hpp"
-
 #include "systems/terrain.hpp"
 #include "systems/render.hpp"
+#include "systems/controls.hpp"
 #include "engine.hpp"
+
+#include "components/player.hpp"
+#include "components/transform.hpp"
 
 #include <glfw3.h>
 GLFWwindow* window;
@@ -36,7 +38,11 @@ int main() {
 	srand(time(NULL));
 	setSDF();
 	Engine e = Engine();
+	int player = e.createEntity();
+	e.addComponent(player, new Player());
+	e.addComponent(player, new Transform());
 	e.addSystem(new TerrainSystem());
+	e.addSystem(new ControlSystem());
 	e.addSystem(new RenderSystem());
 	window = glfwGetCurrentContext();
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
@@ -93,7 +99,7 @@ bool CreateWindow(GLFWwindow* window) {
 	glfwSetMouseButtonCallback(window, (GLFWmousebuttonfun)TwEventMouseButtonGLFW); // - Directly redirect GLFW mouse button events to AntTweakBar
 	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);          // - Directly redirect GLFW mouse position events to AntTweakBar
 	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    // - Directly redirect GLFW mouse wheel events to AntTweakBar
-	glfwSetKeyCallback(window, key_callback);                         // - Directly redirect GLFW key events to AntTweakBar
+	glfwSetKeyCallback(window, ControlSystem::key_callback);                         // - Directly redirect GLFW key events to AntTweakBar
 	glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW);                      // - Directly redirect GLFW char events to AntTweakBar
 
 	// Ensure we can capture the escape key being pressed below
@@ -111,7 +117,11 @@ bool CreateWindow(GLFWwindow* window) {
 
 std::string UpdateVersion() {
 	int v;
-	std::fstream myfile("../VERSION", std::ios::in | std::ios::out);
+	char cwd[1024];
+	readlink("/proc/self/exe", cwd, 1024);
+	std::string scwd = std::string(cwd);
+	std::string path = scwd.substr(0, scwd.rfind("/")) + "/../VERSION";
+	std::fstream myfile(path, std::ios::in | std::ios::out);
 	myfile >> v;
 	myfile.clear();
 	myfile.seekp(0,std::ios::beg);

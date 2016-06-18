@@ -5,7 +5,8 @@
 #include "components/mesh.hpp"
 #include "systems/system.hpp"
 #include <vector>
-
+#include <typeinfo>
+#include <cxxabi.h>
 //TODO: DOCUMENT THIS.
 
 class Engine {
@@ -25,6 +26,8 @@ class Engine {
 					return tmp;
 				}
 			}
+			int status;
+			//std::cout << "Could not find component " << abi::__cxa_demangle(typeid(tmp).name(),0,0,&status) << std::endl;
 			return nullptr;
 		};
 	private:

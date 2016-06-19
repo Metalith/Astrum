@@ -8,6 +8,7 @@ class Mesh : public Component {
 	public:
 		int getID() { return 0; }
 		std::vector<GLfloat> vertices;
+		std::vector<GLfloat> bounds;
 		std::vector<GLfloat> normals;
 		std::vector<int> indices;
 };

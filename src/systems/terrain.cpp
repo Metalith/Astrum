@@ -1,4 +1,5 @@
 #include "systems/terrain.hpp"
+#include "systems/render.hpp"
 #include "systems/system.hpp"
 #include "components/mesh.hpp"
 #include "dc/octree.hpp"
@@ -28,10 +29,14 @@ TerrainSystem::TerrainSystem() {
 
 				octree = new Octree(vec3(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE), CHUNK_SIZE, LOD);
 				octreeList.push_back(octree);
-				GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices);
+				GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices); //TODO: COMBINE THESE TWO LINES
 				GenerateMeshFromOctree(generateSeam(octree), mesh->vertices, mesh->normals, mesh->indices);
+				GenerateBoundsFromOctree(octree, mesh->bounds);
 				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
 			}
+	loadedChunks = octreeList.size();
+	RenderSystem::showDebug(CHUNK_SIZE, "Chunk Size");
+	RenderSystem::showDebug(loadedChunks, "Loaded Chunks");
 }
 
 void TerrainSystem::update() {

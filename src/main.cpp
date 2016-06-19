@@ -71,7 +71,7 @@ bool CreateWindow(GLFWwindow* window) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.2c." + UpdateVersion() + " - Luna").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Astrum Engine Ver 0.2f." + UpdateVersion() + " - Fix Shading").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -90,9 +90,7 @@ bool CreateWindow(GLFWwindow* window) {
 	}
 	glfwSwapInterval(0);
 	// Initialize AntTweakBar
-	TwInit(TW_OPENGL_CORE, NULL);
-
-	TwWindowSize(1024, 768);
+	RenderSystem::initTw();
 	// Create a tweak bar
 
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness

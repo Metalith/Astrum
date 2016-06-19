@@ -10,10 +10,13 @@ class TerrainSystem: public System {
 	public:
 		TerrainSystem();
 		void update();
-	private:
+
 		static const int CHUNK_SIZE;
+	private:
 		std::vector<int> chunkIDs;
 		std::vector<Octree*> octreeList;
+
+		int loadedChunks;
 
 		Octree* generateSeam(Octree* oct); //TODO: Maybe combine octree generation with seam generation
 		Octree* getOctree(vec3 pos);

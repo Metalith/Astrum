@@ -1,5 +1,6 @@
-#include "controls.hpp"
-#include "system.hpp"
+#include "systems/controls.hpp"
+#include "systems/system.hpp"
+#include "systems/render.hpp"
 #include "engine.hpp"
 #include "components/player.hpp"
 #include "components/transform.hpp"
@@ -70,6 +71,10 @@ void ControlSystem::key_callback(GLFWwindow* window, int key, int scancode, int 
 		case GLFW_KEY_D: moveD = set; break;
 		case GLFW_KEY_Q: moveQ = set; break;
 		case GLFW_KEY_E: moveE = set; break;
+		case GLFW_KEY_1: RenderSystem::setShading(0); break;
+		case GLFW_KEY_2: RenderSystem::setShading(1); break;
+		case GLFW_KEY_3: RenderSystem::setShading(2); break;
+		case GLFW_KEY_SPACE: RenderSystem::showBounds(set); break;
 		case GLFW_KEY_RIGHT_SHIFT:
 		case GLFW_KEY_LEFT_SHIFT:
 						if (set) ControlSystem::speed = 150.0f;

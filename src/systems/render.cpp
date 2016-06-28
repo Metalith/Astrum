@@ -123,7 +123,7 @@ void RenderSystem::update() {
 		case SHADED:
 			glUseProgram(shadeProgramID);
 
-			glUniform3f(objectColorLoc, 0.6f, 1.0f, 0.31f);
+			glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
 			glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 			glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 			glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
@@ -178,7 +178,7 @@ void RenderSystem::addEntity(int e) {
 		tPlayer = tmp;
 		TwAddVarRO(PlayerGUI, "Position", TW_TYPE_VECTORF, &tPlayer->position, NULL);
 		TwAddVarCB(PlayerGUI, "Chunk", TW_TYPE_VECTORI, NULL, GetChunkCallback, &tPlayer->position, "");
-		TwAddVarRO(PlayerGUI, "Direction", TW_TYPE_QUAT4F, &tPlayer->orientation, "opened=true"); 
+		TwAddVarRO(PlayerGUI, "Direction", TW_TYPE_QUAT4F, &tPlayer->orientation, "opened=true");
 		TwDefine(" Player/Direction axisx=-x axisy=y axisz=-z ");
 		return;
 	}

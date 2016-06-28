@@ -1,8 +1,9 @@
 #ifndef OCTREE_HPP
 #define OCTREE_HPP
 
-#include "svd.h"
-#include "qef.h"
+#include "dc/svd.h"
+#include "dc/qef.h"
+#include "dc/density.hpp"
 #include <vector>
 #include <functional>
 #include <glfw3.h>
@@ -43,11 +44,12 @@ class Octree {
 		Vertex* vertex;
 		Octree();
 		Octree(vec3 position, std::vector<Octree*>& nodes, float size);
-		Octree(vec3 position, float size, float LOD);
+		Octree(vec3 position, float size, float LOD, DensityField* d);
 
 	private:
 		static int seed;
-		bool GenerateVertex();
+		bool GenerateVertex(DensityField* d);
+		float* noiseSet = nullptr; 
 };
 void setSDF();
 void GenerateMeshFromOctree(Octree* node, std::vector<GLfloat>& vertexBuffer, std::vector<GLfloat>& normalBuffer, std::vector<int>& indexBuffer);

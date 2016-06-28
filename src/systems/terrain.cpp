@@ -3,6 +3,7 @@
 #include "systems/system.hpp"
 #include "components/mesh.hpp"
 #include "dc/octree.hpp"
+#include "dc/density.hpp"
 #include <iostream>
 
 #include "engine.hpp"
@@ -10,16 +11,17 @@
 Engine* System::engine;
 
 const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 4.f;
+const float LOD = 1.f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;
 	int e = 0;
 	Mesh* mesh;
 	Octree* octree;
-	int SIZE = 2;
-	for (int i = SIZE; i >= -SIZE; i--) //TODO: Speed up chunk generation. Severely limiting.
-		for (int j = 1; j >= -1; j--)
+	int SIZE = 1;
+	double lastTime = glfwGetTime();
+	for (int i = SIZE; i >= -SIZE; i--) {
+		for (int j = 0; j >= -0; j--) {
 			for (int k = SIZE; k >= -SIZE; k--) {
 
 				mesh = new Mesh();
@@ -27,13 +29,17 @@ TerrainSystem::TerrainSystem() {
 				System::engine->addComponent(e, mesh);
 				chunkIDs.push_back(e);
 
-				octree = new Octree(vec3(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE), CHUNK_SIZE, LOD);
+				DensityField* DF = new DensityField(vec3(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE), CHUNK_SIZE, LOD);
+				octree = new Octree(vec3(i * CHUNK_SIZE, j * CHUNK_SIZE, k * CHUNK_SIZE), CHUNK_SIZE, LOD, DF);
 				octreeList.push_back(octree);
 				GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices); //TODO: COMBINE THESE TWO LINES
 				GenerateMeshFromOctree(generateSeam(octree), mesh->vertices, mesh->normals, mesh->indices);
 				GenerateBoundsFromOctree(octree, mesh->bounds);
-				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
+				//std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
 			}
+		}
+	}
+	std::cout << glfwGetTime() - lastTime << " Seconds to generate 9 Chunks"  << std::endl;
 	loadedChunks = octreeList.size();
 	RenderSystem::showDebug(CHUNK_SIZE, "Chunk Size");
 	RenderSystem::showDebug(loadedChunks, "Loaded Chunks");

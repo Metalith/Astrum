@@ -1,7 +1,5 @@
 #include "octree.hpp"
 
-module::Perlin testModule;
-
 #include <iostream>
 #include <vector>
 #include <glfw3.h>
@@ -10,14 +8,14 @@ using namespace glm;
 
 #include <noise/noise.h>
 using namespace noise;
-
 #include <boost/assign/std/vector.hpp> // for 'operator+=()'
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-float SDF(vec3 position);
-void setSDF();
-vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1);
-vec3 CalculateSurfaceNormal(const vec3& p);
+//float d->SDF(vec3 position);
+//void setd->SDF();
+void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes);
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, DensityField* d);
+vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d);
 
 int Octree::seed = 0;
 vec3 cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
@@ -36,6 +34,7 @@ const int MATERIAL_SOLID = 1;
 
 // ----------------------------------------------------------------------------
 
+module::Perlin testModule;
 
 // ----------------------------------------------------------------------------
 // data from the original DC impl, drives the contouring process
@@ -87,13 +86,13 @@ const int processEdgeMask[3][4] = {{3,2,1,0},{7,5,6,4},{11,10,9,8}} ;
 
 Octree::Octree() {
 }
-Octree::Octree(vec3 position, float size, float LOD) {
+Octree::Octree(vec3 position, float size, float LOD, DensityField* d) {
 	this->position = position;
 	this->size=size;
 	this->type = Node_Internal;
 	if (size > LOD) {
 		for (int i = 0; i < 8; i++) {
-			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2.f)),size/2.f, LOD);
+			Octree* node = new Octree(position+(cornerOffset[i] * vec3(size/2.f)),size/2.f, LOD, d);
 			if ((node->type == Node_Leaf && node->vertex) || (node->type != Node_Leaf && node->hasChildren)) {
 				nodes[i]=node;
 				this->hasChildren = true;
@@ -102,13 +101,10 @@ Octree::Octree(vec3 position, float size, float LOD) {
 				delete node;
 				nodes[i]=nullptr;
 			}
-			//if (node->type != Node_Leaf && !node->hasChildren) {
-				//delete node;
-				//nodes[i]=nullptr;
-			//}
 		}
-	} else
-		GenerateVertex();
+	} else {
+		GenerateVertex(d);
+	}
 }
 
 Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  float size) {
@@ -153,14 +149,12 @@ Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  float size) {
 	}
 }
 
-bool Octree::GenerateVertex() {
+bool Octree::GenerateVertex(DensityField* d) {
 	this->type = Node_Leaf;
 
 	int corners = 0;
-	for (int c = 0; c < 8; c++)
-	{	float density = SDF(position + (cornerOffset[c] * this->size));
-		char material = density < 0 ? 1 : 0;
-		corners |= (material << c);
+	for (int c = 0; c < 8; c++) {
+		corners |= d->getPoint(position+(cornerOffset[c] * this->size)) << c;
 	}
 	if (corners == 0 || corners == 255) {
 		vertex = nullptr;
@@ -190,8 +184,8 @@ bool Octree::GenerateVertex() {
 
 		const vec3 p1 = position + (cornerOffset[c1] * this->size);
 		const vec3 p2 = position + (cornerOffset[c2] * this->size);
-		const vec3 p = ApproximateZeroCrossingPosition(p1, p2);
-		const vec3 n = CalculateSurfaceNormal(p);
+		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, d);
+		const vec3 n = CalculateSurfaceNormal(p, d);
 
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
@@ -218,26 +212,26 @@ bool Octree::GenerateVertex() {
 	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
 }
 
-void setSDF() {
-	testModule.SetSeed(0);
-	testModule.SetFrequency (0.5);
-	testModule.SetPersistence (0.25);
-}
+//void setd->SDF() {
+	//testModule.SetSeed(0);
+	//testModule.SetFrequency (0.5);
+	//testModule.SetPersistence (0.5);
+//}
 
-float SDF(vec3 p) { return testModule.GetValue(p.x / 32, 0.0, p.z / 32) + (2 * p.y / 32); }
-//float SDF(vec3 p) { return testModule.GetValue(p.x / 4, p.y / 4, p.z / 4); }
-//float SDF(vec3 p) { return p.y + 1.0f; }
+//float d->SDF(vec3 p) { return testModule.GetValue(p.x / 32, 0.0, p.z / 32) + (2 * p.y / 32); }
+//float d->SDF(vec3 p) { return testModule.GetValue(p.x / 4, p.y / 4, p.z / 4); }
+//float d->SDF(vec3 p) { return p.y + 1.0f; }
 
-vec3 CalculateSurfaceNormal(const vec3& p) {
-	const float H = 0.001f;
-	const float dx = SDF(p + vec3(H, 0.f, 0.f)) - SDF(p - vec3(H, 0.f, 0.f));
-	const float dy = SDF(p + vec3(0.f, H, 0.f)) - SDF(p - vec3(0.f, H, 0.f));
-	const float dz = SDF(p + vec3(0.f, 0.f, H)) - SDF(p - vec3(0.f, 0.f, H));
+vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
+	const float H = 0.1f;
+	const float dx = d->SDF(p + vec3(H, 0.f, 0.f)) - d->SDF(p - vec3(H, 0.f, 0.f));
+	const float dy = d->SDF(p + vec3(0.f, H, 0.f)) - d->SDF(p - vec3(0.f, H, 0.f));
+	const float dz = d->SDF(p + vec3(0.f, 0.f, H)) - d->SDF(p - vec3(0.f, 0.f, H));
 
 	return glm::normalize(vec3(dx, dy, dz));
 }
 
-vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1) {
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, DensityField* d) {
 	// approximate the zero crossing by finding the min value along the edge
 	float minValue = 100000.f;
 	float t = 0.f;
@@ -247,7 +241,7 @@ vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1) {
 	while (currentT <= 1.f)
 	{
 		const vec3 p = p0 + ((p1 - p0) * currentT);
-		const float density = glm::abs(SDF(p));
+		const float density = glm::abs(d->SDF(p));
 		if (density < minValue)
 		{
 			minValue = density;

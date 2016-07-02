@@ -15,7 +15,7 @@ class ControlSystem: public System {
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	private:
 		GLFWwindow* window;
-		Transform* tPlayer;
+		Transform* tPlayer = nullptr;
 
 		static float speed;
 		static float rotSpeed;

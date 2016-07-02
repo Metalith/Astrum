@@ -131,10 +131,6 @@ Octree::Octree(vec3 position, std::vector<Octree*>& nodes,  float size) {
 					} else if(!currentNode->nodes[i]) {
 						currentNode->nodes[i] = new Octree();
 						float newSize = currentNode->size / 2.f;
-						//if (newSize == 1) {
-							//printf("Error! Could not place node!\n");
-							//exit(EXIT_FAILURE);
-						//}
 						currentNode = currentNode->nodes[i];
 						currentNode->position = newPos;
 						currentNode->size = newSize;
@@ -212,18 +208,8 @@ bool Octree::GenerateVertex(DensityField* d) {
 	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
 }
 
-//void setd->SDF() {
-	//testModule.SetSeed(0);
-	//testModule.SetFrequency (0.5);
-	//testModule.SetPersistence (0.5);
-//}
-
-//float d->SDF(vec3 p) { return testModule.GetValue(p.x / 32, 0.0, p.z / 32) + (2 * p.y / 32); }
-//float d->SDF(vec3 p) { return testModule.GetValue(p.x / 4, p.y / 4, p.z / 4); }
-//float d->SDF(vec3 p) { return p.y + 1.0f; }
-
 vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
-	const float H = 0.1f;
+	const float H = 0.001f;
 	const float dx = d->SDF(p + vec3(H, 0.f, 0.f)) - d->SDF(p - vec3(H, 0.f, 0.f));
 	const float dy = d->SDF(p + vec3(0.f, H, 0.f)) - d->SDF(p - vec3(0.f, H, 0.f));
 	const float dz = d->SDF(p + vec3(0.f, 0.f, H)) - d->SDF(p - vec3(0.f, 0.f, H));
@@ -566,7 +552,6 @@ void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& n
 	}
 
 	const ivec3 min = ivec3(node->position - vec3(node->size / 2.0f));
-	//std::cout << min.x << " " << min.y << " " << min.z << std::endl;
 	const ivec3 max = ivec3(node->position + vec3(node->size / 2.0f));
 	if (!func(min, max))
 	{

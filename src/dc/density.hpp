@@ -11,20 +11,25 @@ using namespace noise;
 
 class DensityField {
 	public:
-		DensityField(vec3 pos, int size, int LOD);
+		DensityField(vec3 pos, int size, float LOD);
 		char getPoint(vec3 pos);
 		float SDF(vec3 pos);
 	private:
 		int size;
+		float LOD;
 		vec3 pos;
-		std::vector<char> points;
 		
+
 		module::Perlin module;
 		
-		struct point {
+		struct corner {
 			char point;
 			vec3 edges[3][2];	// -X, -Y, -Z - P, N
 		};
+
+		std::vector<corner> points;
+		vec3 CalculateSurfaceNormal(const vec3& p);
+		vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1);
 };
 
 #endif

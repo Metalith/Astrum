@@ -41,7 +41,7 @@ class Octree {
 		bool hasChildren = false;
 		OctreeNodeType	type;
 
-		Vertex* vertex;
+		Vertex* vertex = nullptr;
 		Octree();
 		Octree(vec3 position, std::vector<Octree*>& nodes, float size);
 		Octree(vec3 position, float size, float LOD, DensityField* d);

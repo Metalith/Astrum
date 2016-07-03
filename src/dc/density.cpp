@@ -20,7 +20,7 @@ DensityField::DensityField(vec3 pos, int size, float LOD) {
 				point.material = material;
 				if (points.size() > 0) {
 					if (material != points [points.size() - 1].material) {
-						p = ApproximateZeroCrossingPosition(tmp - vec3(0,0,1), tmp);
+						p = ApproximateZeroCrossingPosition(tmp - vec3(0,0,LOD), tmp);
 						n = CalculateSurfaceNormal(p);
 						point.edges[2] = edges.size();
 						edges.push_back(p);
@@ -29,16 +29,16 @@ DensityField::DensityField(vec3 pos, int size, float LOD) {
 				}
 				if (points.size() > size * 2 *1.0f / LOD + 1) {
 					if (material != points [points.size() - (size * 2 *1.0f / LOD + 1)].material) {
-						p = ApproximateZeroCrossingPosition(tmp - vec3(0,1,0), tmp);
+						p = ApproximateZeroCrossingPosition(tmp - vec3(0,LOD,0), tmp);
 						n = CalculateSurfaceNormal(p);
 						point.edges[1] = edges.size();
 						edges.push_back(p);
 						edges.push_back(n);
 					}
 				}
-				if (points.size() > size * 2 *1.0f / LOD + 1) {
+				if (points.size() > (size * 2 *1.0f / LOD + 1) * (size * 2 * 1.0f / LOD + 1)) {
 					if (material != points [points.size() - ((size * 2 *1.0f / LOD + 1) * (size * 2 *1.0f / LOD + 1))].material) {
-						p = ApproximateZeroCrossingPosition(tmp - vec3(1,0,0), tmp);
+						p = ApproximateZeroCrossingPosition(tmp - vec3(LOD,0,0), tmp);
 						n = CalculateSurfaceNormal(p);
 						point.edges[0] = edges.size();
 						edges.push_back(p);
@@ -52,19 +52,19 @@ DensityField::DensityField(vec3 pos, int size, float LOD) {
 }
 
 char DensityField::getPoint(vec3 pos) {
-	int arraySize = size * 2 * 1.0f / LOD + 1;
+	int arraySize = (size * 2 * (1.0f / LOD)) + 1;
 	ivec3 newPos = ivec3(((pos - this->pos) + float(this->size)) * (1.0f / LOD));
 	return points[newPos.z + newPos.y * arraySize + newPos.x * arraySize * arraySize].material;
 }
 
 std::pair<vec3, vec3> DensityField::getEdge(const vec3& p0, const vec3& p1) {
-	int arraySize = size * 2 * 1.0f / LOD + 1;
+	int arraySize = (size * 2 * (1.0f / LOD)) + 1;
 	ivec3 newPos = ivec3(((p1 - this->pos) + float(this->size)) * (1.0f / LOD));
 	int index = newPos.z + newPos.y * arraySize + newPos.x * arraySize * arraySize;
 	Point p = points[index];
 	ivec3 dir = ivec3(p1 - p0);
-	if (dir.z == 1) return std::make_pair(edges[p.edges[2]], edges[p.edges[2] + 1]);
-	if (dir.y == 1) return std::make_pair(edges[p.edges[1]], edges[p.edges[1] + 1]);
+	if (dir.z > 0) return std::make_pair(edges[p.edges[2]], edges[p.edges[2] + 1]);
+	if (dir.y > 0) return std::make_pair(edges[p.edges[1]], edges[p.edges[1] + 1]);
 	return std::make_pair(edges[p.edges[0]], edges[p.edges[0] + 1]);
 }
 

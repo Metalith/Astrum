@@ -11,7 +11,7 @@
 Engine* System::engine;
 
 const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 1.0f;
+const float LOD = 1.f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;
@@ -21,7 +21,7 @@ TerrainSystem::TerrainSystem() {
 	int SIZE = 1;
 	double lastTime = glfwGetTime();
 	for (int i = SIZE; i >= -SIZE; i--) {
-		for (int j = 1; j >= -1; j--) {
+		for (int j = 0; j >= -0; j--) {
 			for (int k = SIZE; k >= -SIZE; k--) {
 
 				mesh = new Mesh();
@@ -35,7 +35,7 @@ TerrainSystem::TerrainSystem() {
 				GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices); //TODO: COMBINE THESE TWO LINES
 				GenerateMeshFromOctree(generateSeam(octree), mesh->vertices, mesh->normals, mesh->indices);
 				GenerateBoundsFromOctree(octree, mesh->bounds);
-//				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
+				std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
 			}
 		}
 	}

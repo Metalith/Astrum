@@ -12,6 +12,8 @@ using namespace noise;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 void Octree_FindNodes(Octree* node, FindNodesFunc& func, std::vector<Octree*>& nodes);
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, DensityField* d);
+vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d);
 
 int Octree::seed = 0;
 vec3 cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
@@ -177,8 +179,10 @@ bool Octree::GenerateVertex(DensityField* d) {
 		const vec3 p1 = position + (cornerOffset[c1] * this->size);
 		const vec3 p2 = position + (cornerOffset[c2] * this->size);
 		std::pair<vec3, vec3> pn = d->getEdge(p1, p2);
-		const vec3 p = pn.first;
-		const vec3 n = pn.second;
+//		const vec3 p = pn.first;
+//		const vec3 n = pn.second;
+		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, d);
+		const vec3 n = CalculateSurfaceNormal(p, d);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -202,6 +206,38 @@ bool Octree::GenerateVertex(DensityField* d) {
 	}
 	//vertex->position = position; //Minecraft-like style
 	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
+}
+
+vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
+	const float H = 0.001f;
+	const float dx = d->SDF(p + vec3(H, 0.f, 0.f)) - d->SDF(p - vec3(H, 0.f, 0.f));
+	const float dy = d->SDF(p + vec3(0.f, H, 0.f)) - d->SDF(p - vec3(0.f, H, 0.f));
+	const float dz = d->SDF(p + vec3(0.f, 0.f, H)) - d->SDF(p - vec3(0.f, 0.f, H));
+
+	return glm::normalize(vec3(dx, dy, dz));
+}
+
+vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, DensityField* d) {
+	// approximate the zero crossing by finding the min value along the edge
+	float minValue = 100000.f;
+	float t = 0.f;
+	float currentT = 0.f;
+	const int steps = 8;
+	const float increment = 1.f / (float)steps;
+	while (currentT <= 1.f)
+	{
+		const vec3 p = p0 + ((p1 - p0) * currentT);
+		const float density = glm::abs(d->SDF(p));
+		if (density < minValue)
+		{
+			minValue = density;
+			t = currentT;
+		}
+
+		currentT += increment;
+	}
+
+	return p0 + ((p1 - p0) * t);
 }
 
 // ----------------------------------------------------------------------------

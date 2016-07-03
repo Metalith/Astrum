@@ -1,7 +1,7 @@
 # CMake entry point
 cmake_minimum_required (VERSION 2.6)
 project (Astrum)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O")
 
 find_package(OpenGL REQUIRED)
 FIND_PACKAGE( Boost 1.61 COMPONENTS REQUIRED )

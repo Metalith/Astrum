@@ -15,7 +15,7 @@ bool ControlSystem::moveQ;
 bool ControlSystem::moveE;
 
 float ControlSystem::speed = 3.f;
-float ControlSystem::rotSpeed = 0.0015f; // 3 units / seconds
+float ControlSystem::rotSpeed = 3.f; // 3 units / seconds
 float ControlSystem::mouseSpeed = 0.005f;
 
 ControlSystem::ControlSystem() {
@@ -57,8 +57,8 @@ void ControlSystem::update() {
 	if (moveS) tPlayer->position -= direction * deltaTime * speed;
 	if (moveA) tPlayer->position += right * deltaTime * speed;
 	if (moveD) tPlayer->position -= right * deltaTime * speed;
-	if (moveQ) OffsetOrientation(tPlayer->orientation, glm::vec3(0.0f, 0.0f, 1.0f), rotSpeed);
-	if (moveE) OffsetOrientation(tPlayer->orientation, glm::vec3(0.0f, 0.0f, 1.0f), -rotSpeed);
+	if (moveQ) OffsetOrientation(tPlayer->orientation, glm::vec3(0.0f, 0.0f, 1.0f), rotSpeed * deltaTime);
+	if (moveE) OffsetOrientation(tPlayer->orientation, glm::vec3(0.0f, 0.0f, 1.0f), -rotSpeed * deltaTime);
 	lastTime = currentTime;
 }
 

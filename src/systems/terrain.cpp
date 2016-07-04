@@ -10,15 +10,15 @@
 
 Engine* System::engine;
 
-const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 1.f;
+const int TerrainSystem::CHUNK_SIZE = 16;
+const float LOD = 0.125f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;
 	int e = 0;
 	Mesh* mesh;
 	Octree* octree;
-	int SIZE = 1;
+	int SIZE = 0;
 	double lastTime = glfwGetTime();
 	for (int i = SIZE; i >= -SIZE; i--) {
 		for (int j = 0; j >= -0; j--) {
@@ -39,6 +39,31 @@ TerrainSystem::TerrainSystem() {
 			}
 		}
 	}
+//					mesh = new Mesh();
+//					e = System::engine->createEntity();
+//					System::engine->addComponent(e, mesh);
+//					chunkIDs.push_back(e);
+//
+//					DensityField* DF = new DensityField(vec3(0 * CHUNK_SIZE, 0 * CHUNK_SIZE, 0 * CHUNK_SIZE), CHUNK_SIZE, LOD);
+//					octree = new Octree(vec3(0 * CHUNK_SIZE, 0 * CHUNK_SIZE, 0 * CHUNK_SIZE), CHUNK_SIZE, LOD, DF);
+//					octreeList.push_back(octree);
+//					GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices); //TODO: COMBINE THESE TWO LINES
+//					GenerateMeshFromOctree(generateSeam(octree), mesh->vertices, mesh->normals, mesh->indices);
+//					GenerateBoundsFromOctree(octree, mesh->bounds);
+////					std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
+//					mesh = new Mesh();
+//					e = System::engine->createEntity();
+//					System::engine->addComponent(e, mesh);
+//					chunkIDs.push_back(e);
+//
+//					DF = new DensityField(vec3(0.25 * CHUNK_SIZE, 0 * CHUNK_SIZE, -0.75f * CHUNK_SIZE), CHUNK_SIZE / 2, LOD / 2.f);
+//					octree = new Octree(vec3(0.25 * CHUNK_SIZE, 0 * CHUNK_SIZE, -0.75f * CHUNK_SIZE), CHUNK_SIZE / 2, LOD / 2.f, DF);
+//					octreeList.push_back(octree);
+//					GenerateMeshFromOctree(octree, mesh->vertices, mesh->normals, mesh->indices); //TODO: COMBINE THESE TWO LINES
+//					GenerateMeshFromOctree(generateSeam(octree), mesh->vertices, mesh->normals, mesh->indices);
+//					GenerateBoundsFromOctree(octree, mesh->bounds);
+
+//					std::cout<<"Generated Chunk at " << i  << " " << j << " " << k << std::endl;
 	std::cout << glfwGetTime() - lastTime << " Seconds to generate 9 Chunks"  << std::endl;
 	loadedChunks = octreeList.size();
 	RenderSystem::showDebug(CHUNK_SIZE, "Chunk Size");

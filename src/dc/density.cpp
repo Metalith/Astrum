@@ -62,9 +62,17 @@ std::pair<vec3, vec3> DensityField::getEdge(const vec3& p0, const vec3& p1) {
 	ivec3 newPos = ivec3(((p1 - this->pos) + float(this->size)) * (1.0f / LOD));
 	int index = newPos.z + newPos.y * arraySize + newPos.x * arraySize * arraySize;
 	Point p = points[index];
-	ivec3 dir = ivec3(p1 - p0);
-	if (dir.z > 0) return std::make_pair(edges[p.edges[2]], edges[p.edges[2] + 1]);
-	if (dir.y > 0) return std::make_pair(edges[p.edges[1]], edges[p.edges[1] + 1]);
+	vec3 dir = vec3(p1 - p0);
+	if (dir.z > 0) {
+		if (edges[p.edges[2]] != ApproximateZeroCrossingPosition(p0, p1)) std::cout << "FAIL" <<  " " << p.edges[2] << std::endl;
+//		if (ApproximateZeroCrossingPosition(p1 - dir, p1) != ApproximateZeroCrossingPosition(p0, p1)) std::cout << "FAIL2" <<  " " << p.edges[2] << std::endl;
+		return std::make_pair(edges[p.edges[2]], edges[p.edges[2] + 1]);
+	}
+	if (dir.y > 0) {
+		if (edges[p.edges[1]] != ApproximateZeroCrossingPosition(p0, p1)) std::cout << "FAIL" <<  " " << p.edges[1] <<  " " << edges.size() << std::endl;
+		return std::make_pair(edges[p.edges[1]], edges[p.edges[1] + 1]);
+	}
+//	if (edges[p.edges[0]] != ApproximateZeroCrossingPosition(p0, p1)) std::cout << dir.x << " " << dir.y << " " << dir.z << std::endl;
 	return std::make_pair(edges[p.edges[0]], edges[p.edges[0] + 1]);
 }
 

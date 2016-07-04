@@ -182,6 +182,7 @@ bool Octree::GenerateVertex(DensityField* d) {
 //		const vec3 p = pn.first;
 //		const vec3 n = pn.second;
 		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, d);
+//		if (p3.x != p.x) std::cout << p2.x << " " << p2.y << " " << p2.z << std::endl;
 		const vec3 n = CalculateSurfaceNormal(p, d);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 

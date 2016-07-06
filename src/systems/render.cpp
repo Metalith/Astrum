@@ -21,6 +21,7 @@ using namespace glm;
 #include "engine.hpp"
 
 GLuint objectColorLoc;
+GLuint uTimeLoc;
 GLuint sProjMatrixID;
 GLuint sViewMatrixID;
 GLuint sModelMatrixID;
@@ -43,6 +44,7 @@ double lastTime = glfwGetTime();
 int nbFrames = 0;
 int fps = 0;
 
+float uTime = 0.0f;
 
 RenderSystem::displayModes RenderSystem::mode;
 bool RenderSystem::bounds;
@@ -62,15 +64,17 @@ RenderSystem::RenderSystem() {
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	glEnable (GL_BLEND);
+	glEnable(GL_BLEND);
+	glEnable(GL_DITHER);
 	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 
-	shadeProgramID = LoadShaders( "Voxel.vs", "Voxel.fs" );
+	shadeProgramID = LoadShaders( "GasGiant.vs", "GasGiant.fs" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
 
 	objectColorLoc = glGetUniformLocation(shadeProgramID, "objectColor");
+	uTimeLoc = glGetUniformLocation(shadeProgramID, "uTime");
 	sProjMatrixID = glGetUniformLocation(shadeProgramID, "projection");
 	sViewMatrixID = glGetUniformLocation(shadeProgramID, "view");
 	sModelMatrixID = glGetUniformLocation(shadeProgramID, "model");
@@ -121,15 +125,19 @@ void RenderSystem::update() {
 			);
 	switch(mode) {
 		case SHADED:
+			glEnable(GL_CULL_FACE);
 			glUseProgram(shadeProgramID);
 
 			glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
+			glUniform1f(uTimeLoc, uTime);
+			uTime += 0.001;
 			glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 			glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 			glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
 			break;
 		case POINTS:
 		case WIREFRAME:
+			glDisable(GL_CULL_FACE);
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 			glUseProgram(wireProgramID);
 			glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
@@ -246,11 +254,6 @@ void RenderSystem::addEntity(int e) {
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-	//GLuint boundbuffer;
-	//glGenBuffers(1, &boundbuffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, boundbuffer);
-	//glBufferData(GL_ARRAY_BUFFER, bounds.size() * sizeof(GLfloat), &bounds[0], GL_STREAM_DRAW);
-	//std::cout << "test" << std::endl;
 }
 
 void RenderSystem::showDebug(const int& debugNum, std::string debugLabel) {

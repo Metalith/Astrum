@@ -82,8 +82,7 @@ const int edgeProcEdgeMask[3][2][5] = {
 
 const int processEdgeMask[3][4] = {{3,2,1,0},{7,5,6,4},{11,10,9,8}} ;
 
-Octree::Octree() {
-}
+Octree::Octree() {}
 Octree::Octree(vec3 position, float size, float LOD, DensityField* d) {
 	this->position = position;
 	this->size=size;
@@ -179,11 +178,8 @@ bool Octree::GenerateVertex(DensityField* d) {
 		const vec3 p1 = position + (cornerOffset[c1] * this->size);
 		const vec3 p2 = position + (cornerOffset[c2] * this->size);
 		std::pair<vec3, vec3> pn = d->getEdge(p1, p2);
-//		const vec3 p = pn.first;
-//		const vec3 n = pn.second;
-		const vec3 p = ApproximateZeroCrossingPosition(p1, p2, d);
-//		if (p3.x != p.x) std::cout << p2.x << " " << p2.y << " " << p2.z << std::endl;
-		const vec3 n = CalculateSurfaceNormal(p, d);
+		const vec3 p = pn.first;
+		const vec3 n = pn.second;
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;

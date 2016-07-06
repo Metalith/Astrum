@@ -70,9 +70,15 @@ bool CreateWindow(GLFWwindow* window) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RED_BITS, 8);
+	glfwWindowHint(GLFW_GREEN_BITS, 8);
+	glfwWindowHint(GLFW_BLUE_BITS, 8);
+	glfwWindowHint(GLFW_ALPHA_BITS, 8);
+	int count;
+	const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Engine Ver 0.2G." + UpdateVersion() + " - Chunk Optimizations").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Engine Ver 0.3." + UpdateVersion() + " - Gas Giant").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();

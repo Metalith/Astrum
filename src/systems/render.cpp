@@ -70,7 +70,7 @@ RenderSystem::RenderSystem() {
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 
-	shadeProgramID = LoadShaders( "GasGiant.vs", "GasGiant.fs" );
+	shadeProgramID = LoadShaders( "GasGiant.vp", "GasGiant.fp" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
 
 	objectColorLoc = glGetUniformLocation(shadeProgramID, "objectColor");
@@ -130,7 +130,7 @@ void RenderSystem::update() {
 
 			glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
 			glUniform1f(uTimeLoc, uTime);
-			uTime += 0.001;
+			uTime += 0.0001;
 			glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 			glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 			glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);

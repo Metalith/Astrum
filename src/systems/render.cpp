@@ -12,6 +12,8 @@ using namespace glm;
 
 #include <AntTweakBar.h>
 
+#include "bitmap_image.hpp"
+
 #include "systems/render.hpp"
 #include "systems/terrain.hpp"
 #include "systems/system.hpp"
@@ -94,8 +96,119 @@ RenderSystem::RenderSystem() {
 	TwAddSeparator(DebugGUI, NULL, NULL);
 	TwAddVarRO(DebugGUI, "Display", TW_TYPE_DISPLAY_MODE, &mode, NULL);
 	TwAddVarRO(DebugGUI, "Octree", TW_TYPE_BOOLCPP, &bounds," true='SHOW' false='HIDDEN' ");
+
+	//----------------------------------------------------------------------------------------------------------------------
+	// Gas FrameBuffer Code
+	//----------------------------------------------------------------------------------------------------------------------
+
+	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+	GLuint FramebufferName = 0;
+	glGenFramebuffers(1, &FramebufferName);
+	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+	// The texture we're going to render to
+	GLuint renderedTexture;
+	glGenTextures(1, &renderedTexture);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_2D, renderedTexture);
+
+	// Give an empty image to OpenGL ( the last "0" )
+	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 2048, 1024, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	// Poor filtering. Needed !
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	// Set "renderedTexture" as our colour attachement #0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+
+	// Set the list of draw buffers.
+	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+	// Always check that our framebuffer is ok
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "Framebuffer error" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+	// Render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+	glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+	glm::mat4 tProj = glm::ortho(0.0f,2048.0f,0.0f,1024.0f,0.0f,100.0f);
+	glm::mat4 tMod = glm::mat4(1.0);
+	glm::mat4 tView = glm::lookAt(
+			glm::vec3(0,0,1), // Camera is at (4,3,3), in World Space
+			glm::vec3(0,0,0), // and looks at the origin
+			glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+
+	GLuint simpleProgramID = LoadShaders( "GasTexture.vp", "GasTexture.fp" );
+
+	GLuint tProjMatrixID = glGetUniformLocation(simpleProgramID, "projection");
+	GLuint tViewMatrixID = glGetUniformLocation(simpleProgramID, "view");
+	GLuint tModelMatrixID = glGetUniformLocation(simpleProgramID, "model");
+
+
+	// The fullscreen quad's FBO
+	GLuint quad_VertexArrayID;
+	glGenVertexArrays(1, &quad_VertexArrayID);
+	glBindVertexArray(quad_VertexArrayID);
+
+	static const GLfloat g_quad_vertex_buffer_data[] = {
+			0.0f, 0.0f, 0.0f,
+			2048.0f,0.0f, 0.0f,
+			0.0f,  1024.0f, 0.0f,
+			0.0f,  1024.0f, 0.0f,
+			2048.0f, 0.0f, 0.0f,
+			2048.0f, 1024.0f, 0.0f,
+	};
+
+	GLuint quad_vertexbuffer;
+	glGenBuffers(1, &quad_vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+	//// Dark blue background
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glUseProgram(simpleProgramID);
+
+	glUniformMatrix4fv(tProjMatrixID, 1, GL_FALSE, &tProj[0][0]);
+	glUniformMatrix4fv(tModelMatrixID, 1, GL_FALSE, &tMod[0][0]);
+	glUniformMatrix4fv(tViewMatrixID, 1, GL_FALSE, &tView[0][0]);
+
+	// 1rst attribute buffer : vertices
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+	glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+	);
+
+	// Draw the triangles !
+	glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+	glDisableVertexAttribArray(0);
+
+	saveBMP("GasGiant Texture.bmp");
+	// Swap buffers
+	glfwSwapBuffers(window);
+
+
+
+
+	// Render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 }
 
+bool save = false;
 void RenderSystem::update() {
 	// Measure speed
 	double currentTime = glfwGetTime();
@@ -122,29 +235,29 @@ void RenderSystem::update() {
 			tPlayer->position,           // Camera is at player
 			tPlayer->position + direction, // and looks here : at the same position, plus "direction"
 			up // Head is up : cross of direction and right
-			);
+	);
 	switch(mode) {
-		case SHADED:
-			glEnable(GL_CULL_FACE);
-			glUseProgram(shadeProgramID);
+	case SHADED:
+		glEnable(GL_CULL_FACE);
+		glUseProgram(shadeProgramID);
 
-			glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
-			glUniform1f(uTimeLoc, uTime);
-			uTime += 0.0001;
-			glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-			glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-			glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-			break;
-		case POINTS:
-		case WIREFRAME:
-			glDisable(GL_CULL_FACE);
-			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-			glUseProgram(wireProgramID);
-			glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-			glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-			glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-			glUniform4f(wireColorLoc, 0.2f, 1.0f, 0.3f, 1.0f);
-			break;
+		glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
+		glUniform1f(uTimeLoc, uTime);
+		uTime += 0.0001;
+		glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+		glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		break;
+	case POINTS:
+	case WIREFRAME:
+		glDisable(GL_CULL_FACE);
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		glUseProgram(wireProgramID);
+		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		glUniform4f(wireColorLoc, 0.2f, 1.0f, 0.3f, 1.0f);
+		break;
 	}
 
 	for (int i = 0; i < vertexArrays.size(); i++) {
@@ -209,7 +322,7 @@ void RenderSystem::addEntity(int e) {
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
-			);
+	);
 
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
@@ -223,7 +336,7 @@ void RenderSystem::addEntity(int e) {
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
-			);
+	);
 
 	GLuint boundbuffer;
 	glGenBuffers(1, &boundbuffer);
@@ -237,7 +350,7 @@ void RenderSystem::addEntity(int e) {
 			GL_FALSE,           // normalized?
 			0,                  // stride
 			(void*)0            // array buffer offset
-			);
+	);
 
 	GLuint indexbuffer;
 	glGenBuffers(1, &indexbuffer);
@@ -376,4 +489,26 @@ GLuint RenderSystem::LoadShaders(const std::string& vertex_file_path,const std::
 	glDeleteShader(FragmentShaderID);
 
 	return ProgramID;
+}
+
+//TODO: Remove this and bitmap library. Debug purposes only
+void RenderSystem::saveBMP(std::string filename) {
+	if (!save) {
+		unsigned char *p;
+
+		p = (unsigned char *) malloc(2048 * 1024 * 3);
+		glReadPixels(0, 0, 2048, 1024, GL_RGB, GL_UNSIGNED_BYTE, p);
+
+		bitmap_image image(2048,1024);
+
+		for (unsigned int x = 0; x < 2048; ++x)
+		{
+			for (unsigned int y = 0; y < 1024; ++y)
+			{
+				int index = (x + (1024 - y) * 2048) *3;
+				image.set_pixel(x,y,p[index],p[index+1],p[index+2]);
+			}
+		}
+		image.save_image(filename);
+	}
 }

@@ -144,5 +144,5 @@ void main()
 	float n3 = snoise((tPos / 32) * 0.1) * threshold * 32;
 	float n = n1 + n2 + n3;
 	float c = (noise(vec3(tPos.y + n, 0, 0), 4, 0.25, 0.5) + 1.0) / 2.0;
-	color = vec4((vec3(0.8,0.4,0.2)+c)*d,1);
+	color = vec4((vec3(200 / 256.0, 80 / 256.0, 0 / 256.0)+c)*d,1);
 }

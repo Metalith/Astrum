@@ -13,6 +13,8 @@ class RenderSystem: public System {
 		void addEntity(int e);
 		GLuint LoadShaders(const std::string& vertex_file_path,const std::string& fragment_file_path);
 
+		void saveBMP(std::string filename);
+
 		static void initTw();
 		static void showDebug(const int& debugNum, std::string debugLabel);
 		static void showBounds(bool show);

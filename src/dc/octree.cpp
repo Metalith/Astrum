@@ -177,9 +177,11 @@ bool Octree::GenerateVertex(DensityField* d) {
 
 		const vec3 p1 = position + (cornerOffset[c1] * this->size);
 		const vec3 p2 = position + (cornerOffset[c2] * this->size);
-		std::pair<vec3, vec3> pn = d->getEdge(p1, p2);
-		const vec3 p = pn.first;
-		const vec3 n = pn.second;
+//		std::pair<vec3, vec3> pn = d->getEdge(p1, p2);
+//		const vec3 p = pn.first;
+//		const vec3 n = pn.second;
+		vec3 p = ApproximateZeroCrossingPosition(p1, p2, d);
+		vec3 n = CalculateSurfaceNormal(p, d);
 		qef.add(p.x, p.y, p.z, n.x, n.y, n.z);
 
 		averageNormal += n;
@@ -206,7 +208,7 @@ bool Octree::GenerateVertex(DensityField* d) {
 }
 
 vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
-	const float H = 0.001f;
+	const float H = 0.0001f;
 	const float dx = d->SDF(p + vec3(H, 0.f, 0.f)) - d->SDF(p - vec3(H, 0.f, 0.f));
 	const float dy = d->SDF(p + vec3(0.f, H, 0.f)) - d->SDF(p - vec3(0.f, H, 0.f));
 	const float dz = d->SDF(p + vec3(0.f, 0.f, H)) - d->SDF(p - vec3(0.f, 0.f, H));

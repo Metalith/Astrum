@@ -76,12 +76,12 @@ std::pair<vec3, vec3> DensityField::getEdge(const vec3& p0, const vec3& p1) {
 	return std::make_pair(edges[p.edges[0]], edges[p.edges[0] + 1]);
 }
 
-//float DensityField::SDF(vec3 pos) { return this->module.GetValue(pos.x / 32, 0.0, pos.z / 32) + ( pos.y / 32); }
-//float DensityField::SDF(vec3 pos) { return length(pos) - (16 +this->module.GetValue(pos.x, pos.y, pos.z) / 8.f); }
+// float DensityField::SDF(vec3 pos) { return this->module.GetValue(pos.x / 32, 0.0, pos.z / 32) + ( pos.y / 32); }
+// float DensityField::SDF(vec3 pos) { return length(pos) - (16 +this->module.GetValue(pos.x, pos.y, pos.z) / 8.f); }
 float DensityField::SDF(vec3 pos) { return length(pos) - 32; }
 
 vec3 DensityField::CalculateSurfaceNormal(const vec3& p) {
-	const float H = 0.0001f;
+	const float H = 0.001f;
 	const float dx = SDF(p + vec3(H, 0.f, 0.f)) - SDF(p - vec3(H, 0.f, 0.f));
 	const float dy = SDF(p + vec3(0.f, H, 0.f)) - SDF(p - vec3(0.f, H, 0.f));
 	const float dz = SDF(p + vec3(0.f, 0.f, H)) - SDF(p - vec3(0.f, 0.f, H));

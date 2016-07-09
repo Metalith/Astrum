@@ -46,7 +46,8 @@ double lastTime = glfwGetTime();
 int nbFrames = 0;
 int fps = 0;
 
-float uTime = 0.0f;
+GLuint renderedTexture;
+GLuint texID;
 
 RenderSystem::displayModes RenderSystem::mode;
 bool RenderSystem::bounds;
@@ -75,8 +76,7 @@ RenderSystem::RenderSystem() {
 	shadeProgramID = LoadShaders( "GasGiant.vp", "GasGiant.fp" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
 
-	objectColorLoc = glGetUniformLocation(shadeProgramID, "objectColor");
-	uTimeLoc = glGetUniformLocation(shadeProgramID, "uTime");
+	texID = glGetUniformLocation(shadeProgramID, "renderedTexture");
 	sProjMatrixID = glGetUniformLocation(shadeProgramID, "projection");
 	sViewMatrixID = glGetUniformLocation(shadeProgramID, "view");
 	sModelMatrixID = glGetUniformLocation(shadeProgramID, "model");
@@ -240,10 +240,14 @@ void RenderSystem::update() {
 	case SHADED:
 		glEnable(GL_CULL_FACE);
 		glUseProgram(shadeProgramID);
+		// Set our "renderedTexture" sampler to user Texture Unit 0
+		// Bind our texture in Texture Unit 0
+		// Set our "renderedTexture" sampler to user Texture Unit 0
+		// Bind our texture in Texture Unit 0
+//		glActiveTexture(GL_TEXTURE0);
+//		glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
-		glUniform3f(objectColorLoc, 0.6f, 0.6f, 0.6f);
-		glUniform1f(uTimeLoc, uTime);
-		uTime += 0.0001;
+		glUniform1i(texID, 0);
 		glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);

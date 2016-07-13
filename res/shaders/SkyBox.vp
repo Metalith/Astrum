@@ -1,0 +1,23 @@
+#version 330 core
+precision highp float;
+
+layout (location = 0) in vec3 position;
+
+out highp vec3 pos;
+out vec3 vTexCoordinates;
+out mat4 inv_proj;
+out mat4 inv_view_rot;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+
+void main()
+{
+	inv_proj = inverse(projection);
+	inv_view_rot = inverse(view * model);
+	pos = position;
+	vTexCoordinates=normalize(position.xyz);
+	gl_Position = projection * view *  model * vec4(position, 1.0f);
+}

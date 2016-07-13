@@ -78,7 +78,7 @@ bool CreateWindow(GLFWwindow* window) {
 	const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768,("Engine Ver 0.3." + UpdateVersion() + " - Gas Giant").c_str(), NULL, NULL);
+	window = glfwCreateWindow( 1024, 768,("Engine Ver 0.3." + UpdateVersion() + " - SPAAAAAAAAAACCCEEE").c_str(), NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -102,9 +102,9 @@ bool CreateWindow(GLFWwindow* window) {
 
 	// Set GLFW event callbacks. I removed glfwSetWindowSizeCallback for conciseness
 	glfwSetMouseButtonCallback(window, (GLFWmousebuttonfun)TwEventMouseButtonGLFW); // - Directly redirect GLFW mouse button events to AntTweakBar
-	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);          // - Directly redirect GLFW mouse position events to AntTweakBar
-	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    // - Directly redirect GLFW mouse wheel events to AntTweakBar
-	glfwSetKeyCallback(window, ControlSystem::key_callback);                         // - Directly redirect GLFW key events to AntTweakBar
+	glfwSetCursorPosCallback(window, (GLFWcursorposfun)TwEventMousePosGLFW);        // - Directly redirect GLFW mouse position events to AntTweakBar
+	glfwSetScrollCallback(window, (GLFWscrollfun)TwEventMouseWheelGLFW);    		// - Directly redirect GLFW mouse wheel events to AntTweakBar
+	glfwSetKeyCallback(window, ControlSystem::key_callback);                        // - Directly redirect GLFW key events to Control System
 	glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW);                      // - Directly redirect GLFW char events to AntTweakBar
 
 	// Ensure we can capture the escape key being pressed below

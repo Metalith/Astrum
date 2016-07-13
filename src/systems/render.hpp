@@ -11,14 +11,12 @@ class RenderSystem: public System {
 		RenderSystem();
 		void update();
 		void addEntity(int e);
-		GLuint LoadShaders(const std::string& vertex_file_path,const std::string& fragment_file_path);
-
-		void saveBMP(std::string filename);
 
 		static void initTw();
 		static void showDebug(const int& debugNum, std::string debugLabel);
 		static void showBounds(bool show);
 		static void setShading(int shading);
+
 	private:
 		GLFWwindow* window;
 		std::vector<GLuint> vertexArrays;
@@ -28,6 +26,11 @@ class RenderSystem: public System {
 
 		int totalVerts = 0;
 		Transform* tPlayer;
+
+		void genSkyBox();
+		void drawSkyBox();
+		GLuint LoadShaders(const std::string& vertex_file_path,const std::string& fragment_file_path);
+		void saveBMP(std::string filename, int width, int height);
 
 		static enum displayModes { SHADED, WIREFRAME, POINTS } mode;
 		static bool bounds;

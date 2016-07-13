@@ -17,13 +17,13 @@ vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d);
 
 int Octree::seed = 0;
 vec3 cornerOffset[8] {  vec3(-0.5, -0.5, -0.5),
-	vec3(-0.5, -0.5,  0.5),
-	vec3(-0.5,  0.5, -0.5),
-	vec3(-0.5,  0.5,  0.5),
-	vec3(0.5,  -0.5, -0.5),
-	vec3(0.5,  -0.5,  0.5),
-	vec3(0.5,   0.5, -0.5),
-	vec3(0.5,   0.5,  0.5)	};
+						vec3(-0.5, -0.5,  0.5),
+						vec3(-0.5,  0.5, -0.5),
+						vec3(-0.5,  0.5,  0.5),
+						vec3(0.5,  -0.5, -0.5),
+						vec3(0.5,  -0.5,  0.5),
+						vec3(0.5,   0.5, -0.5),
+						vec3(0.5,   0.5,  0.5)	};
 
 const float QEF_ERROR = 1e-6f;
 const int QEF_SWEEPS = 4;

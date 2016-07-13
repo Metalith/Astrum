@@ -11,7 +11,7 @@
 Engine* System::engine;
 
 const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 2.f;
+const float LOD = 0.5f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;

@@ -33,8 +33,14 @@ GLuint wProjMatrixID;
 GLuint wViewMatrixID;
 GLuint wModelMatrixID;
 
+GLuint skyProjMatrixID;
+GLuint skyViewMatrixID;
+GLuint skyModelMatrixID;
+GLuint sunLoc;
+
 GLuint shadeProgramID;
 GLuint wireProgramID;
+GLuint skyProgramID;
 
 mat4 ProjectionMatrix;
 mat4 ViewMatrix;
@@ -47,7 +53,49 @@ int nbFrames = 0;
 int fps = 0;
 
 GLuint renderedTexture;
+GLuint texSkyBox;
 GLuint texID;
+GLuint skyTexID;
+
+const GLfloat g_cube_buffer_data[] = {
+    -1000.0f,-1000.0f,-1000.0f, // triangle 1000 : begin
+    -1000.0f,-1000.0f, 1000.0f,
+    -1000.0f, 1000.0f, 1000.0f, // triangle 1000 : end
+     1000.0f, 1000.0f,-1000.0f, // triangle 2 : begin
+    -1000.0f,-1000.0f,-1000.0f,
+    -1000.0f, 1000.0f,-1000.0f, // triangle 2 : end
+     1000.0f,-1000.0f, 1000.0f,
+    -1000.0f,-1000.0f,-1000.0f,
+     1000.0f,-1000.0f,-1000.0f,
+     1000.0f, 1000.0f,-1000.0f,
+     1000.0f,-1000.0f,-1000.0f,
+    -1000.0f,-1000.0f,-1000.0f,
+    -1000.0f,-1000.0f,-1000.0f,
+    -1000.0f, 1000.0f, 1000.0f,
+    -1000.0f, 1000.0f,-1000.0f,
+     1000.0f,-1000.0f, 1000.0f,
+    -1000.0f,-1000.0f, 1000.0f,
+    -1000.0f,-1000.0f,-1000.0f,
+    -1000.0f, 1000.0f, 1000.0f,
+    -1000.0f,-1000.0f, 1000.0f,
+     1000.0f,-1000.0f, 1000.0f,
+     1000.0f, 1000.0f, 1000.0f,
+     1000.0f,-1000.0f,-1000.0f,
+     1000.0f, 1000.0f,-1000.0f,
+     1000.0f,-1000.0f,-1000.0f,
+     1000.0f, 1000.0f, 1000.0f,
+     1000.0f,-1000.0f, 1000.0f,
+     1000.0f, 1000.0f, 1000.0f,
+     1000.0f, 1000.0f,-1000.0f,
+    -1000.0f, 1000.0f,-1000.0f,
+     1000.0f, 1000.0f, 1000.0f,
+    -1000.0f, 1000.0f,-1000.0f,
+    -1000.0f, 1000.0f, 1000.0f,
+     1000.0f, 1000.0f, 1000.0f,
+    -1000.0f, 1000.0f, 1000.0f,
+     1000.0f,-1000.0f, 1000.0f
+};
+GLuint cube_VertexArrayID;
 
 RenderSystem::displayModes RenderSystem::mode;
 bool RenderSystem::bounds;
@@ -107,7 +155,6 @@ RenderSystem::RenderSystem() {
 	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 
 	// The texture we're going to render to
-	GLuint renderedTexture;
 	glGenTextures(1, &renderedTexture);
 
 	// "Bind" the newly created texture : all future texture functions will modify this texture
@@ -117,8 +164,8 @@ RenderSystem::RenderSystem() {
 	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 2048, 1024, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 	// Poor filtering. Needed !
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	// Set "renderedTexture" as our colour attachement #0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
@@ -163,7 +210,7 @@ RenderSystem::RenderSystem() {
 			0.0f,  1024.0f, 0.0f,
 			0.0f,  1024.0f, 0.0f,
 			2048.0f, 0.0f, 0.0f,
-			2048.0f, 1024.0f, 0.0f,
+			2048.0f, 1024.0f, 0.0f
 	};
 
 	GLuint quad_vertexbuffer;
@@ -196,11 +243,15 @@ RenderSystem::RenderSystem() {
 
 	glDisableVertexAttribArray(0);
 
-	saveBMP("GasGiant Texture.bmp");
+	saveBMP("GasGiant Texture.bmp", 2048, 1024);
 	// Swap buffers
 	glfwSwapBuffers(window);
 
+	//----------------------------------------------------------------------------------------------------------------------
+	// Generate Sky Box
+	//----------------------------------------------------------------------------------------------------------------------
 
+	genSkyBox();
 
 
 	// Render to our framebuffer
@@ -236,16 +287,31 @@ void RenderSystem::update() {
 			tPlayer->position + direction, // and looks here : at the same position, plus "direction"
 			up // Head is up : cross of direction and right
 	);
+
+	// --------- Sky -------------------------------------------------------------------------------------------------------
+	glBindVertexArray(cube_VertexArrayID);
+	glUseProgram(skyProgramID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texSkyBox);
+
+	glCullFace(GL_FRONT);
+	glUniform1i(skyTexID, 0);
+	glUniformMatrix4fv(skyProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+	glm::mat4 skyModelMatrix = translate(tPlayer->position); //= glTranslate()
+	glUniformMatrix4fv(skyModelMatrixID, 1, GL_FALSE, &skyModelMatrix[0][0]);
+	glUniformMatrix4fv(skyViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+	glEnableVertexAttribArray(0);
+
 	switch(mode) {
 	case SHADED:
 		glEnable(GL_CULL_FACE);
+		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+		glCullFace(GL_BACK);
 		glUseProgram(shadeProgramID);
 		// Set our "renderedTexture" sampler to user Texture Unit 0
 		// Bind our texture in Texture Unit 0
-		// Set our "renderedTexture" sampler to user Texture Unit 0
-		// Bind our texture in Texture Unit 0
-//		glActiveTexture(GL_TEXTURE0);
-//		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
 		glUniform1i(texID, 0);
 		glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
@@ -256,6 +322,8 @@ void RenderSystem::update() {
 	case WIREFRAME:
 		glDisable(GL_CULL_FACE);
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+		glCullFace(GL_BACK);
 		glUseProgram(wireProgramID);
 		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
 		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
@@ -371,6 +439,146 @@ void RenderSystem::addEntity(int e) {
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
+}
+
+//--------------------------------------------------------------------------------------------------------------------------
+// Generates SkyBox
+// 100u^3
+// For now generates a square
+//--------------------------------------------------------------------------------------------------------------------------
+void RenderSystem::genSkyBox() {
+	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
+	GLuint fbSkyBox = 0;
+	glGenFramebuffers(1, &fbSkyBox);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbSkyBox);
+
+	// The texture we're going to render to
+	glGenTextures(1, &texSkyBox);
+
+	// "Bind" the newly created texture : all future texture functions will modify this texture
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texSkyBox);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	for(int loop = 0; loop < 6; loop++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + loop, 0, GL_RGBA8, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	}
+
+	glm::mat4 tProj = glm::ortho(0.0f,1024.0f,0.0f,1024.0f,0.0f,100.0f);
+	glm::mat4 tMod = glm::mat4(1.0);
+	glm::mat4 tView = glm::lookAt(
+			glm::vec3(0,0,1), // Camera is at (0,0,1), in World Space
+			glm::vec3(0,0,0), // and looks at the origin
+			glm::vec3(0,1,0)  // Head is up (set to 0,1,0)
+	);
+
+	GLuint starProgramID = LoadShaders( "StarTexture.vp", "StarTexture.fp" );
+
+	GLuint tProjMatrixID = glGetUniformLocation(starProgramID, "projection");
+	GLuint tViewMatrixID = glGetUniformLocation(starProgramID, "view");
+	GLuint tModelMatrixID = glGetUniformLocation(starProgramID, "model");
+
+	GLuint testLoc = glGetUniformLocation(starProgramID, "test");
+	// The fullscreen quad's FBO
+	GLuint quad_VertexArrayID;
+	glGenVertexArrays(1, &quad_VertexArrayID);
+	glBindVertexArray(quad_VertexArrayID);
+
+	static const GLfloat g_quad_vertex_buffer_data[] = {
+			0.0f, 	0.0f, 	0.0f,
+			1024.f,	0.0f, 	0.0f,
+			0.0f,  	1024.f, 0.0f,
+			0.0f,  	1024.f, 0.0f,
+			1024.f,	0.0f, 	0.0f,
+			1024.f,	1024.f, 0.0f
+	};
+
+	GLuint quad_vertexbuffer;
+	glGenBuffers(1, &quad_vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+	// Render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, fbSkyBox);
+	glViewport(0,0,1024,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+
+	for (int face = 0; face < 6; face++) {
+		// Set "renderedTexture" as our colour attachement #0
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, texSkyBox, 0);
+
+		// Set the list of draw buffers.
+		GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+		glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+
+		// Always check that our framebuffer is ok
+		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+			std::cout << "Framebuffer error" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+
+		//// Dark blue background
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glUseProgram(starProgramID);
+
+		glUniformMatrix4fv(tProjMatrixID, 1, GL_FALSE, &tProj[0][0]);
+		glUniformMatrix4fv(tModelMatrixID, 1, GL_FALSE, &tMod[0][0]);
+		glUniformMatrix4fv(tViewMatrixID, 1, GL_FALSE, &tView[0][0]);
+
+		glUniform1i(testLoc, face);
+		// 1rst attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glVertexAttribPointer(
+				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+		);
+
+		// Draw the triangles !
+		glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+		glDisableVertexAttribArray(0);
+	}
+
+	skyProgramID = LoadShaders( "SkyBox.vp", "SkyBox.fp" );
+
+	skyProjMatrixID = glGetUniformLocation(skyProgramID, "projection");
+	skyViewMatrixID = glGetUniformLocation(skyProgramID, "view");
+	skyModelMatrixID = glGetUniformLocation(skyProgramID, "model");
+
+	skyTexID = glGetUniformLocation(skyProgramID, "renderedTexture");
+
+	// The fullscreen quad's FBO
+	glGenVertexArrays(1, &cube_VertexArrayID);
+	glBindVertexArray(cube_VertexArrayID);
+
+	GLuint cube_vertexbuffer;
+	glGenBuffers(1, &cube_vertexbuffer);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, cube_vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(g_cube_buffer_data), g_cube_buffer_data, GL_STATIC_DRAW);
+	glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+	);
+
+	//	saveBMP("Star Texture.bmp", 1024, 1024);
+}
+
+void RenderSystem::drawSkyBox() {
+
+
+
 }
 
 void RenderSystem::showDebug(const int& debugNum, std::string debugLabel) {
@@ -496,20 +704,20 @@ GLuint RenderSystem::LoadShaders(const std::string& vertex_file_path,const std::
 }
 
 //TODO: Remove this and bitmap library. Debug purposes only
-void RenderSystem::saveBMP(std::string filename) {
+void RenderSystem::saveBMP(std::string filename, int width, int height) {
 	if (!save) {
 		unsigned char *p;
 
-		p = (unsigned char *) malloc(2048 * 1024 * 3);
-		glReadPixels(0, 0, 2048, 1024, GL_RGB, GL_UNSIGNED_BYTE, p);
+		p = (unsigned char *) malloc(width * height * 3);
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, p);
 
-		bitmap_image image(2048,1024);
+		bitmap_image image(width, height);
 
-		for (unsigned int x = 0; x < 2048; ++x)
+		for (unsigned int x = 0; x < width; ++x)
 		{
-			for (unsigned int y = 0; y < 1024; ++y)
+			for (unsigned int y = 0; y < height; ++y)
 			{
-				int index = (x + (1024 - y) * 2048) *3;
+				int index = (x + (height - y) * width) *3;
 				image.set_pixel(x,y,p[index],p[index+1],p[index+2]);
 			}
 		}

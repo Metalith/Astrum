@@ -124,7 +124,7 @@ float ridgedNoise(vec3 position, int octaves, float frequency, float persistence
 
 void main() {
 	// Equirectangular Coordinate Conversion
-	vec2 modCoord = (gl_FragCoord.xy - vec2(1024, 512)) / 1024.0;
+	vec2 modCoord = (pos.xy - vec2(1024, 512)) / 1024.0;
 	float horizontalAngle = modCoord.x * 3.1415926535897;
 	float verticalAngle = modCoord.y * 1.570796326794896;
 	vec3 tPos = vec3(
@@ -143,6 +143,6 @@ void main() {
 	float n3 = snoise(tPos * 0.1) * threshold * 1.5;
 	float n = n1 + n2 + n3;
 	
-	float c = (noise(vec3(tPos.y + n, 0, 0), 4, 5, 0.5) + 0.9) / 2.0;
+	float c = (noise(vec3((tPos.y + n) / 1.3, 0, 0), 4, 5, 0.5) + 0.5);
 	color = vec4(vec3(160 / 256.0, 60 / 256.0, 0 / 256.0)+c,1);
 }

@@ -56,44 +56,46 @@ GLuint renderedTexture;
 GLuint texSkyBox;
 GLuint texID;
 GLuint skyTexID;
+GLuint camPosLoc;
+GLuint camDirLoc;
 
 const GLfloat g_cube_buffer_data[] = {
-    -1000.0f,-1000.0f,-1000.0f, // triangle 1000 : begin
-    -1000.0f,-1000.0f, 1000.0f,
-    -1000.0f, 1000.0f, 1000.0f, // triangle 1000 : end
-     1000.0f, 1000.0f,-1000.0f, // triangle 2 : begin
-    -1000.0f,-1000.0f,-1000.0f,
-    -1000.0f, 1000.0f,-1000.0f, // triangle 2 : end
-     1000.0f,-1000.0f, 1000.0f,
-    -1000.0f,-1000.0f,-1000.0f,
-     1000.0f,-1000.0f,-1000.0f,
-     1000.0f, 1000.0f,-1000.0f,
-     1000.0f,-1000.0f,-1000.0f,
-    -1000.0f,-1000.0f,-1000.0f,
-    -1000.0f,-1000.0f,-1000.0f,
-    -1000.0f, 1000.0f, 1000.0f,
-    -1000.0f, 1000.0f,-1000.0f,
-     1000.0f,-1000.0f, 1000.0f,
-    -1000.0f,-1000.0f, 1000.0f,
-    -1000.0f,-1000.0f,-1000.0f,
-    -1000.0f, 1000.0f, 1000.0f,
-    -1000.0f,-1000.0f, 1000.0f,
-     1000.0f,-1000.0f, 1000.0f,
-     1000.0f, 1000.0f, 1000.0f,
-     1000.0f,-1000.0f,-1000.0f,
-     1000.0f, 1000.0f,-1000.0f,
-     1000.0f,-1000.0f,-1000.0f,
-     1000.0f, 1000.0f, 1000.0f,
-     1000.0f,-1000.0f, 1000.0f,
-     1000.0f, 1000.0f, 1000.0f,
-     1000.0f, 1000.0f,-1000.0f,
-    -1000.0f, 1000.0f,-1000.0f,
-     1000.0f, 1000.0f, 1000.0f,
-    -1000.0f, 1000.0f,-1000.0f,
-    -1000.0f, 1000.0f, 1000.0f,
-     1000.0f, 1000.0f, 1000.0f,
-    -1000.0f, 1000.0f, 1000.0f,
-     1000.0f,-1000.0f, 1000.0f
+    -1.0f,-1.0f,-1.0f, // triangle 1 : begin
+    -1.0f,-1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, // triangle 1 : end
+     1.0f, 1.0f,-1.0f, // triangle 2 : begin
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f, // triangle 2 : end
+     1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+     1.0f,-1.0f,-1.0f,
+     1.0f, 1.0f,-1.0f,
+     1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+     1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f,-1.0f,
+     1.0f, 1.0f,-1.0f,
+     1.0f,-1.0f,-1.0f,
+     1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f,
+     1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f,
+    -1.0f, 1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f
 };
 GLuint cube_VertexArrayID;
 
@@ -103,15 +105,16 @@ RenderSystem::RenderSystem() {
 	std::cout << "New System :: Render!" << std::endl;
 	setComponent<Mesh>();
 	setComponent<Player>();
+
 	this->window = glfwGetCurrentContext();
 
 	mode = SHADED;
 	bounds = false;
 
-	glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-
+	//glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
+	glClearColor(0,0,0,0);
 	// Enable GL Flags
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
@@ -278,6 +281,7 @@ void RenderSystem::update() {
 	glm::vec3 right(1,0,0);
 
 	direction =  direction * tPlayer->orientation;
+	// std::cout << direction.x << " " << direction.y << " " << direction.z << std::endl;
 	right = right * tPlayer->orientation;
 	glm::vec3 up = glm::cross( direction, right );
 
@@ -288,24 +292,12 @@ void RenderSystem::update() {
 			up // Head is up : cross of direction and right
 	);
 
-	// --------- Sky -------------------------------------------------------------------------------------------------------
-	glBindVertexArray(cube_VertexArrayID);
-	glUseProgram(skyProgramID);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texSkyBox);
-
-	glCullFace(GL_FRONT);
-	glUniform1i(skyTexID, 0);
-	glUniformMatrix4fv(skyProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-	glm::mat4 skyModelMatrix = translate(tPlayer->position); //= glTranslate()
-	glUniformMatrix4fv(skyModelMatrixID, 1, GL_FALSE, &skyModelMatrix[0][0]);
-	glUniformMatrix4fv(skyViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-	glEnableVertexAttribArray(0);
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	switch(mode) {
 	case SHADED:
 		glEnable(GL_CULL_FACE);
-		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+
 		glCullFace(GL_BACK);
 		glUseProgram(shadeProgramID);
 		// Set our "renderedTexture" sampler to user Texture Unit 0
@@ -322,7 +314,6 @@ void RenderSystem::update() {
 	case WIREFRAME:
 		glDisable(GL_CULL_FACE);
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		glDrawArrays(GL_TRIANGLES, 0, 12*3);
 		glCullFace(GL_BACK);
 		glUseProgram(wireProgramID);
 		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
@@ -358,6 +349,24 @@ void RenderSystem::update() {
 			glBindVertexArray(0); // Unbind our Vertex Array Object
 		}
 	}
+
+	// --------- Sky -------------------------------------------------------------------------------------------------------
+		glBindVertexArray(cube_VertexArrayID);
+		glUseProgram(skyProgramID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texSkyBox);
+		//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_CULL_FACE);
+		glUniform1i(skyTexID, 0);
+		glUniform3fv(camPosLoc, 1, &tPlayer->position[0]);
+		glUniform3fv(camDirLoc, 1, &direction[0]);
+		glUniformMatrix4fv(skyProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+		glm::mat4 skyModelMatrix = translate(tPlayer->position); //= glTranslate()
+		glUniformMatrix4fv(skyModelMatrixID, 1, GL_FALSE, &skyModelMatrix[0][0]);
+		glUniformMatrix4fv(skyViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		glEnableVertexAttribArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	TwDraw();
 
@@ -553,6 +562,8 @@ void RenderSystem::genSkyBox() {
 	skyModelMatrixID = glGetUniformLocation(skyProgramID, "model");
 
 	skyTexID = glGetUniformLocation(skyProgramID, "renderedTexture");
+	camPosLoc = glGetUniformLocation(skyProgramID, "uCamPos");
+	camDirLoc = glGetUniformLocation(skyProgramID, "uCamDir");
 
 	// The fullscreen quad's FBO
 	glGenVertexArrays(1, &cube_VertexArrayID);

@@ -1,7 +1,13 @@
+.gitignore
 build/
 lib/
 bin/
+test/
+screens/
 *.cson
 *.o
 *.gch
 tags
+*.settings
+*project
+*.bmp

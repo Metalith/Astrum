@@ -1,17 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="./css/styles.css">
-    <title>Hello World!</title>
-  </head>
-  <body>
-    <div class="Left">
-      <div class="Preview"><div></div></div>
-      Test
-    </div>
-    <div class="Editor">
-      <b>Node Editor</b>
-    </div>
-  </body>
+    <title>Apollo - Biome Editor</title>
+</head>
+<body>
+        <div id="Left">
+            <div id="Preview"><div></div></div>
+            <div id="DisplayModes">
+                <label class="switch">
+                    <input type="checkbox" id="Mode">
+                    <div class="slider">3D</div>
+                </label>
+                <label class="FullScreen">
+                    <input type="checkbox" id="fsCheckbBox">
+                    <div class="fsMode">Full</div>
+                </label>
+            </div>
+        </div>
+        <div id="Divider"></div>
+        <div id="Editor">
+            <div id="drag-1" class="draggable">
+                <p>Example Node</p>
+            </div>
+            <div id="drag-2" class="draggable">
+                <p>Node 2</p>
+            </div>
+        </div>
+    <script src="./js/interact.min.js"></script>
+    <script src="./js/drag.js"></script>
+</body>
 </html>

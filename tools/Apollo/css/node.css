@@ -1,0 +1,91 @@
+.Node {
+    display: inline;
+    position: absolute;
+    font-family: "Lato thin";
+    font-size: 16px;
+    text-align: center;
+
+    background-color: #cc443e;
+    color: white;
+
+    border-radius: 0.75em;
+    padding-right: 30px;
+    padding: 3px 18px 10px 18px;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently */
+}
+
+.Node {
+    cursor: move;
+}
+
+.NodeName {
+    font-family: "Lato light";
+    text-align: Center;
+}
+
+.Input {
+    float: left;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.InputField {
+    text-align: left;
+    position: relative;
+}
+
+.InputHandle {
+    position: absolute;
+    content: "";
+    /*height: 26px;*/
+    width: 10px;
+    height: 10px;
+    margin-right: 5px;
+    right: 100%;
+    bottom: 5px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.InputHandle:hover {
+    background-color: orange;
+    cursor: default;
+}
+
+.Center {
+    margin-left: 20px;
+    margin-right: 20px;
+    float: left;
+    text-align: center;
+}
+
+.Output {
+    float: right;
+}
+
+.OutputField {
+    text-align: right;
+    position: relative;
+}
+
+.OutputHandle {
+    position: absolute;
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin-left: 5px;
+    left: 100%;
+    bottom: 6px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.OutputHandle:hover {
+    background-color: orange;
+    cursor: default;
+}

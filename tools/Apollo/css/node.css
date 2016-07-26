@@ -31,30 +31,6 @@
 .Input {
     float: left;
     display: inline-block;
-    vertical-align: middle;
-}
-
-.InputField {
-    text-align: left;
-    position: relative;
-}
-
-.InputHandle {
-    position: absolute;
-    content: "";
-    /*height: 26px;*/
-    width: 10px;
-    height: 10px;
-    margin-right: 5px;
-    right: 100%;
-    bottom: 5px;
-    border-radius: 50%;
-    background-color: white;
-}
-
-.InputHandle:hover {
-    background-color: orange;
-    cursor: default;
 }
 
 .Center {
@@ -66,26 +42,52 @@
 
 .Output {
     float: right;
+    display: inline-block;
 }
 
-.OutputField {
-    text-align: right;
+.Field {
     position: relative;
+    display: inline-block;
 }
 
-.OutputHandle {
+.Field:hover {
+    color: orange;
+    cursor: default;
+}
+
+.Input > .Field {
+    float: left;
+}
+
+.Output > .Field {
+    float: right;
+}
+
+.Field:hover > .Handle {
+    background-color: orange;
+}
+
+.Handle:hover {
+    background-color: orange;
+}
+
+.Handle {
     position: absolute;
     content: "";
     width: 8px;
     height: 8px;
-    margin-left: 5px;
-    left: 100%;
-    bottom: 6px;
     border-radius: 50%;
     background-color: white;
 }
 
-.OutputHandle:hover {
-    background-color: orange;
-    cursor: default;
+.Output > .Field > .Handle {
+    margin-left: 5px;
+    left: 100%;
+    bottom: 6px;
+}
+
+.Input > .Field > .Handle {
+    margin-right: 5px;
+    right: 100%;
+    bottom: 6px;
 }

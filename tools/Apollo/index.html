@@ -15,13 +15,13 @@
         <div class="Node">
             <div class="NodeName">Image Node</div>
             <div class="Input">
-                <div class="InputField">In1<div class="InputHandle"></div></div>
-                <div class="InputField">Input 2<div class="InputHandle"></div></div>
+                <div class="Field">In1<div class="Handle"></div></div><br>
+                <div class="Field">Input 2<div class="Handle"></div></div>
             </div>
             <div class="Center"></div>
             <div class="Output">
-                <div class="OutputField">Out1<div class="OutputHandle"></div></div>
-                <div class="OutputField">Output 2<div class="OutputHandle"></div></div>
+                <div class="Field">Out1<div class="Handle"></div></div><br>
+                <div class="Field">Output 2<div class="Handle"></div></div>
             </div>
         </div>
     </div>
@@ -30,13 +30,11 @@
     varying vec2 pos;
 
     void main() {
-        pos = position.xy;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
     }
     </script>
 
     <script type="x-shader/x-fragment" id="fragmentShader">
-    varying vec2 pos;
     void main() {
         if (floor(mod(gl_FragCoord.x / 2.0, 25.0)) == 0.0) {
             gl_FragColor = vec4(0.1,0.1,0.1,1);

@@ -14,10 +14,6 @@ document.getElementById("Editor").appendChild( renderer.domElement );
 
 var geometry = new THREE.PlaneBufferGeometry( w, h );
 //Plane material
-var uniforms = {
-    resolution: { type: "v2", value: new THREE.Vector2(window.innerWidth,window.innerHeight) }
-};
-
 var material = new THREE.ShaderMaterial( {
 	vertexShader: document.getElementById( 'vertexShader' ).textContent,
 	fragmentShader: document.getElementById( 'fragmentShader' ).textContent
@@ -43,7 +39,8 @@ function onWindowResize(){
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-var line;
+var line, selectedOutput;
+
 function UpdateNodeConnector(e) {
     line.geometry.vertices[1].x = e.pageX - w / 2;
     line.geometry.vertices[1].z = e.pageY - h / 2;
@@ -52,10 +49,14 @@ function UpdateNodeConnector(e) {
     line.geometry.lineDistancesNeedUpdate = true;
 }
 
-$('.OutputField').mousedown(function(e) {
+$('.Field').mousedown(function(e) {
+    selectedOutput = $(this);
+    $(this).css("color", "#AAA");
+    var handle = $(this).find(".Handle");
+    handle.css("background-color", "#AAA");
     var material =  new THREE.LineDashedMaterial( { color: 0xDDDDDD, dashSize: 30, gapSize: 10, linewidth: 3 } );
     var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(e.pageX - w / 2, 1, e.pageY - h / 2));
+    geometry.vertices.push(new THREE.Vector3(handle.offset().left + handle.width() / 2 - w / 2, 1, handle.offset().top  + handle.width() / 2 - h / 2));
     geometry.vertices.push(new THREE.Vector3(e.pageX - w / 2, 1, e.pageY - h / 2));
     geometry.computeLineDistances();
     line = new THREE.Line(geometry, material);
@@ -67,6 +68,8 @@ $('.OutputField').mousedown(function(e) {
 
 $(document).mouseup(function(){
     $(window).unbind("mousemove", UpdateNodeConnector);
+    selectedOutput.removeAttr('style');
+    selectedOutput.find(".Handle").removeAttr('style');
     scene.remove(line);
     return false;
 });

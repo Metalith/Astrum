@@ -1,1 +1,1 @@
-$('.Node').draggable({containment: "window", cancel: ".InputHandle, .OutputHandle" });
+$('.Node').draggable({containment: "window", cancel: ".Handle" });

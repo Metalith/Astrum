@@ -91,3 +91,111 @@
     right: 100%;
     bottom: 6px;
 }
+
+
+/*--------- Color Picker CSS ---------*/
+::-webkit-input-placeholder {
+   color: #aa7777;
+}
+
+.Color {
+    /*background-color: #cc9999;*/
+    display: inline-block;
+    position: relative;
+    clear:both;
+    line-height:0;
+}
+
+.Preview {
+    position: absolute;
+    width:18px;
+    height:18px;
+    /*padding: 10%;*/
+    content: "";
+    background-color: white;
+    /*border: solid 1px #c9c9c9;*/
+}
+
+#color_text {
+    border: none;
+    float: left;
+    /*width: 100px;*/
+    height: 20px;
+    border-bottom: solid 2px #c9c9c9;
+    transition: border 0.3s;
+    background-color: #cc9999;
+    font-family: "Lato";
+    padding-left: 30px;
+    color: white;
+    box-sizing: border-box;
+}
+
+#color_text:focus {
+    border-bottom: solid 2px #969696;
+}
+
+.ColorPickerBox {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: #cc9999;
+    z-index: 2;
+    height: 276px;
+}
+
+.SVPicker {
+    float:left;
+    background-color: black;
+    width: 256px;
+    height: 256px;
+    margin: 10px;
+}
+
+.HPicker {
+    float: left;
+    position: relative;
+    margin: 10px;
+    margin-left: 276px;
+    background-color: blue;
+    width: 32px;
+    height: 256px;
+    bottom: 276px;
+}
+
+.Values {
+    position: relative;
+    margin: 10px;
+    margin-left: 316px;
+}
+
+.Values > .Preview {
+    position: static;
+    width: 64px;
+    height: 32px;
+}
+
+.Value {
+    position: relative;;
+    margin: 10px;
+    font-weight: bold;
+    text-align: left;
+    margin-left: 0px;
+    width: 16px;
+    height: 16px;
+    padding: 4px;
+    line-height: 20px;
+}
+
+.Value > input {
+    position: absolute;
+    top: 0px;
+    left: 100%;
+    width: 28px;
+    height: 100%;
+    font-family: "Lato";
+    border: 1px solid gray;
+    background: #ccaaaa;
+    color: white;
+    padding-left: 10px;
+    box-sizing: content-box;
+}

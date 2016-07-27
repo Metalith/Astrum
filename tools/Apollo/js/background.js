@@ -34,12 +34,32 @@ var render = function () {
 window.addEventListener( 'resize', onWindowResize, false );
 
 function onWindowResize(){
+	w = window.innerWidth;
+	h = window.innerHeight;
+	camera.left = w / -2;
+	camera.right = w / 2;
+	camera.top = h / 2;
+	camera.bottom = h / -2;
+	camera.updateProjectionMatrix();
 
-    camera.updateProjectionMatrix();
+	var p = plane.geometry.attributes.position.array;
+
+	p[0] = w / -2;
+	p[1] = h / 2;
+	p[3] = w / 2;
+	p[4] = h / 2;
+
+	p[6] = -w / 2;
+	p[7] = h / -2;
+
+	p[9] = w / 2;
+	p[10] = h / -2;
+	// p[1]
+	plane.geometry.attributes.position.needsUpdate = true;
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-var line, selectedOutput;
+var line, selectedOutput, updatingLine = false;
 
 function UpdateNodeConnector(e) {
     line.geometry.vertices[1].x = e.pageX - w / 2;
@@ -61,16 +81,21 @@ $('.Field').mousedown(function(e) {
     geometry.computeLineDistances();
     line = new THREE.Line(geometry, material);
     scene.add(line)
+	updatingLine = true;
     $(window).bind("mousemove", UpdateNodeConnector);
     renderer.render(scene, camera);
+
     return false;
 });
 
 $(document).mouseup(function(){
-    $(window).unbind("mousemove", UpdateNodeConnector);
-    selectedOutput.removeAttr('style');
-    selectedOutput.find(".Handle").removeAttr('style');
-    scene.remove(line);
-    return false;
+	if(updatingLine) {
+	    $(window).unbind("mousemove", UpdateNodeConnector);
+	    selectedOutput.removeAttr('style');
+	    selectedOutput.find(".Handle").removeAttr('style');
+	    scene.remove(line);
+		updatingLine = false;
+	}
+	return false;
 });
 render();

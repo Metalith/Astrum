@@ -162,6 +162,12 @@
     bottom: 276px;
 }
 
+.Selector {
+    width: 100px;
+    height: 100px;
+    background-color: white;
+}
+
 .Values {
     position: relative;
     margin: 10px;
@@ -198,4 +204,8 @@
     color: white;
     padding-left: 10px;
     box-sizing: content-box;
+}
+
+input[disabled] {
+    background-color: blue;
 }

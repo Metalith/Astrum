@@ -188,41 +188,41 @@ function updateSL(e) {
 }
 
 function updateRGB() {
-    var h = parseFloat($('.Node #H > input').val());
-    var s = parseFloat($('.Node #S > input').val());
-    var l = parseFloat($('.Node #L > input').val());
-
-    h /= 360;
-    s /= 100;
-    l /=100;
-    var r, g, b;
-
-    if(s == 0){
-        r = g = b = l; // achromatic
-    }else{
-        function hue2rgb(p, q, t){
-            if(t < 0) t += 1;
-            if(t > 1) t -= 1;
-            if(t < 1/6) return p + (q - p) * 6 * t;
-            if(t < 1/2) return q;
-            if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
+    var H = parseFloat($('.Node #H > input').val());
+    var S = parseFloat($('.Node #S > input').val());
+    var L = parseFloat($('.Node #L > input').val());
+    var R, G, B;
+    L /= 100;
+    S /= 100;
+    if (S == 0) {
+        R = L;
+        G = L;
+        B = L;
+    } else {
+        var temp1, temp2;
+        function Hue2RGB(H) {
+            if ( H < 0 ) H += 1;
+            if ( H > 1 ) H -= 1;
+            if ( H < 1 / 6) return temp2 + (temp1 - temp2) * 6 * H;
+            if ( H < 1 / 2 ) return temp1;
+            if ( H < 2 / 3 ) return temp2 + (temp1 - temp2) * ( (2 / 3) - H) * 6;
+            return temp2;
         }
-
-        var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        var p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
+        temp1 = L < 0.5 ? L * (1 + S) : L + S - L * S;
+        temp2 = 2 * L - temp1;
+        H = H / 360.0;
+        R = Hue2RGB(H + 1/3);
+        G = Hue2RGB(H);
+        B = Hue2RGB(H - 1/3);
     }
     $('.Node #R > input').val(
-        ("00" + Math.round(r * 255)).slice(-3)
+        ("00" + Math.round(R * 255)).slice(-3)
     );
     $('.Node #G > input').val(
-        ("00" + Math.round(g * 255)).slice(-3)
+        ("00" + Math.round(G * 255)).slice(-3)
     );
     $('.Node #B > input').val(
-        ("00" + Math.round(b * 255)).slice(-3)
+        ("00" + Math.round(B * 255)).slice(-3)
     );
 }
 

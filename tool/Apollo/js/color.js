@@ -22,10 +22,10 @@ $('.SLPicker').mousedown(function(e) {
         + (100 - (e.pageY - $(this).offset().top) * (100 / 256)) +'%)'
     );
     $('.Node #S > input').val(
-        ("00" + Math.floor(100 - (e.pageX - $(this).offset().left) * (100 / 256))).slice(-3)
+        ("00" + Math.round(100 - (e.pageX - $(this).offset().left) * (100 / 256))).slice(-3)
     );
     $('.Node #L > input').val(
-        ("00" + Math.floor(100 - (e.pageY - $(this).offset().top) * (100 / 256))).slice(-3)
+        ("00" + Math.round(100 - (e.pageY - $(this).offset().top) * (100 / 256))).slice(-3)
     );
     updateRGB();
     $(window).bind("mousemove", updateSL);
@@ -46,7 +46,7 @@ $('.HPicker').mousedown(function(e) {
         + $('.Node #L > input').val() +'%)'
     );
     $('.Node #H > input').val(
-        ("00" + Math.floor((e.pageY - $(this).offset().top) * (360 / 256))).slice(-3)
+        ("00" + Math.round((e.pageY - $(this).offset().top) * (360 / 256))).slice(-3)
     );
     drawSVPicker($('.SLPicker')[0], (e.pageY - $(this).offset().top) * (360 / 256));
     updateRGB();
@@ -54,6 +54,88 @@ $('.HPicker').mousedown(function(e) {
 }).mouseup(function() {
     $(window).unbind("mousemove", updateHue);
 });
+
+$('#H > input').on('input',function() {
+    $('.Preview').css(
+        'background-color',
+        'hsl('
+        + $('.Node #H > input').val() +','
+        + $('.Node #S > input').val() +'%,'
+        + $('.Node #L > input').val() +'%)'
+    );
+    $('.HPicker').next().offset({
+        top: $('.HPicker').offset().top + (parseInt($('.Node #H > input').val()) * 256 / 360) - 9,
+        left: 7 + $('.HPicker').offset().left
+    });
+    drawSVPicker($('.SLPicker')[0],  parseFloat($('.Node #H > input').val()));
+    updateRGB();
+});
+
+$('#S > input, #L > input').on('input', function() {
+    $('.Preview').css(
+        'background-color',
+        'hsl('
+        + $('.Node #H > input').val() +','
+        + $('.Node #S > input').val() +'%,'
+        + $('.Node #L > input').val() +'%)'
+    );
+    $('.SLPicker').next().offset({
+        top: $('.SLPicker').offset().top + (256 - parseInt($('.Node #L > input').val()) * 256 / 100) - 9,
+        left: $('.SLPicker').offset().left + (256 - parseInt($('.Node #S > input').val()) * 256 / 100) - 9
+    });
+    updateRGB();
+})
+
+$('#R > input, #G > input, #B > input').on('input', function() {
+    $('.Preview').css(
+        'background-color',
+        'rgb('
+        + $('.Node #R > input').val() +','
+        + $('.Node #G > input').val() +','
+        + $('.Node #B > input').val() +')'
+    );
+    updateHSL();
+})
+
+function updateHSL() {
+    var R = parseFloat($('.Node #R > input').val()) /255;
+    var G = parseFloat($('.Node #G > input').val()) /255;
+    var B = parseFloat($('.Node #B > input').val()) /255;
+    var H, S, L;
+    var max = Math.max(R, G, B);
+    var min = Math.min(R, G, B);
+    L = (min + max) / 2.0;
+    if (min == max) {
+        S = 0;
+        H = 0;
+    } else {
+        if ( L < 0.5 ) S = (max-min)/(max+min);
+        else S = (max - min) / (2.0 - max - min);
+
+        if (max == R) H = (G-B)/(max-min);
+        if (max == G) H = 2.0 + (B-R)/(max-min);
+        if (max == B) H = 4.0 + (R-G)/(max-min);
+        H *= 60;
+    }
+    $('.Node #L > input').val(
+        ("00" + Math.round(L * 100)).slice(-3)
+    );
+    $('.Node #H > input').val(
+        ("00" + Math.round(H)).slice(-3)
+    );
+    $('.Node #S > input').val(
+        ("00" + Math.round(S * 100)).slice(-3)
+    );
+    $('.HPicker').next().offset({
+        top: $('.HPicker').offset().top + (H * 256 / 360) - 9,
+        left: 7 + $('.HPicker').offset().left
+    });
+    $('.SLPicker').next().offset({
+        top: $('.SLPicker').offset().top + (256 - L * 256) - 9,
+        left: $('.SLPicker').offset().left + (256 - S * 256) - 9
+    });
+    drawSVPicker($('.SLPicker')[0],  H);
+}
 
 function updateHue(e) {
     if (e.pageY - $('.HPicker').offset().top <= 256.0 &&
@@ -70,7 +152,7 @@ function updateHue(e) {
             + $('.Node #L > input').val() +'%)'
         );
         $('.Node #H > input').val(
-            ("00" + Math.floor((e.pageY - $('.HPicker').offset().top) * (360 / 256))).slice(-3)
+            ("00" + Math.round((e.pageY - $('.HPicker').offset().top) * (360 / 256))).slice(-3)
         );
         drawSVPicker($('.SLPicker')[0], (e.pageY - $('.HPicker').offset().top) * (360 / 256));
         updateRGB();
@@ -81,9 +163,9 @@ function updateHue(e) {
 
 function updateSL(e) {
     if (e.pageY - $('.SLPicker').offset().top <= 256.0 &&
-    e.pageY - $('.SLPicker').offset().top >= 0 &&
-    e.pageX - $('.SLPicker').offset().left >= 0 &&
-    e.pageX - $('.SLPicker').offset().left <= 256) {
+        e.pageY - $('.SLPicker').offset().top >= 0 &&
+        e.pageX - $('.SLPicker').offset().left >= 0 &&
+        e.pageX - $('.SLPicker').offset().left <= 256) {
         selector = $('.SLPicker').next();
         selector.offset({ top: e.pageY - 10, left: e.pageX - 10 })
         $('.Preview').css(
@@ -94,10 +176,10 @@ function updateSL(e) {
             + (100 - (e.pageY - $('.SLPicker').offset().top) * (100 / 256)) +'%)'
         );
         $('.Node #S > input').val(
-            ("00" + Math.floor(100 - (e.pageX - $('.SLPicker').offset().left) * (100 / 256))).slice(-3)
+            ("00" + Math.round(100 - (e.pageX - $('.SLPicker').offset().left) * (100 / 256))).slice(-3)
         );
         $('.Node #L > input').val(
-            ("00" + Math.floor(100 - (e.pageY -$('.SLPicker').offset().top) * (100 / 256))).slice(-3)
+            ("00" + Math.round(100 - (e.pageY -$('.SLPicker').offset().top) * (100 / 256))).slice(-3)
         );
         updateRGB();
     } else {
@@ -134,13 +216,13 @@ function updateRGB() {
         b = hue2rgb(p, q, h - 1/3);
     }
     $('.Node #R > input').val(
-        ("00" + Math.floor(r * 255)).slice(-3)
+        ("00" + Math.round(r * 255)).slice(-3)
     );
     $('.Node #G > input').val(
-        ("00" + Math.floor(g * 255)).slice(-3)
+        ("00" + Math.round(g * 255)).slice(-3)
     );
     $('.Node #B > input').val(
-        ("00" + Math.floor(b * 255)).slice(-3)
+        ("00" + Math.round(b * 255)).slice(-3)
     );
 }
 

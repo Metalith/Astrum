@@ -81,7 +81,7 @@ $('#S > input, #L > input').on('input', function() {
     );
     $('.SLPicker').next().offset({
         top: $('.SLPicker').offset().top + (256 - parseInt($('.Node #L > input').val()) * 256 / 100) - 9,
-        left: $('.SLPicker').offset().left + (256 - parseInt($('.Node #S > input').val()) * 256 / 100) - 9
+        left: $('.SLPicker').offset().left + (256 - parseInt($('.Node #S > input').val()) * 256 / 100) - [](9)
     });
     updateRGB();
 })
@@ -96,6 +96,29 @@ $('#R > input, #G > input, #B > input').on('input', function() {
     );
     updateHSL();
 })
+
+
+$('#color_text').on('input', function() {
+    var hex = /([a-f\d]{1,2})($|[a-f\d]{1,2})($|[a-f\d]{1,2})$/i.exec($(this).val());
+    $('.Preview').css(
+        'background-color',
+        'rgb('
+        + (parseInt(hex[1], 16) || 0) +','
+        + (parseInt(hex[2], 16) || 0) +','
+        + (parseInt(hex[3], 16) || 0) +')'
+    );
+    $('.Node #R > input').val(
+        ("00" + (parseInt(hex[1], 16) || 0)).slice(-3)
+    );
+    $('.Node #G > input').val(
+        ("00" + (parseInt(hex[2], 16) || 0)).slice(-3)
+    );
+    $('.Node #B > input').val(
+        ("00" + (parseInt(hex[3], 16) || 0)).slice(-3)
+    );
+    updateHSL();
+})
+
 
 function updateHSL() {
     var R = parseFloat($('.Node #R > input').val()) /255;
@@ -188,6 +211,10 @@ function updateSL(e) {
 }
 
 function updateRGB() {
+    function componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+    }
     var H = parseFloat($('.Node #H > input').val());
     var S = parseFloat($('.Node #S > input').val());
     var L = parseFloat($('.Node #L > input').val());
@@ -223,6 +250,9 @@ function updateRGB() {
     );
     $('.Node #B > input').val(
         ("00" + Math.round(B * 255)).slice(-3)
+    );
+    $('#color_text').val(
+        (((1 << 24) + (R * 255 << 16) + (G * 255 << 8) + B * 255).toString(16).slice(1,7).toUpperCase())
     );
 }
 

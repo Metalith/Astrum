@@ -2,17 +2,19 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/jquery.contextMenu.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/node.css">
     <title>Apollo - World Editor</title>
 </head>
 <body>
+    <span class="context-menu-one btn btn-neutral">right click me</span>
     <div id="Editor">
         <label class="switch">
             <input type="checkbox">
             <div class="slider"></div>
         </label>
-        <div class="Node">
+        <div class="Node" style="left:100px; top:100px;">
             <div class="NodeName">Color Node</div>
             <div class="Input">
                 <div class="Field">R<div class="Handle"></div></div><br>
@@ -22,8 +24,8 @@
             <div class="Center">
                 <div class="Color">
                     <div class="Preview"></div>
-                    <input type="text" placeholder="000000" maxlength="6" size="6" id="color_text">
-                    <div class="ColorPickerBox" id="picker1">
+                    <input type="text" placeholder="000000" value="FFFFFF" maxlength="6" size="6" id="color_text">
+                    <div class="ColorPickerBox" id="picker1" hidden>
                         <canvas class="SLPicker" width="100" height="100"></canvas>
                         <div class="Selector" hidden></div>
                         <canvas class="HPicker" width="100" height="360"></canvas>
@@ -74,6 +76,7 @@
     <!-- normal script imports etc  -->
     <script src="./js/jquery-3.1.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+    <script src="js/jquery.contextMenu.min.js"></script>
     <script src="js/three.min.js"></script>
     <script src="js/background.js"></script>
     <script src="js/node.js"></script>

@@ -18,6 +18,10 @@
 /* Hide default HTML checkbox */
 .switch input {display:none;}
 
+.contextmenu #menudemo, .contextmenu .demo {
+  cursor: context-menu;
+}
+
 /* The slider */
 .slider {
   position: absolute;

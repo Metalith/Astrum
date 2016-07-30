@@ -116,7 +116,7 @@
     /*border: solid 1px #c9c9c9;*/
 }
 
-#color_text {
+.color_input {
     border: none;
     float: left;
     /*width: 100px;*/
@@ -130,7 +130,7 @@
     box-sizing: border-box;
 }
 
-#color_text:focus {
+.color_input:focus {
     border-bottom: solid 2px #969696;
 }
 
@@ -209,7 +209,4 @@
     color: white;
     padding-left: 10px;
     box-sizing: content-box;
-}
-input[disabled] {
-    background-color: blue;
 }

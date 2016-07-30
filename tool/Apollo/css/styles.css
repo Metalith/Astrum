@@ -18,8 +18,38 @@
 /* Hide default HTML checkbox */
 .switch input {display:none;}
 
-.contextmenu #menudemo, .contextmenu .demo {
-  cursor: context-menu;
+.contextmenu-custom {
+    background-color: #999999;
+    border: none;
+}
+.contextmenu-item-custom {
+        background-color: #999999;
+        font-family: Lato, sans-serif;
+        color: white;
+}
+.contextmenu-item-custom:hover {
+        background-color: #333333;
+        color: white;
+}
+
+/* menu header via data attribute */
+.data-title:before {
+    content: attr(data-menutitle);
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: #999999;
+    color: white;
+    padding: 2px;
+
+    font-family: Lato, sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+.data-title :first-child {
+    margin-top: 20px;
 }
 
 /* The slider */

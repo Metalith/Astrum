@@ -69,7 +69,7 @@ function UpdateNodeConnector(e) {
     line.geometry.lineDistancesNeedUpdate = true;
 }
 
-$('.Field').mousedown(function(e) {
+$('body').on('mousedown', '.Field', function(e) {
     selectedOutput = $(this);
     $(this).css("color", "#AAA");
     var handle = $(this).find(".Handle");

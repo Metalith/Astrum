@@ -69,30 +69,42 @@ function UpdateNodeConnector(e) {
     line.geometry.lineDistancesNeedUpdate = true;
 }
 
-$('body').on('mousedown', '.Field', function(e) {
-    selectedOutput = $(this);
-    $(this).css("color", "#AAA");
-    var handle = $(this).find(".Handle");
-    handle.css("background-color", "#AAA");
-    var material =  new THREE.LineDashedMaterial( { color: 0xDDDDDD, dashSize: 30, gapSize: 10, linewidth: 3 } );
-    var geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(handle.offset().left + handle.width() / 2 - w / 2, 1, handle.offset().top  + handle.width() / 2 - h / 2));
-    geometry.vertices.push(new THREE.Vector3(e.pageX - w / 2, 1, e.pageY - h / 2));
-    geometry.computeLineDistances();
-    line = new THREE.Line(geometry, material);
-    scene.add(line)
-	updatingLine = true;
-    $(window).bind("mousemove", UpdateNodeConnector);
-    renderer.render(scene, camera);
-
-    return false;
+$('body').on('mousedown mouseenter mouseleave', '.Field', function(e) {
+	switch (e.type) {
+		case "mouseenter":
+			$(this).css('color', 'orange');
+			$(this).find('.Handle').css('background-color', 'orange');
+			break;
+		case "mouseleave":;
+			if (selectedOutput != this) {
+				$(this).removeAttr('style');
+				$(this).find('.Handle').removeAttr('style');
+			}
+			break;
+		default:
+			selectedOutput = this;
+		    $(this).css("color", "#AAA");
+		    var handle = $(this).find(".Handle");
+		    handle.css("background-color", "#AAA");
+		    var material =  new THREE.LineDashedMaterial( { color: 0xDDDDDD, dashSize: 30, gapSize: 10, linewidth: 3 } );
+		    var geometry = new THREE.Geometry();
+		    geometry.vertices.push(new THREE.Vector3(handle.offset().left + handle.width() / 2 - w / 2, 1, handle.offset().top  + handle.width() / 2 - h / 2));
+		    geometry.vertices.push(new THREE.Vector3(e.pageX - w / 2, 1, e.pageY - h / 2));
+		    geometry.computeLineDistances();
+		    line = new THREE.Line(geometry, material);
+		    scene.add(line)
+			updatingLine = true;
+		    $(window).bind("mousemove", UpdateNodeConnector);
+		    renderer.render(scene, camera);
+	}
+    // return false;
 });
 
 $(document).mouseup(function(){
 	if(updatingLine) {
 	    $(window).unbind("mousemove", UpdateNodeConnector);
-	    selectedOutput.removeAttr('style');
-	    selectedOutput.find(".Handle").removeAttr('style');
+	    $(selectedOutput).removeAttr('style');
+	    $(selectedOutput).find(".Handle").removeAttr('style');
 	    scene.remove(line);
 		updatingLine = false;
 	}

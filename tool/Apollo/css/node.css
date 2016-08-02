@@ -50,10 +50,10 @@
     display: inline-block;
 }
 
-.Field:hover {
+/*.Field:hover {
     color: orange;
     cursor: default;
-}
+}*/
 
 .Input > .Field {
     float: left;
@@ -63,13 +63,13 @@
     float: right;
 }
 
-.Field:hover > .Handle {
+/*.Field:hover > .Handle {
     background-color: orange;
 }
 
 .Handle:hover {
     background-color: orange;
-}
+}*/
 
 .Handle {
     position: absolute;

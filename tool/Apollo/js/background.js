@@ -59,7 +59,7 @@ function onWindowResize(){
     renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-var line, selectedOutput, updatingLine = false;
+var line, selectedOutput, selectedNode, updatingLine = false;
 
 function UpdateNodeConnector(e) {
     line.geometry.vertices[1].x = e.pageX - w / 2;
@@ -69,20 +69,42 @@ function UpdateNodeConnector(e) {
     line.geometry.lineDistancesNeedUpdate = true;
 }
 
-$('body').on('mousedown mouseenter mouseleave', '.Field', function(e) {
+$('body').on('mousedown mouseenter mouseleave mouseup', '.Field', function(e) {
 	switch (e.type) {
 		case "mouseenter":
 			$(this).css('color', 'orange');
 			$(this).find('.Handle').css('background-color', 'orange');
+			Nodes.CurrentField = this;
 			break;
-		case "mouseleave":;
+		case "mouseleave":
 			if (selectedOutput != this) {
 				$(this).removeAttr('style');
 				$(this).find('.Handle').removeAttr('style');
+				Nodes.CurrentField = "";
+			}
+			break;
+		case "mouseup":
+			if (selectedOutput != Nodes.CurrentField && Nodes.CurrentField != "") {
+				if ($(this).parent().attr("class") == "Input") { // Input -> Output
+					Nodes.connect({			//TODO: Refactor this into being the actual nodes and field string
+						outNode: selectedNode,
+						inNode: Nodes.CurrentNode,
+						outField: selectedOutput,
+						inField: Nodes.CurrentField
+					});
+				} else {										// Output <- Input
+					Nodes.connect({			//TODO: Refactor this into being the actual nodes and field string
+						outNode: Nodes.CurrentNode,
+						inNode: selectedNode,
+						outField: Nodes.CurrentField,
+						inField: selectedOutput
+					});
+				}
 			}
 			break;
 		default:
 			selectedOutput = this;
+			selectedNode = Nodes.CurrentNode;
 		    $(this).css("color", "#AAA");
 		    var handle = $(this).find(".Handle");
 		    handle.css("background-color", "#AAA");
@@ -100,7 +122,7 @@ $('body').on('mousedown mouseenter mouseleave', '.Field', function(e) {
     // return false;
 });
 
-$(document).mouseup(function(){
+$(document).mouseup(function(event){
 	if(updatingLine) {
 	    $(window).unbind("mousemove", UpdateNodeConnector);
 	    $(selectedOutput).removeAttr('style');
@@ -108,6 +130,5 @@ $(document).mouseup(function(){
 	    scene.remove(line);
 		updatingLine = false;
 	}
-	return false;
 });
 render();

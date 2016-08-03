@@ -23,14 +23,27 @@
     </script>
 
     <script type="x-shader/x-fragment" id="fragmentShader">
-    void main() {
-        if (floor(mod(gl_FragCoord.x / 2.0, 25.0)) == 0.0) {
-            gl_FragColor = vec4(0.1,0.1,0.1,1);
-        } else if (floor(mod(gl_FragCoord.y / 2.0, 25.0)) == 0.0) {
-            gl_FragColor = vec4(0.1,0.1,0.1,1);
-        } else {
-            discard;
-        }
+    precision highp float;
+
+    float hex(vec2 p) {
+        p.x *= 0.57735*2.0;
+    	p.y += mod(floor(p.x), 2.0)*0.5;
+    	p = abs((mod(p, 1.0) - 0.5));
+    	return abs(max(p.x*1.5 + p.y, p.y*2.0) - 1.0);
+    }
+
+    void main(void) {
+    	vec2 pos = gl_FragCoord.xy;
+    	vec2 p = pos/50.0;
+    	float  r = 0.05;
+        float h = smoothstep(r, 0.0,hex(p));
+        if (h == 0.0) discard;
+    	gl_FragColor = vec4(vec3(0.1), 1.0);
+    }
+    </script>
+    <script type="x-shader/x-fragment" id="displayFragmentShader">
+    void main(void) {
+    	gl_FragColor = vec4(vec3(0.0), 1.0);
     }
     </script>
     <!-- Insert this line above script imports  -->
@@ -42,7 +55,6 @@
     <script src="js/jquery.ui.position.min.js"></script>
     <script src="js/jquery.contextMenu.min.js"></script>
     <script src="js/three.min.js"></script>
-    <script src="js/background.js"></script>
     <script src="js/node.js"></script>
     <!-- Insert this line after script imports -->
     <script>if (window.module) module = window.module;</script>

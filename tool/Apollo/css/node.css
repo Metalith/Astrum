@@ -1,5 +1,5 @@
 .Node {
-    display: inline;
+    display: inline-block;
     position: absolute;
     font-family: "Lato thin";
     font-size: 16px;
@@ -50,11 +50,6 @@
     display: inline-block;
 }
 
-/*.Field:hover {
-    color: orange;
-    cursor: default;
-}*/
-
 .Input > .Field {
     float: left;
 }
@@ -62,14 +57,6 @@
 .Output > .Field {
     float: right;
 }
-
-/*.Field:hover > .Handle {
-    background-color: orange;
-}
-
-.Handle:hover {
-    background-color: orange;
-}*/
 
 .Handle {
     position: absolute;

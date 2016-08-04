@@ -7,7 +7,7 @@ $.contextMenu({
             name: "Color",
             className: 'contextmenu-item-custom',
             callback: function(key, opt){
-                Nodes.create({
+                NodeManager.create({
                     name: "Color Node",
                     field: "color_input",
                     input: {
@@ -31,7 +31,7 @@ $.contextMenu({
             name: "Output",
             className: 'contextmenu-item-custom',
             callback: function(key, opt){
-                Nodes.create({
+                NodeManager.create({
                     name: "Output",
                     field: "display",
                     input: {
@@ -50,14 +50,7 @@ $.contextMenu({
 // set a title
 $('.data-title').attr('data-menutitle', "Add Node");
 
-/*------------------
- * Node Creation
- * Variables:
- *  nodeType - Object containing node information
- *  x        - position X
- *  y        - position Y
- *------------------*/
-var Nodes = {
+var NodeManager = {
     nodeArray: [],
     CurrentNode: "",
     CurrentField: "",
@@ -75,7 +68,7 @@ var Nodes = {
     background: "",
     // ---------------
     create: function(nodeType, x, y) {
-        var id = Nodes.nodeArray.length;
+        var id = NodeManager.nodeArray.length;
         nodeType.id = id;
         var Header  = '<div class="Node" id="Node'+id+'" style="left:'+x+'px; top:'+y+'px">'
         var Title   = '<div class="NodeName">'+nodeType.name+'</div>'
@@ -120,7 +113,7 @@ var Nodes = {
                     this.display = new THREE.Mesh( geometry, material);
                     this.display.rotation.x = -1.57;
                     this.display.position.y = -0.5;
-                    Nodes.scene.add( this.display );
+                    NodeManager.scene.add( this.display );
                 } else {
                     alert("Output already exists");
                     return;
@@ -145,25 +138,25 @@ var Nodes = {
                 break;
             default:
         }
-        Nodes.CurrentNode = null;
-        Nodes.nodeArray[id] = nodeType;
+        NodeManager.CurrentNode = null;
+        NodeManager.nodeArray[id] = nodeType;
     },
     connect: function(connection) {
         if ($(connection.inField).parent().attr("class") != $(connection.outField).parent().attr("class")) {
-            var inNode = Nodes.nodeArray[$(connection.inNode).attr("id").match(/\d+/)];
-            var outNode = Nodes.nodeArray[$(connection.outNode).attr("id").match(/\d+/)];
+            var inNode = NodeManager.nodeArray[$(connection.inNode).attr("id").match(/\d+/)];
+            var outNode = NodeManager.nodeArray[$(connection.outNode).attr("id").match(/\d+/)];
             inNode.input[$(connection.outField).text()] = outNode.output[$(connection.outField).text()]();
             inNode.update();
         } else {
-            alert("Cannot connect nodes.");
+            alert("Cannot connect NodeManager.");
         }
     },
     updateTempConnector: function(e) {
-        Nodes.tempConnector.geometry.vertices[1].x = e.pageX - window.innerWidth / 2;
-        Nodes.tempConnector.geometry.vertices[1].z = e.pageY - window.innerHeight / 2;
-        Nodes.tempConnector.geometry.verticesNeedUpdate = true;
-        Nodes.tempConnector.geometry.computeLineDistances();
-        Nodes.tempConnector.geometry.lineDistancesNeedUpdate = true;
+        NodeManager.tempConnector.geometry.vertices[1].x = e.pageX - window.innerWidth / 2;
+        NodeManager.tempConnector.geometry.vertices[1].z = e.pageY - window.innerHeight / 2;
+        NodeManager.tempConnector.geometry.verticesNeedUpdate = true;
+        NodeManager.tempConnector.geometry.computeLineDistances();
+        NodeManager.tempConnector.geometry.lineDistancesNeedUpdate = true;
     },
     renderConnections: function() {
 
@@ -173,12 +166,12 @@ var Nodes = {
     }
 };
 
-Nodes.renderer.setSize( window.innerWidth, window.innerHeight );
-Nodes.renderer.domElement.style.position = "absolute";
-Nodes.renderer.domElement.style.top = 0;
-Nodes.renderer.domElement.style.zIndex = 0;
-Nodes.renderer.setClearColor( 0x0e1112, 1 );
-document.getElementById("Editor").appendChild( Nodes.renderer.domElement );
+NodeManager.renderer.setSize( window.innerWidth, window.innerHeight );
+NodeManager.renderer.domElement.style.position = "absolute";
+NodeManager.renderer.domElement.style.top = 0;
+NodeManager.renderer.domElement.style.zIndex = 0;
+NodeManager.renderer.setClearColor( 0x0e1112, 1 );
+document.getElementById("Editor").appendChild( NodeManager.renderer.domElement );
 
 var geometry = new THREE.PlaneBufferGeometry( window.innerWidth, window.innerHeight );
 //Plane material
@@ -186,26 +179,26 @@ var material = new THREE.ShaderMaterial( {
 	vertexShader: document.getElementById( 'vertexShader' ).textContent,
 	fragmentShader: document.getElementById( 'fragmentShader' ).textContent
 } );
-Nodes.background = new THREE.Mesh( geometry, material );
-Nodes.background.rotation.x = -1.57;
-Nodes.background.position.y = -1;
-Nodes.scene.add( Nodes.background );
+NodeManager.background = new THREE.Mesh( geometry, material );
+NodeManager.background.rotation.x = -1.57;
+NodeManager.background.position.y = -1;
+NodeManager.scene.add( NodeManager.background );
 
-Nodes.camera.position.set(0, 5, 0)
-Nodes.camera.lookAt(Nodes.scene.position)
+NodeManager.camera.position.set(0, 5, 0)
+NodeManager.camera.lookAt(NodeManager.scene.position)
 
 window.addEventListener( 'resize', onWindowResize, false );
 
 function onWindowResize(){
 	w = window.innerWidth;
 	h = window.innerHeight;
-	Nodes.camera.left = w / -2;
-	Nodes.camera.right = w / 2;
-	Nodes.camera.top = h / 2;
-	Nodes.camera.bottom = h / -2;
-	Nodes.camera.updateProjectionMatrix();
+	NodeManager.camera.left = w / -2;
+	NodeManager.camera.right = w / 2;
+	NodeManager.camera.top = h / 2;
+	NodeManager.camera.bottom = h / -2;
+	NodeManager.camera.updateProjectionMatrix();
 
-	var p = Nodes.background.geometry.attributes.position.array;
+	var p = NodeManager.background.geometry.attributes.position.array;
 
 	p[0] = w / -2;
 	p[1] = h / 2;
@@ -217,9 +210,9 @@ function onWindowResize(){
 
 	p[9] = w / 2;
 	p[10] = h / -2;
-    Nodes.background.geometry.attributes.position.needsUpdate = true;
-    if(Nodes.display) {
-        p = Nodes.display.geometry.attributes.position.array;
+    NodeManager.background.geometry.attributes.position.needsUpdate = true;
+    if(NodeManager.display) {
+        p = NodeManager.display.geometry.attributes.position.array;
         var m = Math.min(window.innerWidth, window.innerHeight);
 
     	p[0] = m / -2;
@@ -234,12 +227,12 @@ function onWindowResize(){
     	p[10] = m / -2;
 
         // p[1]
-    	Nodes.display.geometry.attributes.position.needsUpdate = true;
+    	NodeManager.display.geometry.attributes.position.needsUpdate = true;
         //---------------
         //  Important
         //---------------
     }
-    Nodes.renderer.setSize( window.innerWidth, window.innerHeight );
+    NodeManager.renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
 var updatingLine;
@@ -248,37 +241,37 @@ $('body').on('mousedown mouseenter mouseleave mouseup', '.Field', function(e) {
 		case "mouseenter":
 			$(this).css('color', 'orange');
 			$(this).find('.Handle').css('background-color', 'orange');
-			Nodes.CurrentField = this;
+			NodeManager.CurrentField = this;
 			break;
 		case "mouseleave":
-			if (Nodes.selectedField != this) {
+			if (NodeManager.selectedField != this) {
 				$(this).removeAttr('style');
 				$(this).find('.Handle').removeAttr('style');
-				Nodes.CurrentField = "";
+				NodeManager.CurrentField = "";
 			}
 			break;
 		case "mouseup":
-			if (Nodes.selectedField != Nodes.CurrentField && Nodes.CurrentField != "") {
+			if (NodeManager.selectedField != NodeManager.CurrentField && NodeManager.CurrentField != "") {
 				if ($(this).parent().attr("class") == "Input") { // Input -> Output
-					Nodes.connect({			//TODO: Refactor this into being the actual nodes and field string
-						outNode: Nodes.selectedNode,
-						inNode: Nodes.CurrentNode,
-						outField: Nodes.selectedOutput,
-						inField: Nodes.CurrentField
+					NodeManager.connect({			//TODO: Refactor this into being the actual NodeManager and field string
+						outNode: NodeManager.selectedNode,
+						inNode: NodeManager.CurrentNode,
+						outField: NodeManager.selectedOutput,
+						inField: NodeManager.CurrentField
 					});
 				} else {										// Output <- Input
-					Nodes.connect({			//TODO: Refactor this into being the actual nodes and field string
-						outNode: Nodes.CurrentNode,
-						inNode: Nodes.selectedNode,
-						outField: Nodes.CurrentField,
-						inField: Nodes.selectedOutput
+					NodeManager.connect({			//TODO: Refactor this into being the actual NodeManager and field string
+						outNode: NodeManager.CurrentNode,
+						inNode: NodeManager.selectedNode,
+						outField: NodeManager.CurrentField,
+						inField: NodeManager.selectedOutput
 					});
 				}
 			}
 			break;
 		default:
-			Nodes.selectedOutput = this;
-			Nodes.selectedNode = Nodes.CurrentNode;
+			NodeManager.selectedOutput = this;
+			NodeManager.selectedNode = NodeManager.CurrentNode;
 		    $(this).css("color", "#AAA");
 		    var handle = $(this).find(".Handle");
 		    handle.css("background-color", "#AAA");
@@ -287,36 +280,36 @@ $('body').on('mousedown mouseenter mouseleave mouseup', '.Field', function(e) {
 		    geometry.vertices.push(new THREE.Vector3(handle.offset().left + handle.width() / 2 - window.innerWidth / 2, 1, handle.offset().top  + handle.width() / 2 - window.innerHeight / 2));
 		    geometry.vertices.push(new THREE.Vector3(e.pageX - window.innerWidth / 2, 1, e.pageY - window.innerHeight / 2));
 		    geometry.computeLineDistances();
-		    Nodes.tempConnector = new THREE.Line(geometry, material);
-		    Nodes.scene.add(Nodes.tempConnector);
+		    NodeManager.tempConnector = new THREE.Line(geometry, material);
+		    NodeManager.scene.add(NodeManager.tempConnector);
 			updatingLine = true;
-		    $(window).bind("mousemove", Nodes.updateTempConnector);
+		    $(window).bind("mousemove", NodeManager.updateTempConnector);
 	}
     // return false;
 });
 
 $(document).mouseup(function(event){
 	if(updatingLine) {
-	    $(window).unbind("mousemove", Nodes.updateTempConnector);
-	    $(Nodes.selectedField).removeAttr('style');
-	    $(Nodes.selectedField).find(".Handle").removeAttr('style');
-	    Nodes.scene.remove(Nodes.tempConnector);
+	    $(window).unbind("mousemove", NodeManager.updateTempConnector);
+	    $(NodeManager.selectedField).removeAttr('style');
+	    $(NodeManager.selectedField).find(".Handle").removeAttr('style');
+	    NodeManager.scene.remove(NodeManager.tempConnector);
 		updatingLine = false;
 	}
 });
 
 var render = function () {
     requestAnimationFrame( render );
-    Nodes.renderer.render(Nodes.scene, Nodes.camera);
+    NodeManager.renderer.render(NodeManager.scene, NodeManager.camera);
 };
 
 render();
 
 $('body').on("mouseover", '.Node', function() {
-    Nodes.CurrentNode = this;
+    NodeManager.CurrentNode = this;
 });
 
-Nodes.create({
+NodeManager.create({
     name: "Color Node",
     field: "color_input",
     input: {
@@ -326,7 +319,7 @@ Nodes.create({
         },
     output: {
             RGB: function() {
-                return "0e1112";
+                return $(document).find('.color_input').val();
             },
             R: 255,
             G: 255,
@@ -339,16 +332,16 @@ Nodes.create({
     0
 );
 
-Nodes.create({
+NodeManager.create({
     name: "Output",
     field: "display",
     update: function() {
         var hex = /([a-f\d]{1,2})($|[a-f\d]{1,2})($|[a-f\d]{1,2})$/i.exec(this.input.RGB);
-        Nodes.display.material.fragmentShader = "void main(void) {gl_FragColor = vec4(vec3("
+        NodeManager.display.material.fragmentShader = "void main(void) {gl_FragColor = vec4(vec3("
             + (parseInt(hex[1], 16) || 0) / 255.0 +","
             + (parseInt(hex[2], 16) || 0) / 255.0 +","
             + (parseInt(hex[3], 16) || 0) / 255.0 +"), 1.0);}";
-        Nodes.display.material.needsUpdate = true;
+        NodeManager.display.material.needsUpdate = true;
     },
     input: {
             RGB: "0",
@@ -363,11 +356,11 @@ Nodes.create({
 // Color Input Events
 //---------------------
 $('body').on("mouseover focus click", ".color_input", function() {
-    $(Nodes.CurrentNode).find(".ColorPickerBox").toggle(true);
+    $(NodeManager.CurrentNode).find(".ColorPickerBox").toggle(true);
 });
 
 $('body').on('mouseleave', '.Color', function() {
-    $(Nodes.CurrentNode).find(".ColorPickerBox").toggle(false);
+    $(NodeManager.CurrentNode).find(".ColorPickerBox").toggle(false);
 })
 
 var canvasClicked;
@@ -382,7 +375,7 @@ $('body').on('mousedown mousemove mouseup mouseleave', '.SLPicker,.HPicker', fun
         selector.toggle(true);
         selector.offset({ top: e.pageY - 10, left: e.pageX - 10 })
         if ($(this).attr("class") == "SLPicker") {
-            $(Nodes.CurrentNode).find('.Preview').css(
+            $(NodeManager.CurrentNode).find('.Preview').css(
                 'background-color',
                 'hsl('
                 + $('.Node #H > input').val() + ','
@@ -396,17 +389,17 @@ $('body').on('mousedown mousemove mouseup mouseleave', '.SLPicker,.HPicker', fun
                 ("00" + Math.round(100 - (e.pageY - $(this).offset().top) * (100 / 256))).slice(-3)
             );
         } else if ($(this).attr("class") == "HPicker") {
-            $(Nodes.CurrentNode).find('.Preview').css(
+            $(NodeManager.CurrentNode).find('.Preview').css(
                 'background-color',
                 'hsl('
                 + (e.pageY - $(this).offset().top) * (360 / 256) + ','
-                + $(Nodes.CurrentNode).find('#S > input').val() +'%,'
-                + $(Nodes.CurrentNode).find('#L > input').val() +'%)'
+                + $(NodeManager.CurrentNode).find('#S > input').val() +'%,'
+                + $(NodeManager.CurrentNode).find('#L > input').val() +'%)'
             );
-            $(Nodes.CurrentNode).find('#H > input').val(
+            $(NodeManager.CurrentNode).find('#H > input').val(
                 ("00" + Math.round((e.pageY - $(this).offset().top) * (360 / 256))).slice(-3)
             );
-            drawSVPicker($(Nodes.CurrentNode).find('.SLPicker')[0], (e.pageY - $(this).offset().top) * (360 / 256));
+            drawSVPicker($(NodeManager.CurrentNode).find('.SLPicker')[0], (e.pageY - $(this).offset().top) * (360 / 256));
         }
         updateRGB();
     }
@@ -419,64 +412,64 @@ $(document.body).on('input', '.Color input', function(e) {
     // alert($(this).parent().attr("id"));
     switch($(this).parent().attr("id")) {
         case "H":
-            $(Nodes.CurrentNode).find('.Preview').css(
+            $(NodeManager.CurrentNode).find('.Preview').css(
                 'background-color',
                 'hsl('
-                + $(Nodes.CurrentNode).find('#H > input').val() +','
-                + $(Nodes.CurrentNode).find('#S > input').val() +'%,'
-                + $(Nodes.CurrentNode).find('#L > input').val() +'%)'
+                + $(NodeManager.CurrentNode).find('#H > input').val() +','
+                + $(NodeManager.CurrentNode).find('#S > input').val() +'%,'
+                + $(NodeManager.CurrentNode).find('#L > input').val() +'%)'
             );
-            $(Nodes.CurrentNode).find('.HPicker').next().offset({
-                top: $(Nodes.CurrentNode).find('.HPicker').offset().top + (parseInt($(Nodes.CurrentNode).find('#H > input').val()) * 256 / 360) - 9,
-                left: 7 + $(Nodes.CurrentNode).find('.HPicker').offset().left
+            $(NodeManager.CurrentNode).find('.HPicker').next().offset({
+                top: $(NodeManager.CurrentNode).find('.HPicker').offset().top + (parseInt($(NodeManager.CurrentNode).find('#H > input').val()) * 256 / 360) - 9,
+                left: 7 + $(NodeManager.CurrentNode).find('.HPicker').offset().left
             });
-            drawSVPicker($(Nodes.CurrentNode).find('.SLPicker')[0],  parseFloat($(Nodes.CurrentNode).find('#H > input').val()));
+            drawSVPicker($(NodeManager.CurrentNode).find('.SLPicker')[0],  parseFloat($(NodeManager.CurrentNode).find('#H > input').val()));
             updateRGB();
             break;
         case "S":
         case "L":
-            $(Nodes.CurrentNode).find('.Preview').css(
+            $(NodeManager.CurrentNode).find('.Preview').css(
                 'background-color',
                 'hsl('
-                + $(Nodes.CurrentNode).find('#H > input').val() +','
-                + $(Nodes.CurrentNode).find('#S > input').val() +'%,'
-                + $(Nodes.CurrentNode).find('#L > input').val() +'%)'
+                + $(NodeManager.CurrentNode).find('#H > input').val() +','
+                + $(NodeManager.CurrentNode).find('#S > input').val() +'%,'
+                + $(NodeManager.CurrentNode).find('#L > input').val() +'%)'
             );
-            $(Nodes.CurrentNode).find('.SLPicker').next().offset({
-                top: $(Nodes.CurrentNode).find('.SLPicker').offset().top + (256 - parseInt($(Nodes.CurrentNode).find('#L > input').val()) * 256 / 100) - 9,
-                left: $(Nodes.CurrentNode).find('.SLPicker').offset().left + (256 - parseInt($(Nodes.CurrentNode).find('#S > input').val()) * 256 / 100) - 9
+            $(NodeManager.CurrentNode).find('.SLPicker').next().offset({
+                top: $(NodeManager.CurrentNode).find('.SLPicker').offset().top + (256 - parseInt($(NodeManager.CurrentNode).find('#L > input').val()) * 256 / 100) - 9,
+                left: $(NodeManager.CurrentNode).find('.SLPicker').offset().left + (256 - parseInt($(NodeManager.CurrentNode).find('#S > input').val()) * 256 / 100) - 9
             });
             updateRGB();
             break;
         case "R":
         case "G":
         case "B":
-            $(Nodes.CurrentNode).find('.Preview').css(
+            $(NodeManager.CurrentNode).find('.Preview').css(
                 'background-color',
                 'rgb('
-                + $(Nodes.CurrentNode).find('#R > input').val() +','
-                + $(Nodes.CurrentNode).find('#G > input').val() +','
-                + $(Nodes.CurrentNode).find('#B > input').val() +')'
+                + $(NodeManager.CurrentNode).find('#R > input').val() +','
+                + $(NodeManager.CurrentNode).find('#G > input').val() +','
+                + $(NodeManager.CurrentNode).find('#B > input').val() +')'
             );
             updateHSL();
             break;
     }
     if ($(this).attr("class") == "color_input") {
         var hex = /([a-f\d]{1,2})($|[a-f\d]{1,2})($|[a-f\d]{1,2})$/i.exec($(this).val());
-        $(Nodes.CurrentNode).find('.Preview').css(
+        $(NodeManager.CurrentNode).find('.Preview').css(
             'background-color',
             'rgb('
             + (parseInt(hex[1], 16) || 0) +','
             + (parseInt(hex[2], 16) || 0) +','
             + (parseInt(hex[3], 16) || 0) +')'
         );
-        $(Nodes.CurrentNode).find(' #R > input').val(
+        $(NodeManager.CurrentNode).find(' #R > input').val(
             ("00" + (parseInt(hex[1], 16) || 0)).slice(-3)
         );
-        $(Nodes.CurrentNode).find(' #G > input').val(
+        $(NodeManager.CurrentNode).find(' #G > input').val(
             ("00" + (parseInt(hex[2], 16) || 0)).slice(-3)
         );
-        $(Nodes.CurrentNode).find(' #B > input').val(
+        $(NodeManager.CurrentNode).find(' #B > input').val(
             ("00" + (parseInt(hex[3], 16) || 0)).slice(-3)
         );
         updateHSL();
@@ -484,9 +477,9 @@ $(document.body).on('input', '.Color input', function(e) {
 });
 
 function updateHSL() {
-    var R = parseFloat($(Nodes.CurrentNode).find(' #R > input').val()) /255;
-    var G = parseFloat($(Nodes.CurrentNode).find(' #G > input').val()) /255;
-    var B = parseFloat($(Nodes.CurrentNode).find(' #B > input').val()) /255;
+    var R = parseFloat($(NodeManager.CurrentNode).find(' #R > input').val()) /255;
+    var G = parseFloat($(NodeManager.CurrentNode).find(' #G > input').val()) /255;
+    var B = parseFloat($(NodeManager.CurrentNode).find(' #B > input').val()) /255;
     var H, S, L;
     var max = Math.max(R, G, B);
     var min = Math.min(R, G, B);
@@ -504,24 +497,24 @@ function updateHSL() {
         H *= 60;
     }
     if (H < 0) H+=360;
-    $(Nodes.CurrentNode).find(' #L > input').val(
+    $(NodeManager.CurrentNode).find(' #L > input').val(
         ("00" + Math.round(L * 100)).slice(-3)
     );
-    $(Nodes.CurrentNode).find(' #H > input').val(
+    $(NodeManager.CurrentNode).find(' #H > input').val(
         ("00" + Math.round(H)).slice(-3)
     );
-    $(Nodes.CurrentNode).find(' #S > input').val(
+    $(NodeManager.CurrentNode).find(' #S > input').val(
         ("00" + Math.round(S * 100)).slice(-3)
     );
-    $(Nodes.CurrentNode).find('.HPicker').next().offset({
-        top: $(Nodes.CurrentNode).find('.HPicker').offset().top + (H * 256 / 360) - 9,
-        left: 7 + $(Nodes.CurrentNode).find('.HPicker').offset().left
+    $(NodeManager.CurrentNode).find('.HPicker').next().offset({
+        top: $(NodeManager.CurrentNode).find('.HPicker').offset().top + (H * 256 / 360) - 9,
+        left: 7 + $(NodeManager.CurrentNode).find('.HPicker').offset().left
     });
-    $(Nodes.CurrentNode).find('.SLPicker').next().offset({
-        top: $(Nodes.CurrentNode).find('.SLPicker').offset().top + (256 - L * 256) - 9,
-        left: $(Nodes.CurrentNode).find('.SLPicker').offset().left + (256 - S * 256) - 9
+    $(NodeManager.CurrentNode).find('.SLPicker').next().offset({
+        top: $(NodeManager.CurrentNode).find('.SLPicker').offset().top + (256 - L * 256) - 9,
+        left: $(NodeManager.CurrentNode).find('.SLPicker').offset().left + (256 - S * 256) - 9
     });
-    drawSVPicker($(Nodes.CurrentNode).find('.SLPicker')[0],  H);
+    drawSVPicker($(NodeManager.CurrentNode).find('.SLPicker')[0],  H);
 }
 
 function updateRGB() {
@@ -529,9 +522,9 @@ function updateRGB() {
         var hex = c.toString(16);
             return hex.length == 1 ? "0" + hex : hex;
     }
-    var H = parseFloat($(Nodes.CurrentNode).find('#H > input').val());
-    var S = parseFloat($(Nodes.CurrentNode).find('#S > input').val());
-    var L = parseFloat($(Nodes.CurrentNode).find('#L > input').val());
+    var H = parseFloat($(NodeManager.CurrentNode).find('#H > input').val());
+    var S = parseFloat($(NodeManager.CurrentNode).find('#S > input').val());
+    var L = parseFloat($(NodeManager.CurrentNode).find('#L > input').val());
     var R, G, B;
     L /= 100;
     S /= 100;
@@ -556,16 +549,16 @@ function updateRGB() {
         G = Hue2RGB(H);
         B = Hue2RGB(H - 1/3);
     }
-    $(Nodes.CurrentNode).find('#R > input').val(
+    $(NodeManager.CurrentNode).find('#R > input').val(
         ("00" + Math.round(R * 255)).slice(-3)
     );
-    $(Nodes.CurrentNode).find('#G > input').val(
+    $(NodeManager.CurrentNode).find('#G > input').val(
         ("00" + Math.round(G * 255)).slice(-3)
     );
-    $(Nodes.CurrentNode).find('#B > input').val(
+    $(NodeManager.CurrentNode).find('#B > input').val(
         ("00" + Math.round(B * 255)).slice(-3)
     );
-    $(Nodes.CurrentNode).find('#color_text').val(
+    $(NodeManager.CurrentNode).find('.color_input').val(
         (((1 << 24) + (R * 255 << 16) + (G * 255 << 8) + B * 255).toString(16).slice(1,7).toUpperCase())
     );
 }

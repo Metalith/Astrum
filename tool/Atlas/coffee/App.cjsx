@@ -35,4 +35,4 @@ require.config
 
 require ['Node', 'UI', 'react', 'ReactDOM'], (Node, UI, React, ReactDOM) ->
     root = React.createElement(Node, {name: "test"});
-    ReactDOM.render(root, document.getElementById('Editor'));
+    ReactDOM.render(<Node showTitle/>, document.getElementById('Editor'));

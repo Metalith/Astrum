@@ -8,11 +8,12 @@
     <title>Apollo - World Editor</title>
 </head>
 <body>
-    <div id="Editor"></div>
+    <div id="Editor"><div id="example"></div></div>
         <label class="switch">
             <input type="checkbox">
             <div class="slider"></div>
         </label>
+
     <!-- Shaders -->
     <script type="x-shader/x-vertex" id="vertexShader">
     varying vec2 pos;
@@ -46,17 +47,14 @@
     	gl_FragColor = vec4(vec3(0.0), 1.0);
     }
     </script>
-    <!-- Insert this line above script imports  -->
-    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-
     <!-- normal script imports etc  -->
-    <script src="./js/jquery-3.1.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
-    <script src="js/jquery.ui.position.min.js"></script>
-    <script src="js/jquery.contextMenu.min.js"></script>
-    <script src="js/three.min.js"></script>
-    <script src="js/UI.js"></script>
+    <!-- <script src="./js/jquery-3.1.0.min.js"></script> -->
+    <!-- <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script> -->
+    <!-- <script src="js/jquery.ui.position.min.js"></script> -->
+    <!-- <script src="js/jquery.contextMenu.min.js"></script> -->
+    <!-- <script src="js/three.min.js"></script> -->
+    <script data-main="js/App.js" src="js/lib/require.js"></script>
+    <!-- <script src="js/Core.js"></script -->
     <!-- Insert this line after script imports -->
-    <script>if (window.module) module = window.module;</script>
 </body>
 </html>

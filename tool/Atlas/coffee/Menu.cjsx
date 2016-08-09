@@ -1,4 +1,4 @@
-define ["jquery", "react", "reactredux", "Actions", "Node", 'MenuItem'], ($, React, t, Actions, Node, MenuItem) ->
+define ["react", "reactredux", "Actions", "Node", 'MenuItem'], ( React, t, Actions, Node, MenuItem) ->
     connect = require('reactredux').connect
 
 

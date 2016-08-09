@@ -6,7 +6,6 @@ require.config
     # 3rd party script alias names (Easier to type "jquery" than "libs/jquery-1.7.2.min")
     paths:
         # Core Libraries
-        jquery: "lib/jquery-3.1.0.min"
         react: "lib/react-with-addons"
         ReactDOM: "lib/react-dom"
         redux: "lib/redux"

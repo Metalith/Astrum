@@ -3,7 +3,7 @@ var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); 
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-define(["jquery", "react", "Menu"], function($, React, Menu) {
+define(["react", "Menu"], function(React, Menu) {
   var Editor;
   return Editor = (function(superClass) {
     extend(Editor, superClass);

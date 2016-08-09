@@ -44,7 +44,7 @@
 # on mouseup
 #     if connecting
 # Turn to backbone if need more readability and maintainability
-define ["jquery", "react"], ($, React) ->
+define ["react"], (React) ->
     # class Node extends React.component
     #     name: ''
     #     id: -1

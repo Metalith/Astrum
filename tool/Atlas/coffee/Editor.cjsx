@@ -1,4 +1,4 @@
-define ["jquery", "react", "Menu"], ($, React, Menu) ->
+define ["react", "Menu"], (React, Menu) ->
     class Editor extends React.Component
         constructor: (props) ->
             super props

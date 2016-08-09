@@ -7,32 +7,26 @@ require.config
     paths:
         # Core Libraries
         jquery: "lib/jquery-3.1.0.min"
-        react: "lib/react"
+        react: "lib/react-with-addons"
         ReactDOM: "lib/react-dom"
+        redux: "lib/redux"
+        reactredux: "lib/react-redux"
         three: "lib/three.min"
         #
         UI: "UI"
         Node: "NodeTypes/Node"
         TestNode: "NodeTypes/TestNode"
-#
-# ###############################
-# ### Instantiate your app
-# ###############################
-# define (require) ->
-#     Node = require 'Node'
-#     # # Basic stuff required everywhere
-#     # $                   = require 'jquery'
-#     # _                   = require 'lodash'
-#     # Backbone            = require 'backbone'
-#     # backbone_extensions = require 'backbone_extensions'
-#     # async               = require 'async'
-#     # async_extensions    = require 'async_extensions'
-#     #
-#     # # controllers
-#     # GenericController   = require 'controllers/generic'
-#     ->
-#         testNode = new Node(300, 300)
+        Editor: "Editor"
+        Reducer: "Reducer"
+        Actions: "Actions"
 
-require ['Node', 'UI', 'react', 'ReactDOM'], (Node, UI, React, ReactDOM) ->
-    root = React.createElement(Node, {name: "test"});
-    ReactDOM.render(<Node showTitle/>, document.getElementById('Editor'));
+require ['redux', 'Reducer', 'Editor', 'react', 'ReactDOM', 'reactredux'], (T, Reducer, Editor, React, ReactDOM, A) =>
+    createStore = require('redux').createStore
+    Provider = require('reactredux').Provider
+    store = createStore(Reducer, window.devToolsExtension && window.devToolsExtension())
+    ReactDOM.render(
+        <Provider store={store}>
+            <Editor />
+        </Provider>,
+        document.getElementById("container")
+    )

@@ -1,5 +1,14 @@
 {
-  "name"    : "AtlasEditor",
-  "version" : "0.1.0",
-  "main"    : "main.js"
+  "name": "AtlasEditor",
+  "version": "0.1.0",
+  "main": "main.js",
+  "dependencies": {
+    "react": "^15.3.0",
+    "react-redux": "^4.4.5",
+    "redux-devtools": "^3.3.1"
+  },
+  "devDependencies": {
+    "redux-devtools": "^3.3.1",
+    "requirejs": "^2.2.0"
+  }
 }

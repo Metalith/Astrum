@@ -2,17 +2,16 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/jquery.contextMenu.css">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/node.css">
-    <title>Apollo - World Editor</title>
+    <title>Atlas - World Editor</title>
 </head>
 <body>
-    <div id="Editor"><div id="example"></div></div>
-        <label class="switch">
-            <input type="checkbox">
-            <div class="slider"></div>
-        </label>
+    <div id="container"></div>
+    <label class="switch">
+        <input type="checkbox">
+        <div class="slider"></div>
+    </label>
 
     <!-- Shaders -->
     <script type="x-shader/x-vertex" id="vertexShader">
@@ -47,14 +46,6 @@
     	gl_FragColor = vec4(vec3(0.0), 1.0);
     }
     </script>
-    <!-- normal script imports etc  -->
-    <!-- <script src="./js/jquery-3.1.0.min.js"></script> -->
-    <!-- <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script> -->
-    <!-- <script src="js/jquery.ui.position.min.js"></script> -->
-    <!-- <script src="js/jquery.contextMenu.min.js"></script> -->
-    <!-- <script src="js/three.min.js"></script> -->
     <script data-main="js/App.js" src="js/lib/require.js"></script>
-    <!-- <script src="js/Core.js"></script -->
-    <!-- Insert this line after script imports -->
 </body>
 </html>

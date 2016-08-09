@@ -74,18 +74,31 @@ define ["jquery", "react"], ($, React) ->
     #     input: ''
     #     center: ''
     #     output: ''
-    class ExampleComponent extends React.Component
-      constructor: (props) ->
-        super props
-        @state =
-          test: 123
+    class Node extends React.Component
+        @name: "blue"
+        constructor: (props) ->
+            super props
+            @state =
+            test: 123
 
-      @defaultProps: ->
-        bar: 'baz'
+        @defaultProps: ->
+            bar: 'baz'
 
-      render: ->
-        <div className="neat-component">
-          {<h1>A Component is I</h1> if @props.showTitle}
-          <hr />
-          {<p key={n}>This line has been printed {n} times</p> for n in [1..5]}
-        </div>
+        render: ->
+            <div className="Node">
+            </div>
+
+    class TestNode extends Node
+        @name: 'Test Node'
+        constructor: (x, y) ->
+            super(x, y)
+        input:
+            TestInput: "Test"
+        center: "Test Center"
+        output:
+            TestOutput: "Test"
+
+    return {
+        Node: Node
+        TestNode: TestNode
+    }

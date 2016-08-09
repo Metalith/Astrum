@@ -1,3 +1,8 @@
+#container {
+    width: 100%;
+    height: 100%;
+}
+
 #Editor {
     float: left;
     width: 100%;
@@ -5,96 +10,133 @@
     background: #0e1112;
 }
 
+.context-menu {
+    position: absolute;
+    display: inline-block;
+    min-width: 13em;
+    max-width: 26em;
+
+    padding: .25em 0;
+    font-family: inherit;
+    font-size: inherit;
+    list-style-type: none;
+    background: #999;
+    overflow: hidden;
+    border-radius: .2em;
+    color: white;
+    font-family: Lato regular, sans-serif;
+    font-size: 14px;
+}
+
+.context-menu-item {
+    background-color: #999999;
+    font-family: Lato light, sans-serif;
+    color: white;
+    font-size: 16px;
+    text-align: left;
+}
+.context-menu-item:hover {
+    background-color: #333333;
+    color: white;
+}
+
+.show {
+    -webkit-animation-name: show-anim; /* Chrome, Safari, Opera */
+    -webkit-animation-duration: 0.5s; /* Chrome, Safari, Opera */
+    animation-name: show-anim;
+    animation-duration: 0.5s;
+    animation-timing-function: linear;
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes show-anim {
+    from {max-height: 0px;}
+    to {max-height: 500px;}
+}
+
+/* Standard syntax */
+@keyframes show-anim {
+    from {max-height: 0px; }
+    to {max-height: 500px; }
+}
+
+.hide {
+    max-height: 0px;
+    padding: 0px;
+    -webkit-animation-name: hide-anim; /* Chrome, Safari, Opera */*/
+    -webkit-animation-duration: 0.3s; /* Chrome, Safari, Opera */
+    animation: hide-anim 0.1s ease-in;
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes hide-anim {
+    0% {max-height: 500px; padding: .25em 0px; }
+    100% {max-height: 0px; padding: 0px; }
+
+}
+
+/* Standard syntax */
+@keyframes hide-anim {
+    0% {max-height: 500px; padding: .25em 0px; }
+    100% {max-height: 0px; padding: 0px; }
+}
+
 /* The switch - the box around the slider */
 .switch {
-  position: absolute;
-  bottom: 4px;
-  right: 4px;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
 }
 
 /* Hide default HTML checkbox */
 .switch input {display:none;}
 
-.contextmenu-custom {
-    background-color: #999999;
-    border: none;
-}
-.contextmenu-item-custom {
-        background-color: #999999;
-        font-family: Lato, sans-serif;
-        color: white;
-}
-.contextmenu-item-custom:hover {
-        background-color: #333333;
-        color: white;
-}
-
-/* menu header via data attribute */
-.data-title:before {
-    content: attr(data-menutitle);
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    background: #999999;
-    color: white;
-    padding: 2px;
-
-    font-family: Lato, sans-serif;
-    font-size: 13px;
-    font-weight: bold;
-}
-.data-title :first-child {
-    margin-top: 20px;
-}
-
 /* The slider */
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #2F2F2F;
-  -webkit-transition: .4s;
-  transition: .4s;
-  border: 2px solid white;
-  border-radius: 34px;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2F2F2F;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border: 2px solid white;
+    border-radius: 34px;
 }
 
 .slider:before {
-  position: absolute;
-  content: "2D";
-  /*height: 26px;*/
-  font: 14px Lato light;
-  text-align: center;
-  padding-top: 5px;
-  padding-bottom: 4px;
-  width: 26px;
-  left: 4px;
-  bottom: 2px;
-  background-color: white;
+    position: absolute;
+    content: "2D";
+    /*height: 26px;*/
+    font: 14px Lato light;
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 4px;
+    width: 26px;
+    left: 4px;
+    bottom: 2px;
+    background-color: white;
 
-  border-radius: 50%;
-  -webkit-transition: .4s;
-  transition: .4s;
+    border-radius: 50%;
+    -webkit-transition: .4s;
+    transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #F39621;
-  box-shadow: 0 0 5px #F39621;
+    background-color: #F39621;
+    box-shadow: 0 0 5px #F39621;
 }
 
 input:checked + .slider:before {
     content: "3D";
-  -webkit-transform: translateX(22px);
-  -ms-transform: translateX(22px);
-  transform: translateX(22px);
+    -webkit-transform: translateX(22px);
+    -ms-transform: translateX(22px);
+    transform: translateX(22px);
 }
 
 html,

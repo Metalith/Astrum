@@ -1,4 +1,4 @@
-define ["react", "Menu"], (React, Menu) ->
+define ["react", "Menu", "Background"], (React, Menu, Background) ->
     class Editor extends React.Component
         constructor: (props) ->
             super props
@@ -13,5 +13,6 @@ define ["react", "Menu"], (React, Menu) ->
 
         render: ->
             <div id="Editor" onContextMenu={(e) => @setState(showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]); e.preventDefault()}>
+                <Background />
                 <Menu hide={@hideContextMenu} show={@state.showContextMenu} pos={@state.menuPos}/>
             </div>

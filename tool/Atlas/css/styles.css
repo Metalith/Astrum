@@ -36,7 +36,7 @@
     text-align: left;
 }
 .context-menu-item:hover {
-    background-color: #333333;
+    background-color: #333355;
     color: white;
 }
 
@@ -64,8 +64,8 @@
     max-height: 0px;
     padding: 0px;
     -webkit-animation-name: hide-anim; /* Chrome, Safari, Opera */*/
-    -webkit-animation-duration: 0.3s; /* Chrome, Safari, Opera */
-    animation: hide-anim 0.1s ease-in;
+    -webkit-animation-duration: 0.07s; /* Chrome, Safari, Opera */
+    animation: hide-anim 0.07s ease-in;
 }
 
 /* Chrome, Safari, Opera */

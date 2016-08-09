@@ -15,9 +15,12 @@ require.config
         UI: "UI"
         Node: "NodeTypes/Node"
         TestNode: "NodeTypes/TestNode"
-        Editor: "Editor"
-        Reducer: "Reducer"
+        Editor: "containers/Editor"
+        Reducer: "reducers/Reducer"
         Actions: "Actions"
+        Menu: "components/Menu"
+        MenuItem: "components/MenuItem"
+        Background: "components/Background"
 
 require ['redux', 'Reducer', 'Editor', 'react', 'ReactDOM', 'reactredux'], (T, Reducer, Editor, React, ReactDOM, A) =>
     createStore = require('redux').createStore

@@ -1,97 +1,58 @@
-# class Node {
-#     Name:
-#     id:
-#     connections: [{nodex, nodex.output.rgb, "output", input.rgb},
-#                 {nodey, nodey.input.rgba, "input", output.rgb}]
-#     constructor: ->
-#         generateHTML
-#     input:
-#         RGB:
-#             type: vec3
-#             connection: {nodex, nodex.output.rgb}
-#             value: vec3(0, 0, 0)
-#     output:
-#         RGB:
-#             type: vec3
-#             connection: nodey.input.rgba
-#             value: ->
-#                 return value / 3;
-#     update: ->
-#         for field in inputs
-#             if connected
-#                 field.value = connection.value
-#     value: ->
-#         sum = 0;
-#         for input in inputs
-#             sum += input.value
-#     center: ->
-#         return html or none
-#     onConnect: (connection)->
-#         if (connection[0][2] == "output") {
-#             input[connection[4]].connection = connection;
-#             input[connection[4]].value = connection[2]()
-#
-#         }
-#         background.addConnection(connection)
-#         update
-# }
-#
-# var nodeArray
-# getNode(el) -> return nodeArray[el.id];
-# # Events
-# on hover addClass selected
-#
-# on mouseup
-#     if connecting
-# Turn to backbone if need more readability and maintainability
 define ["react"], (React) ->
-    # class Node extends React.component
-    #     name: ''
-    #     id: -1
-    #     connections: []
-    #     # constructor: (x, y) ->
-    #     #     Header  = '<div class="Node" id="Node'+@id+'" style="left:'+x+'px; top:'+y+'px">'
-    #     #     Title   = '<div class="NodeName">'+@name+'</div>'
-    #     #     Input   = ""
-    #     #     for k,v of @input
-    #     #         Input += '<div class="Field">'+k+'<div class="Handle"></div></div><br>'
-    #     #     Input = '<div class="Input">'+Input+'</div>'
-    #     #     Center = '<div class="Center">'+@center+'</div>'
-    #     #     Output = "";
-    #     #     for k,v of @output
-    #     #       Output += '<div class="Field">' + k + '<div class="Handle"></div></div><br>';
-    #     #     Output = '<div class="Output">' + Output + '</div>';
-    #     #     $("body").append Header+Title+Input+Center+Output
-    #     #     # $('.Node').draggable
-    #     #     #     containment: "window"
-    #     #     #     cancel: ".Handle, .Center, .Field"
-    #     constructor: (props) ->
-    #         super props
-    #         @state =
-    #           test: 123
-    #     render: ->
-    #         React.createElement('li', null, 'Second Text Content');
-    #     input: ''
-    #     center: ''
-    #     output: ''
     class Node extends React.Component
         el: ''
         constructor: (props) ->
             super props
+            @state =
+                dragging: false
+                pos:
+                    x: @props.pos[0]
+                    y: @props.pos[1]
+                rel: null
+
+        componentWillUpdate: (props, state) =>
+            if !@state.dragging && state.dragging
+                document.addEventListener('mousemove', @onMouseMove)
+                document.addEventListener('mouseup', @onMouseUp)
+            else if @state.dragging && !state.dragging
+                document.removeEventListener('mousemove', @onMouseMove)
+                document.removeEventListener('mouseup', @onMouseUp)
+
+        onMouseDown: (e) =>
+            if e.target.tagName != "INPUT" && e.target.className != "Field" && e.target.className != "Handle"
+                @setState({
+                    dragging: true
+                    rel:
+                        x: e.pageX - @state.pos.x
+                        y: e.pageY - @state.pos.y
+                })
+
+        onMouseMove: (e) =>
+            @setState({
+                pos:
+                    x: e.pageX - @state.rel.x
+                    y: e.pageY - @state.rel.y
+            })
+
+        onMouseUp: (e) =>
+            @setState({dragging: false})
+
+        preventDrag: (e) ->
+            e.stopPropagation()
 
         render: ->
-            Title   = <div className="NodeName">{@name}</div>
-            Input = <div className="Input">
+            # Title   = <div className="NodeName">{@name}</div>
+            i = 0
+            Input = <div className="Input"><br />
                 {for k,v of @input
-                    <div className="Field">{k}<div className="Handle"></div></div>}
+                    <div className="Field" key={i++}>{k}<div className="Handle"></div></div>}
             </div>
-            Center = <div className="Center">{@center}</div>
-            Output = <div className="Output">
+            Center = <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center}</div></div>
+            Output = <div className="Output"><br />
                 {for k,v of @output
-                    <div className="Field">{k}<div className="Handle"></div></div>}
+                    <div className="Field" key={i++}>{k}<div className="Handle"></div></div>}
             </div>
-            return <div className="Node" style={position: "absolute", left: @props.pos[0], top: @props.pos[1]}>
-                    {Title}
+            return <div className="Node" style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
                     {Input}
                     {Center}
                     {Output}
@@ -107,7 +68,25 @@ define ["react"], (React) ->
         output:
             TestOutput: "Test"
 
+    class ValueNode extends Node
+        name: 'Value'
+        constructor: (props) ->
+            super props
+        center: <input type="number" name="fname" onChange={() -> }/>
+        output:
+            Val: () -> @Value
+
+    class OutputNode extends Node
+        name: 'Output'
+        constructor: (props) ->
+            super props
+        center: ""
+        input:
+            Program: ""
+
     return {
         Node: Node
         TestNode: TestNode
+        Value: ValueNode
+        Output: OutputNode
     }

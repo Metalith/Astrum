@@ -73,6 +73,34 @@
 }
 
 
+input[type=number] {
+    border: none;
+    float: left;
+    width: 100px;
+    height: 20px;
+    border-bottom: solid 1px #c9c9c9;
+    background-color: #cc9999;
+    font-family: "Lato";
+    color: white;
+    box-sizing: border-box;
+    vertical-align:middle;
+    -moz-appearance: textfield;
+     -webkit-appearance: none;
+     appearance: none;
+    margin: 0;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input:focus {
+    border: solid 1px #FFF;
+}
+
 /*--------- Color Picker CSS ---------*/
 ::-webkit-input-placeholder {
    color: #aa7777;
@@ -99,7 +127,7 @@
 .color_input {
     border: none;
     float: left;
-    /*width: 100px;*/
+    width: 100px;
     height: 20px;
     border-bottom: solid 2px #c9c9c9;
     transition: border 0.3s;
@@ -110,11 +138,11 @@
     box-sizing: border-box;
 }
 
-.color_input:focus {
+/*.color_input:focus {
     border-bottom: solid 2px #969696;
-}
+}*/
 
-.ColorPickerBox {
+/*.ColorPickerBox {
     position: absolute;
     left: 0;
     top: 100%;
@@ -189,4 +217,4 @@
     color: white;
     padding-left: 10px;
     box-sizing: content-box;
-}
+}*/

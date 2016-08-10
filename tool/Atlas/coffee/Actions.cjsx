@@ -6,14 +6,6 @@ define 'Actions', [''], () ->
             pos: pos
         }
 
-    registerType = (name, nodeType) ->
-        return {
-            type: 'REGISTER_NODETYPE'
-            name: name
-            nodeType: nodeType
-        }
-
     return {
         addNode: addNode
-        registerType: registerType
     }

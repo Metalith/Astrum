@@ -75,23 +75,32 @@ define ["react"], (React) ->
     #     center: ''
     #     output: ''
     class Node extends React.Component
-        @name: "blue"
+        el: ''
         constructor: (props) ->
             super props
-            @state =
-            test: 123
-
-        @defaultProps: ->
-            bar: 'baz'
 
         render: ->
-            <div className="Node">
+            Title   = <div className="NodeName">{@name}</div>
+            Input = <div className="Input">
+                {for k,v of @input
+                    <div className="Field">{k}<div className="Handle"></div></div>}
+            </div>
+            Center = <div className="Center">{@center}</div>
+            Output = <div className="Output">
+                {for k,v of @output
+                    <div className="Field">{k}<div className="Handle"></div></div>}
+            </div>
+            return <div className="Node" style={position: "absolute", left: @props.pos[0], top: @props.pos[1]}>
+                    {Title}
+                    {Input}
+                    {Center}
+                    {Output}
             </div>
 
     class TestNode extends Node
-        @name: 'Test Node'
-        constructor: (x, y) ->
-            super(x, y)
+        name: 'Test Node'
+        constructor: (props) ->
+            super props
         input:
             TestInput: "Test"
         center: "Test Center"

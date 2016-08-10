@@ -15,7 +15,8 @@
       Actions: "Actions",
       Menu: "components/Menu",
       MenuItem: "components/MenuItem",
-      Background: "components/Background"
+      Background: "containers/Background",
+      Nodes: "containers/Nodes"
     }
   });
 

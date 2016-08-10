@@ -4,7 +4,7 @@
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
-  define(["react", "Menu", "Background"], function(React, Menu, Background) {
+  define(["react", "Menu", "Background", "Nodes"], function(React, Menu, Background, Nodes) {
     var Editor;
     return Editor = (function(superClass) {
       extend(Editor, superClass);
@@ -36,7 +36,7 @@
               return e.preventDefault();
             };
           })(this))
-        }, React.createElement(Background, null), React.createElement(Menu, {
+        }, React.createElement(Background, null), React.createElement(Nodes, null), React.createElement(Menu, {
           "hide": this.hideContextMenu,
           "show": this.state.showContextMenu,
           "pos": this.state.menuPos

@@ -8,25 +8,60 @@
     Node = (function(superClass) {
       extend(Node, superClass);
 
-      Node.name = "blue";
+      Node.prototype.el = '';
 
       function Node(props) {
         Node.__super__.constructor.call(this, props);
-        this.state = {
-          test: 123
-        };
       }
 
-      Node.defaultProps = function() {
-        return {
-          bar: 'baz'
-        };
-      };
-
       Node.prototype.render = function() {
+        var Center, Input, Output, Title, k, v;
+        Title = React.createElement("div", {
+          "className": "NodeName"
+        }, this.name);
+        Input = React.createElement("div", {
+          "className": "Input"
+        }, (function() {
+          var ref, results;
+          ref = this.input;
+          results = [];
+          for (k in ref) {
+            v = ref[k];
+            results.push(React.createElement("div", {
+              "className": "Field"
+            }, k, React.createElement("div", {
+              "className": "Handle"
+            })));
+          }
+          return results;
+        }).call(this));
+        Center = React.createElement("div", {
+          "className": "Center"
+        }, this.center);
+        Output = React.createElement("div", {
+          "className": "Output"
+        }, (function() {
+          var ref, results;
+          ref = this.output;
+          results = [];
+          for (k in ref) {
+            v = ref[k];
+            results.push(React.createElement("div", {
+              "className": "Field"
+            }, k, React.createElement("div", {
+              "className": "Handle"
+            })));
+          }
+          return results;
+        }).call(this));
         return React.createElement("div", {
-          "className": "Node"
-        });
+          "className": "Node",
+          "style": {
+            position: "absolute",
+            left: this.props.pos[0],
+            top: this.props.pos[1]
+          }
+        }, Title, Input, Center, Output);
       };
 
       return Node;
@@ -35,10 +70,10 @@
     TestNode = (function(superClass) {
       extend(TestNode, superClass);
 
-      TestNode.name = 'Test Node';
+      TestNode.prototype.name = 'Test Node';
 
-      function TestNode(x, y) {
-        TestNode.__super__.constructor.call(this, x, y);
+      function TestNode(props) {
+        TestNode.__super__.constructor.call(this, props);
       }
 
       TestNode.prototype.input = {

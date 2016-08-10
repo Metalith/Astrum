@@ -47,15 +47,8 @@
 
 .Field {
     position: relative;
-    display: inline-block;
-}
-
-.Input > .Field {
-    float: left;
-}
-
-.Output > .Field {
-    float: right;
+    text-align: left;
+    /*display: inline-block;*/
 }
 
 .Handle {

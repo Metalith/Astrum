@@ -4,11 +4,15 @@
     slice = [].slice;
 
   initialState = {
-    Nodes: []
+    Nodes: [],
+    Connecting: false,
+    Connections: [],
+    SelectedNode: -1,
+    SelectedField: ''
   };
 
   define(['redux'], function() {
-    var Nodes, combineReducers;
+    var Connecting, Nodes, Selected, combineReducers;
     combineReducers = require('redux').combineReducers;
     Nodes = function(state, action) {
       if (state == null) {
@@ -18,13 +22,42 @@
         case 'ADD_NODE':
           return slice.call(state).concat([{
               nodeType: action.nodeType,
-              pos: action.pos
+              id: action.id,
+              initPos: action.pos
             }]);
       }
       return state;
     };
+    Connecting = function(state, action) {
+      if (state == null) {
+        state = false;
+      }
+      switch (action.type) {
+        case 'SELECT':
+          return true;
+      }
+      return state;
+    };
+    Selected = function(state, action) {
+      if (state == null) {
+        state = {
+          Node: -1,
+          Field: ''
+        };
+      }
+      switch (action.type) {
+        case 'SELECT':
+          return {
+            Node: action.node,
+            Field: action.field
+          };
+      }
+      return state;
+    };
     return combineReducers({
-      Nodes: Nodes
+      Nodes: Nodes,
+      Connecting: Connecting,
+      Selected: Selected
     });
   });
 

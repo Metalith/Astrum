@@ -15,16 +15,15 @@
 
       Nodes.prototype.render = function() {
         var i;
-        i = 100;
-        return React.createElement("div", {
-          "key": 99.
-        }, this.props.nodes.map((function(_this) {
+        i = 0;
+        return React.createElement("div", null, this.props.nodes.map((function(_this) {
           return function(node) {
             var GenNode;
-            GenNode = Node[node.nodeType];
+            GenNode = connect()(Node[node.nodeType]);
             return React.createElement(GenNode, {
-              "key": i++,
-              "pos": node.pos
+              "key": node.id,
+              "pos": node.initPos,
+              "id": node.id
             });
           };
         })(this)));

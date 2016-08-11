@@ -31,6 +31,7 @@ define ['three', 'react'], (THREE, React) ->
 
         componentDidMount: ->
             document.getElementById("background").appendChild( renderer.domElement )
+
         render: =>
             <div id="background"></div>
 

@@ -6,9 +6,9 @@ define ["react", "reactredux", "Actions", "Node", 'MenuItem'], ( React, t, Actio
             super props
 
         render: ->
-            i = 100;
-            <div key={99}>
-                {@props.nodes.map((node) => GenNode = Node[node.nodeType]; <GenNode key={i++} pos={node.pos}/>)}
+            i = 0;
+            <div>
+                {@props.nodes.map((node) => GenNode = connect()(Node[node.nodeType]); <GenNode key={node.id} pos={node.initPos} id={node.id}/>)}
             </div>
 
 

@@ -1,4 +1,11 @@
-define ["react"], (React) ->
+define ["react", "Actions"], (React, Actions) ->
+
+    class NodeField extends React.Component
+        constructor: (props) ->
+            super props
+        render: ->
+            <div className="Field" onMouseDown={() => @props.startConnection @props.field}>{@props.field}<div className="Handle"></div></div>
+
     class Node extends React.Component
         el: ''
         constructor: (props) ->
@@ -40,17 +47,19 @@ define ["react"], (React) ->
         preventDrag: (e) ->
             e.stopPropagation()
 
+        startConnection: (field) =>
+            @props.dispatch(Actions.select(@props.id, field))
+
         render: ->
-            # Title   = <div className="NodeName">{@name}</div>
             i = 0
             Input = <div className="Input"><br />
                 {for k,v of @input
-                    <div className="Field" key={i++}>{k}<div className="Handle"></div></div>}
+                    <NodeField key={++i} field={k} startConnection={@startConnection}/>}
             </div>
             Center = <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center}</div></div>
             Output = <div className="Output"><br />
                 {for k,v of @output
-                    <div className="Field" key={i++}>{k}<div className="Handle"></div></div>}
+                    <NodeField key={++i} field={k} startConnection={@startConnection}/>}
             </div>
             return <div className="Node" style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
                     {Input}

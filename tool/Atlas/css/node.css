@@ -17,9 +17,6 @@
     -moz-user-select: none;      /* Firefox */
     -ms-user-select: none;       /* Internet Explorer/Edge */
     user-select: none;           /* Non-prefixed version, currently */
-}
-
-.Node {
     cursor: move;
 }
 
@@ -48,8 +45,27 @@
 .Field {
     position: relative;
     text-align: left;
+    cursor: default;
     /*display: inline-block;*/
 }
+
+.Field.hov {
+    color: orange;
+}
+
+.Field.hov>.Handle {
+    background-color: orange;
+}
+
+.Field.sel {
+    color: #333;
+}
+
+.Field.sel>.Handle {
+    background-color: #333;
+}
+
+
 
 .Handle {
     position: absolute;

@@ -22,7 +22,7 @@
             GenNode = connect()(Node[node.nodeType]);
             return React.createElement(GenNode, {
               "key": node.id,
-              "pos": node.initPos,
+              "pos": node.pos,
               "id": node.id
             });
           };

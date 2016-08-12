@@ -3,8 +3,18 @@ define ["react", "Actions"], (React, Actions) ->
     class NodeField extends React.Component
         constructor: (props) ->
             super props
+
         render: ->
-            <div className="Field" onMouseDown={() => @props.startConnection @props.field}>{@props.field}<div className="Handle"></div></div>
+            # if @state.hovering
+            #     classes = "Field " + "hov"
+            # else if @state.selectedclasses = "Field"
+            <div className="Field" id={@props.field}
+                ref={(c) => @el = c}
+                onMouseDown={(e) => @el.classList.toggle('sel'); @props.startConnection @props.field, @props.type; e.stopPropagation()}
+                onMouseEnter={() => @el.classList.toggle('hov')}
+                onMouseLeave={() => @el.classList.toggle('hov')}>
+                {@props.field}
+                <div className="Handle"></div></div>
 
     class Node extends React.Component
         el: ''
@@ -13,16 +23,16 @@ define ["react", "Actions"], (React, Actions) ->
             @state =
                 dragging: false
                 pos:
-                    x: @props.pos[0]
-                    y: @props.pos[1]
+                    x: @props.pos.x
+                    y: @props.pos.y
                 rel: null
 
         componentWillUpdate: (props, state) =>
             if !@state.dragging && state.dragging
-                document.addEventListener('mousemove', @onMouseMove)
+                document.addEventListener('mousemove', @onDrag)
                 document.addEventListener('mouseup', @onMouseUp)
             else if @state.dragging && !state.dragging
-                document.removeEventListener('mousemove', @onMouseMove)
+                document.removeEventListener('mousemove', @onDrag)
                 document.removeEventListener('mouseup', @onMouseUp)
 
         onMouseDown: (e) =>
@@ -34,7 +44,7 @@ define ["react", "Actions"], (React, Actions) ->
                         y: e.pageY - @state.pos.y
                 })
 
-        onMouseMove: (e) =>
+        onDrag: (e) =>
             @setState({
                 pos:
                     x: e.pageX - @state.rel.x
@@ -43,25 +53,30 @@ define ["react", "Actions"], (React, Actions) ->
 
         onMouseUp: (e) =>
             @setState({dragging: false})
+            @props.dispatch(Actions.setPos(@props.id, @state.pos))
 
-        preventDrag: (e) ->
-            e.stopPropagation()
+        startConnection: (field, type) =>
+            @props.dispatch Actions.select @props.id, field, type
+            document.addEventListener 'mouseup', @endConnection
 
-        startConnection: (field) =>
-            @props.dispatch(Actions.select(@props.id, field))
+        endConnection: (e) =>
+            @props.dispatch Actions.stopConnecting()
+            if (e.target.classList.contains("Field"))
+                alert(e.target.className)
+            document.removeEventListener 'mouseup', @endConnection
 
         render: ->
             i = 0
             Input = <div className="Input"><br />
                 {for k,v of @input
-                    <NodeField key={++i} field={k} startConnection={@startConnection}/>}
+                    <NodeField key={++i} field={k} type={"Input"} startConnection={@startConnection}/>}
             </div>
             Center = <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center}</div></div>
             Output = <div className="Output"><br />
                 {for k,v of @output
-                    <NodeField key={++i} field={k} startConnection={@startConnection}/>}
+                    <NodeField key={++i} field={k} type={"Output"} startConnection={@startConnection}/>}
             </div>
-            return <div className="Node" style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
+            return <div className="Node" id={"Node" + @props.id} style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
                     {Input}
                     {Center}
                     {Output}

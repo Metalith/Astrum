@@ -5,48 +5,91 @@
     hasProp = {}.hasOwnProperty;
 
   define(['three', 'react'], function(THREE, React) {
-    var Background;
-    return Background = (function(superClass) {
-      var background, camera, renderer, scene;
-
+    var Background, connect, mapStateToProps;
+    connect = require('reactredux').connect;
+    Background = (function(superClass) {
       extend(Background, superClass);
 
-      renderer = new THREE.WebGLRenderer({
+      Background.prototype.renderer = new THREE.WebGLRenderer({
         antialias: true
       });
 
-      scene = new THREE.Scene();
+      Background.prototype.scene = new THREE.Scene();
 
-      camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10);
+      Background.prototype.camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / -2, 0.1, 10);
 
-      background = '';
+      Background.prototype.background = '';
 
-      function Background() {
+      Background.prototype.tempConnector = '';
+
+      function Background(props) {
+        this.onWindowResize = bind(this.onWindowResize, this);
         this.renderScene = bind(this.renderScene, this);
         this.render = bind(this.render, this);
+        this.removeTempConnector = bind(this.removeTempConnector, this);
+        this.updateTempConnector = bind(this.updateTempConnector, this);
+        this.componentWillUpdate = bind(this.componentWillUpdate, this);
         var geometry, material;
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.domElement.style.position = "absolute";
-        renderer.domElement.style.top = 0;
-        renderer.domElement.style.zIndex = 0;
-        renderer.setClearColor(0x0e1112, 1);
+        Background.__super__.constructor.call(this, props);
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.domElement.style.position = "absolute";
+        this.renderer.domElement.style.top = 0;
+        this.renderer.domElement.style.zIndex = 0;
+        this.renderer.setClearColor(0x0e1112, 1);
         geometry = new THREE.PlaneBufferGeometry(window.innerWidth, window.innerHeight);
         material = new THREE.ShaderMaterial({
           vertexShader: document.getElementById('vertexShader').textContent,
           fragmentShader: document.getElementById('fragmentShader').textContent
         });
-        background = new THREE.Mesh(geometry, material);
-        background.rotation.x = -1.57;
-        scene.add(background);
-        background.position.y = 0;
-        camera.position.set(0, 5, 0);
-        camera.lookAt(scene.position);
+        this.background = new THREE.Mesh(geometry, material);
+        this.background.rotation.x = -1.57;
+        this.scene.add(this.background);
+        this.background.position.y = 0;
+        this.camera.position.set(0, 5, 0);
+        this.camera.lookAt(this.scene.position);
         window.addEventListener('resize', this.onWindowResize, false);
         this.renderScene();
       }
 
       Background.prototype.componentDidMount = function() {
-        return document.getElementById("background").appendChild(renderer.domElement);
+        return document.getElementById("background").appendChild(this.renderer.domElement);
+      };
+
+      Background.prototype.componentWillUpdate = function(nextProps, nextState) {
+        var geometry, handle, handlePos, material;
+        if (!this.props.Connecting && nextProps.Connecting) {
+          handle = document.querySelector("#Node" + nextProps.Selected.Node + ">." + nextProps.Selected.Type + ">#" + nextProps.Selected.Field + ">.Handle");
+          handlePos = handle.getBoundingClientRect();
+          material = new THREE.LineDashedMaterial({
+            color: 0xDDDDDD,
+            dashSize: 30,
+            gapSize: 10,
+            linewidth: 3
+          });
+          geometry = new THREE.Geometry();
+          geometry.vertices.push(new THREE.Vector3(handlePos.left + handlePos.width / 2 - window.innerWidth / 2, 1, handlePos.top + handlePos.width / 2 - window.innerHeight / 2));
+          geometry.vertices.push(new THREE.Vector3(handlePos.left + handlePos.width / 2 - window.innerWidth / 2, 1, handlePos.top + handlePos.width / 2 - window.innerHeight / 2));
+          geometry.computeLineDistances();
+          this.tempConnector = new THREE.Line(geometry, material);
+          this.scene.add(this.tempConnector);
+          document.addEventListener('mousemove', this.updateTempConnector);
+          return document.addEventListener('mouseup', this.removeTempConnector);
+        }
+      };
+
+      Background.prototype.updateTempConnector = function(e) {
+        this.tempConnector.geometry.vertices[1].x = e.pageX - window.innerWidth / 2;
+        this.tempConnector.geometry.vertices[1].z = e.pageY - window.innerHeight / 2;
+        this.tempConnector.geometry.verticesNeedUpdate = true;
+        this.tempConnector.geometry.computeLineDistances();
+        return this.tempConnector.geometry.lineDistancesNeedUpdate = true;
+      };
+
+      Background.prototype.removeTempConnector = function() {
+        document.querySelector("#Node" + this.props.Selected.Node + ">." + this.props.Selected.Type + ">#" + this.props.Selected.Field).classList.toggle('sel');
+        document.removeEventListener('mousemove', this.updateTempConnector);
+        document.removeEventListener('mouseup', this.removeTempConnector);
+        return this.scene.remove(this.tempConnector);
       };
 
       Background.prototype.render = function() {
@@ -57,19 +100,19 @@
 
       Background.prototype.renderScene = function() {
         requestAnimationFrame(this.renderScene);
-        return renderer.render(scene, camera);
+        return this.renderer.render(this.scene, this.camera);
       };
 
       Background.prototype.onWindowResize = function() {
         var h, p, w;
         w = window.innerWidth;
         h = window.innerHeight;
-        camera.left = w / -2;
-        camera.right = w / 2;
-        camera.top = h / 2;
-        camera.bottom = h / -2;
-        camera.updateProjectionMatrix();
-        p = background.geometry.attributes.position.array;
+        this.camera.left = w / -2;
+        this.camera.right = w / 2;
+        this.camera.top = h / 2;
+        this.camera.bottom = h / -2;
+        this.camera.updateProjectionMatrix();
+        p = this.background.geometry.attributes.position.array;
         p[0] = w / -2;
         p[1] = h / 2;
         p[3] = w / 2;
@@ -78,13 +121,20 @@
         p[7] = h / -2;
         p[9] = w / 2;
         p[10] = h / -2;
-        background.geometry.attributes.position.needsUpdate = true;
-        return renderer.setSize(window.innerWidth, window.innerHeight);
+        this.background.geometry.attributes.position.needsUpdate = true;
+        return this.renderer.setSize(window.innerWidth, window.innerHeight);
       };
 
       return Background;
 
     })(React.Component);
+    mapStateToProps = function(state) {
+      return {
+        Connecting: state.Connecting,
+        Selected: state.Selected
+      };
+    };
+    return Background = connect(mapStateToProps)(Background);
   });
 
 }).call(this);

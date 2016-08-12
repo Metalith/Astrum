@@ -18,7 +18,10 @@
           "className": "context-menu-item",
           "onClick": ((function(_this) {
             return function(e) {
-              return _this.props.dispatch(Actions.addNode(_this.props.name, [e.pageX, e.pageY]), _this.props.hide());
+              return _this.props.dispatch(Actions.addNode(_this.props.name, {
+                x: e.pageX,
+                y: e.pageY
+              }), _this.props.hide());
             };
           })(this))
         }, "                  ", this.props.name);

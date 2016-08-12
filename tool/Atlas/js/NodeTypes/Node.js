@@ -16,9 +16,27 @@
       NodeField.prototype.render = function() {
         return React.createElement("div", {
           "className": "Field",
+          "id": this.props.field,
+          "ref": ((function(_this) {
+            return function(c) {
+              return _this.el = c;
+            };
+          })(this)),
           "onMouseDown": ((function(_this) {
+            return function(e) {
+              _this.el.classList.toggle('sel');
+              _this.props.startConnection(_this.props.field, _this.props.type);
+              return e.stopPropagation();
+            };
+          })(this)),
+          "onMouseEnter": ((function(_this) {
             return function() {
-              return _this.props.startConnection(_this.props.field);
+              return _this.el.classList.toggle('hov');
+            };
+          })(this)),
+          "onMouseLeave": ((function(_this) {
+            return function() {
+              return _this.el.classList.toggle('hov');
             };
           })(this))
         }, this.props.field, React.createElement("div", {
@@ -35,17 +53,18 @@
       Node.prototype.el = '';
 
       function Node(props) {
+        this.endConnection = bind(this.endConnection, this);
         this.startConnection = bind(this.startConnection, this);
         this.onMouseUp = bind(this.onMouseUp, this);
-        this.onMouseMove = bind(this.onMouseMove, this);
+        this.onDrag = bind(this.onDrag, this);
         this.onMouseDown = bind(this.onMouseDown, this);
         this.componentWillUpdate = bind(this.componentWillUpdate, this);
         Node.__super__.constructor.call(this, props);
         this.state = {
           dragging: false,
           pos: {
-            x: this.props.pos[0],
-            y: this.props.pos[1]
+            x: this.props.pos.x,
+            y: this.props.pos.y
           },
           rel: null
         };
@@ -53,10 +72,10 @@
 
       Node.prototype.componentWillUpdate = function(props, state) {
         if (!this.state.dragging && state.dragging) {
-          document.addEventListener('mousemove', this.onMouseMove);
+          document.addEventListener('mousemove', this.onDrag);
           return document.addEventListener('mouseup', this.onMouseUp);
         } else if (this.state.dragging && !state.dragging) {
-          document.removeEventListener('mousemove', this.onMouseMove);
+          document.removeEventListener('mousemove', this.onDrag);
           return document.removeEventListener('mouseup', this.onMouseUp);
         }
       };
@@ -73,7 +92,7 @@
         }
       };
 
-      Node.prototype.onMouseMove = function(e) {
+      Node.prototype.onDrag = function(e) {
         return this.setState({
           pos: {
             x: e.pageX - this.state.rel.x,
@@ -83,17 +102,23 @@
       };
 
       Node.prototype.onMouseUp = function(e) {
-        return this.setState({
+        this.setState({
           dragging: false
         });
+        return this.props.dispatch(Actions.setPos(this.props.id, this.state.pos));
       };
 
-      Node.prototype.preventDrag = function(e) {
-        return e.stopPropagation();
+      Node.prototype.startConnection = function(field, type) {
+        this.props.dispatch(Actions.select(this.props.id, field, type));
+        return document.addEventListener('mouseup', this.endConnection);
       };
 
-      Node.prototype.startConnection = function(field) {
-        return this.props.dispatch(Actions.select(this.props.id, field));
+      Node.prototype.endConnection = function(e) {
+        this.props.dispatch(Actions.stopConnecting());
+        if (e.target.classList.contains("Field")) {
+          alert(e.target.className);
+        }
+        return document.removeEventListener('mouseup', this.endConnection);
       };
 
       Node.prototype.render = function() {
@@ -110,6 +135,7 @@
             results.push(React.createElement(NodeField, {
               "key": ++i,
               "field": k,
+              "type": "Input",
               "startConnection": this.startConnection
             }));
           }
@@ -133,6 +159,7 @@
             results.push(React.createElement(NodeField, {
               "key": ++i,
               "field": k,
+              "type": "Output",
               "startConnection": this.startConnection
             }));
           }
@@ -140,6 +167,7 @@
         }).call(this));
         return React.createElement("div", {
           "className": "Node",
+          "id": "Node" + this.props.id,
           "style": {
             position: "absolute",
             left: this.state.pos.x,

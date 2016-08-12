@@ -12,19 +12,49 @@
   };
 
   define(['redux'], function() {
-    var Connecting, Nodes, Selected, combineReducers;
+    var Connecting, Node, Nodes, Selected, combineReducers;
     combineReducers = require('redux').combineReducers;
+    Node = function(state, action) {
+      if (state == null) {
+        state = {
+          nodeType: '',
+          id: -1,
+          pos: {
+            x: -1,
+            y: -1
+          }
+        };
+      }
+      switch (action.type) {
+        case 'ADD_NODE':
+          return {
+            nodeType: action.nodeType,
+            id: action.id,
+            pos: action.pos
+          };
+        case 'SET_POS':
+          if (state.id !== action.id) {
+            return state;
+          }
+          return Object.assign({}, state, {
+            pos: action.pos
+          });
+      }
+      return state;
+    };
     Nodes = function(state, action) {
       if (state == null) {
         state = [];
       }
       switch (action.type) {
         case 'ADD_NODE':
-          return slice.call(state).concat([{
-              nodeType: action.nodeType,
-              id: action.id,
-              initPos: action.pos
-            }]);
+          return slice.call(state).concat([Node(void 0, action)]);
+        case 'SET_POS':
+          return state.map((function(_this) {
+            return function(t) {
+              return Node(t, action);
+            };
+          })(this));
       }
       return state;
     };
@@ -35,6 +65,8 @@
       switch (action.type) {
         case 'SELECT':
           return true;
+        case 'STOP_CONNECTING':
+          return false;
       }
       return state;
     };
@@ -42,14 +74,16 @@
       if (state == null) {
         state = {
           Node: -1,
-          Field: ''
+          Field: '',
+          Type: ''
         };
       }
       switch (action.type) {
         case 'SELECT':
           return {
             Node: action.node,
-            Field: action.field
+            Field: action.field,
+            Type: action.fieldType
           };
       }
       return state;

@@ -12,7 +12,7 @@
   };
 
   define(['redux'], function() {
-    var Connecting, Node, Nodes, Selected, combineReducers;
+    var Connecting, Connections, MovedNode, Node, Nodes, Selected, combineReducers;
     combineReducers = require('redux').combineReducers;
     Node = function(state, action) {
       if (state == null) {
@@ -22,7 +22,8 @@
           pos: {
             x: -1,
             y: -1
-          }
+          },
+          Connections: []
         };
       }
       switch (action.type) {
@@ -30,7 +31,8 @@
           return {
             nodeType: action.nodeType,
             id: action.id,
-            pos: action.pos
+            pos: action.pos,
+            Connections: []
           };
         case 'SET_POS':
           if (state.id !== action.id) {
@@ -39,6 +41,12 @@
           return Object.assign({}, state, {
             pos: action.pos
           });
+        case 'ADD_CONNECTION':
+          if (state.id === action.node1.Node || state.id === action.node2.Node) {
+            return Object.assign({}, state, {
+              Connections: Connections(state.Connections, action)
+            });
+          }
       }
       return state;
     };
@@ -50,6 +58,7 @@
         case 'ADD_NODE':
           return slice.call(state).concat([Node(void 0, action)]);
         case 'SET_POS':
+        case 'ADD_CONNECTION':
           return state.map((function(_this) {
             return function(t) {
               return Node(t, action);
@@ -58,12 +67,42 @@
       }
       return state;
     };
+    Connections = function(state, action) {
+      if (state == null) {
+        state = [];
+      }
+      switch (action.type) {
+        case 'ADD_CONNECTION':
+          return slice.call(state).concat([{
+              id: action.id,
+              Node1: action.node1,
+              Node2: action.node2
+            }]);
+      }
+      return state;
+    };
+    MovedNode = function(state, action) {
+      if (state == null) {
+        state = {
+          id: -1
+        };
+      }
+      switch (action.type) {
+        case 'SET_POS':
+          return Object.assign({}, state, {
+            id: action.id
+          });
+      }
+      return Object.assign({}, state, {
+        id: -1
+      });
+    };
     Connecting = function(state, action) {
       if (state == null) {
         state = false;
       }
       switch (action.type) {
-        case 'SELECT':
+        case 'START_CONNECTING':
           return true;
         case 'STOP_CONNECTING':
           return false;
@@ -79,17 +118,20 @@
         };
       }
       switch (action.type) {
-        case 'SELECT':
+        case 'START_CONNECTING':
           return {
             Node: action.node,
             Field: action.field,
-            Type: action.fieldType
+            Type: action.fieldType,
+            HandlePos: action.handlePos
           };
       }
       return state;
     };
     return combineReducers({
       Nodes: Nodes,
+      MovedNode: MovedNode,
+      Connections: Connections,
       Connecting: Connecting,
       Selected: Selected
     });

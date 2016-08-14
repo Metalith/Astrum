@@ -5,7 +5,7 @@
     font-size: 16px;
     text-align: center;
 
-    background-color: #cc443e;
+    background-color: #D34747;
     color: white;
 
     border-radius: 0.75em;
@@ -95,7 +95,7 @@ input[type=number] {
     width: 100px;
     height: 20px;
     border-bottom: solid 1px #c9c9c9;
-    background-color: #cc9999;
+    background-color: #F57373;
     font-family: "Lato";
     color: white;
     box-sizing: border-box;

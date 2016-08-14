@@ -5,10 +5,15 @@ define ["react", "reactredux", "Actions", "Node", 'MenuItem'], ( React, t, Actio
         constructor: (props) ->
             super props
 
+        mapSelectedToProps: (state) =>
+            return {
+                Selected: state.Selected
+            }
+
         render: ->
             i = 0;
             <div>
-                {@props.nodes.map((node) => GenNode = connect()(Node[node.nodeType]); <GenNode key={node.id} pos={node.pos} id={node.id}/>)}
+                {@props.nodes.map((node) => GenNode = connect(@mapSelectedToProps)(Node[node.nodeType]); <GenNode key={node.id} pos={node.pos} Connections={node.Connections} id={node.id}/>)}
             </div>
 
 

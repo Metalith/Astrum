@@ -10,6 +10,11 @@
     background: #0e1112;
 }
 
+.Connectors {
+    position: absolute;
+    pointer-events:none;
+}
+
 .context-menu {
     position: absolute;
     display: inline-block;

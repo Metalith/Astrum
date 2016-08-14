@@ -40,6 +40,10 @@
           "hide": this.hideContextMenu,
           "show": this.state.showContextMenu,
           "pos": this.state.menuPos
+        }), React.createElement("svg", {
+          "className": "Connectors",
+          "height": "100%",
+          "width": "100%"
         }));
       };
 

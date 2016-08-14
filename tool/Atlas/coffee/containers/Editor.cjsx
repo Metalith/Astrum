@@ -16,4 +16,6 @@ define ["react", "Menu", "Background", "Nodes"], (React, Menu, Background, Nodes
                 <Background />
                 <Nodes />
                 <Menu hide={@hideContextMenu} show={@state.showContextMenu} pos={@state.menuPos}/>
+                <svg className="Connectors" height="100%" width="100%">
+                </svg>
             </div>

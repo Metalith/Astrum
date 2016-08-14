@@ -14,12 +14,13 @@ define 'Actions', [''], () ->
             pos: pos
         }
 
-    select = (node, field, type) ->
+    startConnecting = (node, field, type, handlePos) ->
         return {
-            type: 'SELECT'
+            type: 'START_CONNECTING'
             node: node
             field: field
             fieldType: type
+            handlePos: handlePos
         }
 
     stopConnecting = () ->
@@ -27,9 +28,19 @@ define 'Actions', [''], () ->
             type: 'STOP_CONNECTING'
         }
 
+    j = 0
+    addConnection = (node1, node2) ->
+        return {
+            type: 'ADD_CONNECTION'
+            id: j++
+            node1: node1
+            node2: node2
+    }
+
     return {
         addNode: addNode
         setPos: setPos
-        select: select
+        startConnecting: startConnecting
         stopConnecting: stopConnecting
+        addConnection: addConnection
     }

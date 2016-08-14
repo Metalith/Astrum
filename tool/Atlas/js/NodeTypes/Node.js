@@ -24,19 +24,19 @@
           })(this)),
           "onMouseDown": ((function(_this) {
             return function(e) {
-              _this.el.classList.toggle('sel');
+              _this.el.classList.add('sel');
               _this.props.startConnection(_this.props.field, _this.props.type);
               return e.stopPropagation();
             };
           })(this)),
           "onMouseEnter": ((function(_this) {
             return function() {
-              return _this.el.classList.toggle('hov');
+              return _this.el.classList.add('hov');
             };
           })(this)),
           "onMouseLeave": ((function(_this) {
             return function() {
-              return _this.el.classList.toggle('hov');
+              return _this.el.classList.remove('hov');
             };
           })(this))
         }, this.props.field, React.createElement("div", {
@@ -93,11 +93,25 @@
       };
 
       Node.prototype.onDrag = function(e) {
-        return this.setState({
-          pos: {
-            x: e.pageX - this.state.rel.x,
-            y: e.pageY - this.state.rel.y
+        var Con, Connector, i, newPos, path, ref;
+        newPos = {
+          x: e.pageX - this.state.rel.x,
+          y: e.pageY - this.state.rel.y
+        };
+        ref = this.props.Connections;
+        for (i in ref) {
+          Con = ref[i];
+          Connector = document.querySelector("#Connector" + Con.id);
+          path = Connector.getPathData();
+          if (Con.Node1.Node === this.props.id) {
+            path[0].values = [e.pageX - this.state.rel.x + Con.Node1.HandlePos.x, e.pageY - this.state.rel.y + Con.Node1.HandlePos.y];
+          } else {
+            path[1].values = [e.pageX - this.state.rel.x + Con.Node2.HandlePos.x, e.pageY - this.state.rel.y + Con.Node2.HandlePos.y];
           }
+          Connector.setPathData(path);
+        }
+        return this.setState({
+          pos: newPos
         });
       };
 
@@ -109,14 +123,39 @@
       };
 
       Node.prototype.startConnection = function(field, type) {
-        this.props.dispatch(Actions.select(this.props.id, field, type));
+        var handlePos, handleRect;
+        handleRect = document.querySelector("#Node" + this.props.id + ">." + type + ">#" + field + ">.Handle").getBoundingClientRect();
+        handlePos = {
+          x: handleRect.left + handleRect.width / 2 - this.state.pos.x,
+          y: handleRect.top + handleRect.height / 2 - this.state.pos.y
+        };
+        this.props.dispatch(Actions.startConnecting(this.props.id, field, type, handlePos));
         return document.addEventListener('mouseup', this.endConnection);
       };
 
       Node.prototype.endConnection = function(e) {
+        var handlePos, handleRect;
         this.props.dispatch(Actions.stopConnecting());
         if (e.target.classList.contains("Field")) {
-          alert(e.target.className);
+          if (e.target.parentElement.className !== this.props.Selected.Type) {
+            if (e.target.parentElement.parentElement.id !== "Node" + this.props.Selected.Node) {
+              handleRect = e.target.querySelector('.Handle').getBoundingClientRect();
+              handlePos = {
+                x: handleRect.left + handleRect.width / 2 - e.target.parentElement.parentElement.offsetLeft,
+                y: handleRect.top + handleRect.height / 2 - e.target.parentElement.parentElement.offsetTop
+              };
+              this.props.dispatch(Actions.addConnection(this.props.Selected, {
+                Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
+                Field: e.target.textContent,
+                Type: e.target.parentElement.className,
+                HandlePos: handlePos
+              }));
+            } else {
+              alert("Error: Cannot connect a node to itself");
+            }
+          } else {
+            alert("Error: Fields of same type");
+          }
         }
         return document.removeEventListener('mouseup', this.endConnection);
       };
@@ -190,13 +229,16 @@
       }
 
       TestNode.prototype.input = {
-        TestInput: "Test"
+        TestInput: "Test",
+        GreenInput: "2"
       };
 
       TestNode.prototype.center = "Test Center";
 
       TestNode.prototype.output = {
-        TestOutput: "Test"
+        TestOutput: "Test",
+        TestOutput2: "test",
+        TestOutput3: "Blue"
       };
 
       return TestNode;

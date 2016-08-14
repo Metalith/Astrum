@@ -5,11 +5,10 @@
     font-size: 16px;
     text-align: center;
 
-    background-color: #D34747;
+    background-color: #cc443e;
     color: white;
 
     border-radius: 0.75em;
-    padding-right: 30px;
     padding: 3px 18px 10px 18px;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none;   /* Chrome/Safari/Opera */
@@ -95,7 +94,7 @@ input[type=number] {
     width: 100px;
     height: 20px;
     border-bottom: solid 1px #c9c9c9;
-    background-color: #F57373;
+    background-color: #cc9999;
     font-family: "Lato";
     color: white;
     box-sizing: border-box;

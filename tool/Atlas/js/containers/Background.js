@@ -22,8 +22,6 @@
 
       Background.prototype.tempConnector = '';
 
-      Background.prototype.Connectors = [];
-
       function Background(props) {
         this.onWindowResize = bind(this.onWindowResize, this);
         this.renderScene = bind(this.renderScene, this);
@@ -58,7 +56,7 @@
       };
 
       Background.prototype.componentWillUpdate = function(nextProps, nextState) {
-        var Connectors, Handle1, Handle2, Node1, Node2, d, geometry, handlePos, material, newConnection, newpath, xmlns;
+        var Connectors, Handle1, Handle2, Node1, Node2, a, d, geometry, h, h1, h2, half, handlePos, height, material, newConnection, newpath, t, xmlns;
         if (!this.props.Connecting && nextProps.Connecting) {
           material = new THREE.LineDashedMaterial({
             color: 0xDDDDDD,
@@ -80,7 +78,7 @@
           return document.addEventListener('mouseup', this.removeTempConnector);
         } else if (nextProps.Connections.length > this.props.Connections.length) {
           Connectors = document.querySelector(".Connectors");
-          newConnection = nextProps.Connections[this.Connectors.length];
+          newConnection = nextProps.Connections[this.props.Connections.length];
           Node1 = nextProps.Nodes[newConnection.Node1.Node];
           Node2 = nextProps.Nodes[newConnection.Node2.Node];
           Handle1 = {
@@ -91,16 +89,54 @@
             x: Node2.pos.x + newConnection.Node2.HandlePos.x,
             y: Node2.pos.y + newConnection.Node2.HandlePos.y
           };
+          if (newConnection.Node1.Type !== "Input") {
+            a = Handle1;
+            Handle1 = Handle2;
+            Handle2 = a;
+          }
           xmlns = "http://www.w3.org/2000/svg";
           newpath = document.createElementNS(xmlns, "path");
-          d = "M" + Handle1.x + " " + Handle1.y + " L" + Handle2.x + " " + Handle2.y;
+          d = "M" + Handle1.x + " " + Handle1.y;
+          d += "h-50";
+          if (Handle1.x < Handle2.x + 100) {
+            half = (Handle2.y - Handle1.y) / 2;
+            h1 = document.querySelector("#Node" + Node1.id).getBoundingClientRect();
+            h2 = document.querySelector("#Node" + Node2.id).getBoundingClientRect();
+            height = 0;
+            if (half >= 0) {
+              height = h1.bottom - h2.top;
+            } else {
+              height = h2.bottom - h1.top;
+            }
+            if (height + 25 >= 0) {
+              h = h1.height + h2.height + 25;
+              t = 1;
+              if (half < 0) {
+                t = -1;
+              }
+              d += "v" + (t * h);
+              d += "H" + (Handle2.x + 50);
+              d += "v" + (t * (-h + (t * half) * 2));
+              d += "h-50";
+            } else {
+              d += "v" + half;
+              d += "H" + (Handle2.x + 50);
+              d += "v" + half;
+              d += "h-50";
+            }
+          } else {
+            half = (Handle2.x - Handle1.x) / 2 + 50;
+            d += "h" + half;
+            d += "V" + Handle2.y;
+            d += "h" + half;
+            d += "h-50";
+          }
           newpath.setAttributeNS(null, "id", "Connector" + newConnection.id);
           newpath.setAttributeNS(null, "d", d);
           newpath.setAttributeNS(null, "stroke", "white");
           newpath.setAttributeNS(null, "stroke-width", "2");
           newpath.setAttributeNS(null, "fill", "none");
-          Connectors.appendChild(newpath);
-          return this.Connectors.push(newConnection.id);
+          return Connectors.appendChild(newpath);
         }
       };
 

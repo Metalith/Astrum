@@ -93,7 +93,7 @@
       };
 
       Node.prototype.onDrag = function(e) {
-        var Con, Connector, i, newPos, path, ref;
+        var Con, Connector, Handle1, Handle2, d, h, h1, h2, half, height, i, newPos, ref, t;
         newPos = {
           x: e.pageX - this.state.rel.x,
           y: e.pageY - this.state.rel.y
@@ -102,13 +102,63 @@
         for (i in ref) {
           Con = ref[i];
           Connector = document.querySelector("#Connector" + Con.id);
-          path = Connector.getPathData();
+          h1 = document.querySelector("#Node" + Con.Node1.Node).getBoundingClientRect();
+          h2 = document.querySelector("#Node" + Con.Node2.Node).getBoundingClientRect();
+          Handle1 = {};
+          Handle2 = {};
           if (Con.Node1.Node === this.props.id) {
-            path[0].values = [e.pageX - this.state.rel.x + Con.Node1.HandlePos.x, e.pageY - this.state.rel.y + Con.Node1.HandlePos.y];
+            Handle1 = {
+              x: e.pageX - this.state.rel.x + Con.Node1.HandlePos.x,
+              y: e.pageY - this.state.rel.y + Con.Node1.HandlePos.y
+            };
+            Handle2 = {
+              x: h2.left + Con.Node2.HandlePos.x,
+              y: h2.top + Con.Node2.HandlePos.y
+            };
           } else {
-            path[1].values = [e.pageX - this.state.rel.x + Con.Node2.HandlePos.x, e.pageY - this.state.rel.y + Con.Node2.HandlePos.y];
+            Handle1 = {
+              x: h1.left + Con.Node1.HandlePos.x,
+              y: h1.top + Con.Node1.HandlePos.y
+            };
+            Handle2 = {
+              x: e.pageX - this.state.rel.x + Con.Node2.HandlePos.x,
+              y: e.pageY - this.state.rel.y + Con.Node2.HandlePos.y
+            };
           }
-          Connector.setPathData(path);
+          d = "M" + Handle1.x + " " + Handle1.y;
+          d += "h-50";
+          if (Handle1.x < Handle2.x + 100) {
+            half = (Handle2.y - Handle1.y) / 2;
+            height = 0;
+            if (half >= 0) {
+              height = h1.bottom - h2.top;
+            } else {
+              height = h2.bottom - h1.top;
+            }
+            if (height + 25 >= 0) {
+              h = h1.height + h2.height + 25;
+              t = 1;
+              if (half < 0) {
+                t = -1;
+              }
+              d += "v" + (t * h);
+              d += "H" + (Handle2.x + 50);
+              d += "v" + (t * (-h + (t * half) * 2));
+              d += "h-50";
+            } else {
+              d += "v" + half;
+              d += "H" + (Handle2.x + 50);
+              d += "v" + half;
+              d += "h-50";
+            }
+          } else {
+            half = (Handle2.x - Handle1.x) / 2 + 50;
+            d += "h" + half;
+            d += "V" + Handle2.y;
+            d += "h" + half;
+            d += "h-50";
+          }
+          Connector.setAttribute("d", d);
         }
         return this.setState({
           pos: newPos
@@ -144,12 +194,21 @@
                 x: handleRect.left + handleRect.width / 2 - e.target.parentElement.parentElement.offsetLeft,
                 y: handleRect.top + handleRect.height / 2 - e.target.parentElement.parentElement.offsetTop
               };
-              this.props.dispatch(Actions.addConnection(this.props.Selected, {
-                Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
-                Field: e.target.textContent,
-                Type: e.target.parentElement.className,
-                HandlePos: handlePos
-              }));
+              if (this.props.Selected.Type === "Input") {
+                this.props.dispatch(Actions.addConnection(this.props.Selected, {
+                  Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
+                  Field: e.target.textContent,
+                  Type: e.target.parentElement.className,
+                  HandlePos: handlePos
+                }));
+              } else {
+                this.props.dispatch(Actions.addConnection({
+                  Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
+                  Field: e.target.textContent,
+                  Type: e.target.parentElement.className,
+                  HandlePos: handlePos
+                }, this.props.Selected));
+              }
             } else {
               alert("Error: Cannot connect a node to itself");
             }

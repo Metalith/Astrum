@@ -14,13 +14,14 @@ define 'Actions', [''], () ->
             pos: pos
         }
 
-    startConnecting = (node, field, type, handlePos) ->
+    startConnecting = (node, field, type, handlePos, value) ->
         return {
             type: 'START_CONNECTING'
             node: node
             field: field
             fieldType: type
             handlePos: handlePos
+            value: value
         }
 
     stopConnecting = () ->

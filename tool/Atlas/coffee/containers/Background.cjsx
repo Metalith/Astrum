@@ -117,7 +117,7 @@ define ['three', 'react'], (THREE, React) ->
             @tempConnector.geometry.lineDistancesNeedUpdate = true;
 
         removeTempConnector:() =>
-            document.querySelector("#Node" + @props.Selected.Node+">."+ @props.Selected.Type+">#" + @props.Selected.Field).classList.remove('sel')
+            document.querySelector('.Field.sel').classList.remove('sel')
             document.removeEventListener('mousemove', @updateTempConnector)
             document.removeEventListener('mouseup', @removeTempConnector)
             @scene.remove(@tempConnector)

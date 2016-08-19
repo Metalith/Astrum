@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "file": "Connector.js",
+  "sourceRoot": "../..",
+  "sources": [
+    "coffee/components/Connector.cjsx"
+  ],
+  "names": [],
+  "mappings": ""
+}

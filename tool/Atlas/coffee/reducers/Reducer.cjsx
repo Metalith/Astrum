@@ -24,7 +24,7 @@ define ['redux'], () ->
         switch action.type
             when 'ADD_NODE'
                 return [state..., Node(undefined, action)]
-            when 'SET_POS', 'ADD_CONNECTION'
+            when 'SET_POS', 'SET_VAL', 'ADD_CONNECTION'
                 return state.map((t) => Node(t, action))
         return state
     Connections = (state = [], action) ->
@@ -32,12 +32,6 @@ define ['redux'], () ->
             when 'ADD_CONNECTION'
                 return [state..., {id: action.id, Node1: action.node1, Node2: action.node2}]
         return state
-
-    MovedNode = (state = {id: -1}, action) ->
-        switch action.type
-            when 'SET_POS'
-                return Object.assign({}, state, {id: action.id})
-        return Object.assign({}, state, {id: -1})
 
     Connecting = (state = false, action) ->
         switch action.type
@@ -55,12 +49,12 @@ define ['redux'], () ->
                     Field: action.field
                     Type: action.fieldType
                     HandlePos: action.handlePos
+                    Value: action.value
                 }
         return state
 
     return combineReducers({
         Nodes,
-        MovedNode,
         Connections,
         Connecting,
         Selected

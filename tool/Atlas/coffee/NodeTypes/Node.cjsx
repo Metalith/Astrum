@@ -1,13 +1,11 @@
 define ["react", "Actions"], (React, Actions) ->
+    connect = require('reactredux').connect
 
     class NodeField extends React.Component
         constructor: (props) ->
             super props
 
         render: ->
-            # if @state.hovering
-            #     classes = "Field " + "hov"
-            # else if @state.selectedclasses = "Field"
             <div className="Field" id={@props.field}
                 ref={(c) => @el = c}
                 onMouseDown={(e) => @el.classList.add('sel'); @props.startConnection @props.field, @props.type; e.stopPropagation()}
@@ -26,6 +24,8 @@ define ["react", "Actions"], (React, Actions) ->
                     x: @props.pos.x
                     y: @props.pos.y
                 rel: null
+        output: {}
+        input: {}
 
         componentWillUpdate: (props, state) =>
             if !@state.dragging && state.dragging
@@ -34,6 +34,9 @@ define ["react", "Actions"], (React, Actions) ->
             else if @state.dragging && !state.dragging
                 document.removeEventListener('mousemove', @onDrag)
                 document.removeEventListener('mouseup', @onMouseUp)
+
+        componentWillReceiveProps: (nextProps) ->
+            console.log nextProps.Connections.length
 
         onMouseDown: (e) =>
             if e.target.tagName != "INPUT" && e.target.className != "Field" && e.target.className != "Handle"
@@ -103,6 +106,7 @@ define ["react", "Actions"], (React, Actions) ->
                 pos: newPos
             })
 
+
         onMouseUp: (e) =>
             @setState({dragging: false})
             @props.dispatch(Actions.setPos(@props.id, @state.pos))
@@ -112,7 +116,10 @@ define ["react", "Actions"], (React, Actions) ->
             handlePos =
                 x: handleRect.left + handleRect.width / 2 - @state.pos.x
                 y: handleRect.top + handleRect.height / 2 - @state.pos.y
-            @props.dispatch Actions.startConnecting @props.id, field, type, handlePos
+            if type == "Output"
+                @props.dispatch Actions.startConnecting @props.id, field, type, handlePos, @output[field]
+            else
+                @props.dispatch Actions.startConnecting @props.id, field, type, handlePos, 0
             document.addEventListener 'mouseup', @endConnection
 
         endConnection: (e) =>
@@ -143,13 +150,17 @@ define ["react", "Actions"], (React, Actions) ->
                     alert "Error: Fields of same type"
             document.removeEventListener 'mouseup', @endConnection
 
+
+        update: () =>
+            return
+
         render: ->
             i = 0
             Input = <div className="Input"><br />
                 {for k,v of @input
                     <NodeField key={++i} field={k} type={"Input"} startConnection={@startConnection}/>}
             </div>
-            Center = <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center}</div></div>
+            Center = <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center()}</div></div>
             Output = <div className="Output"><br />
                 {for k,v of @output
                     <NodeField key={++i} field={k} type={"Output"} startConnection={@startConnection}/>}
@@ -166,32 +177,48 @@ define ["react", "Actions"], (React, Actions) ->
             super props
         input:
             TestInput: "Test"
-            GreenInput: "2"
-        center: "Test Center"
-        output:
-            TestOutput: "Test"
-            TestOutput2: "test"
-            TestOutput3: "Blue"
+        center: ->
+            <input type="number" name="fname" onChange={@update}/>
 
     class ValueNode extends Node
         name: 'Value'
         constructor: (props) ->
             super props
-        center: <input type="number" name="fname" onChange={() -> }/>
+        update: (e) =>
+            @output.Val = parseInt(e.target.value)
+            super()
+
+        center: ->
+            <input type="number" name="fname" onChange={@update}/>
         output:
-            Val: () -> @Value
+            Val: 2
 
     class OutputNode extends Node
         name: 'Output'
         constructor: (props) ->
             super props
-        center: ""
+        center: -> ""
         input:
             Program: ""
 
+    # class MathNode extends Node
+    #     name: 'Math'
+    #     constructor: (props) ->
+    #         super props
+    #     center:
+    #     input:
+    #         Value1: 0
+    #         Value2: 0
+    #     output:
+    #         Result: 0
+
+    mapSelectedToProps = (state) =>
+        return {
+            Selected: state.Selected
+        }
+
     return {
-        Node: Node
-        TestNode: TestNode
-        Value: ValueNode
-        Output: OutputNode
+        TestNode: connect(mapSelectedToProps)(TestNode)
+        Value: connect(mapSelectedToProps)(ValueNode)
+        Output: connect(mapSelectedToProps)(OutputNode)
     }

@@ -1,5 +1,5 @@
 .Node {
-    display: inline-block;
+    display: inline-table;
     position: absolute;
     font-family: "Lato thin";
     font-size: 16px;
@@ -17,6 +17,7 @@
     -ms-user-select: none;       /* Internet Explorer/Edge */
     user-select: none;           /* Non-prefixed version, currently */
     cursor: move;
+    white-space: nowrap;
 }
 
 .NodeName {

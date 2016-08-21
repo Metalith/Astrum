@@ -1,4 +1,4 @@
-define ["react", "Menu", "Background", "Nodes"], (React, Menu, Background, Nodes) ->
+define ["react", "Menu", "Background", "Nodes", "Connectors"], (React, Menu, Background, Nodes, Connectors) ->
     class Editor extends React.Component
         constructor: (props) ->
             super props
@@ -15,7 +15,6 @@ define ["react", "Menu", "Background", "Nodes"], (React, Menu, Background, Nodes
             <div id="Editor" onContextMenu={(e) => @setState(showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]); e.preventDefault()}>
                 <Background />
                 <Nodes />
+                <Connectors />
                 <Menu hide={@hideContextMenu} show={@state.showContextMenu} pos={@state.menuPos}/>
-                <svg className="Connectors" height="100%" width="100%">
-                </svg>
             </div>

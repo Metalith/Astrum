@@ -11,7 +11,7 @@ require.config
         three: "lib/three.min"
         #
         UI: "UI"
-        Node: "NodeTypes/Node"
+        Node: "components/Node"
         TestNode: "NodeTypes/TestNode"
         Editor: "containers/Editor"
         Reducer: "reducers/Reducer"
@@ -21,7 +21,15 @@ require.config
         Background: "containers/Background"
         Nodes: "containers/Nodes"
 
-require ['redux', 'Reducer', 'Editor', 'react', 'ReactDOM', 'reactredux'], (T, Reducer, Editor, React, ReactDOM, A) =>
+        Connectors: "containers/Connectors"
+        TempConnector: "components/TempConnector"
+        Connector: "components/Connector"
+        Input: "components/Input"
+        Output: "components/Output"
+        Field: "components/Field"
+
+
+require ['Reducer', 'Editor', 'react', 'ReactDOM', 'reactredux'], (Reducer, Editor, React, ReactDOM, A) =>
     createStore = require('redux').createStore
     Provider = require('reactredux').Provider
     store = createStore(Reducer, window.devToolsExtension && window.devToolsExtension())

@@ -14,14 +14,12 @@ define 'Actions', [''], () ->
             pos: pos
         }
 
-    startConnecting = (node, field, type, handlePos, value) ->
+    startConnecting = (node, field, type) ->
         return {
             type: 'START_CONNECTING'
             node: node
             field: field
             fieldType: type
-            handlePos: handlePos
-            value: value
         }
 
     stopConnecting = () ->
@@ -29,18 +27,32 @@ define 'Actions', [''], () ->
             type: 'STOP_CONNECTING'
         }
 
+    startDragging = (id) ->
+        return {
+            type: 'START_DRAGGING'
+            id: id
+        }
+
+    stopDragging = (id) ->
+        return {
+            type: 'STOP_DRAGGING'
+            id: id
+        }
+
     j = 0
-    addConnection = (node1, node2) ->
+    addConnection = (Input, Output) ->
         return {
             type: 'ADD_CONNECTION'
             id: j++
-            node1: node1
-            node2: node2
+            Input: Input
+            Output: Output
     }
 
     return {
         addNode: addNode
         setPos: setPos
+        startDragging: startDragging
+        stopDragging: stopDragging
         startConnecting: startConnecting
         stopConnecting: stopConnecting
         addConnection: addConnection

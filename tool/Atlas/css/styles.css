@@ -149,4 +149,5 @@ body {
     height: 100%;
     margin: 0px;
     overflow: hidden;
+    -webkit-user-select: none;
 }

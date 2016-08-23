@@ -8,16 +8,16 @@ initialState =
 define ['redux'], () ->
     combineReducers = require('redux').combineReducers
 
-    Node =  (state = {nodeType: '', id: -1, pos:{x:-1,y:-1}, Connections: [], dragging: false}, action) ->
+    Node =  (state = {nodeType: '', id: -1, pos:{x:-1,y:-1}, Connections: [], input: {}, dragging: false}, action) ->
         switch action.type
             when 'ADD_NODE'
-                return {nodeType: action.nodeType, id: action.id, pos: action.pos, Connections: [], dragging: false}
+                return {nodeType: action.nodeType, id: action.id, pos: action.pos, Connections: [], input: action.input, dragging: false}
             when 'SET_POS'
                 if state.id != action.id then return state
                 return Object.assign({}, state, {pos: action.pos, dragging: false})
             when 'ADD_CONNECTION'
                 if state.id == action.Input.Node || state.id == action.Output.Node
-                    return Object.assign({}, state, {Connections: [state.Connections..., action.id]})
+                    return Object.assign({}, state, {Connections: Connections(state.Connections, action)})
             when 'START_DRAGGING'
                 if state.id == action.id
                     return Object.assign({}, state, {dragging: true})
@@ -29,6 +29,7 @@ define ['redux'], () ->
     Nodes = (state = [], action) ->
         switch action.type
             when 'ADD_NODE'
+                action.id = state.length
                 return [state..., Node(undefined, action)]
             when 'SET_POS', 'SET_VAL', 'ADD_CONNECTION', 'START_DRAGGING', 'STOP_DRAGGING'
                 return state.map((t) => Node(t, action))
@@ -36,6 +37,7 @@ define ['redux'], () ->
     Connections = (state = [], action) ->
         switch action.type
             when 'ADD_CONNECTION'
+                action.id = state.length
                 return [state..., {id: action.id, Input: action.Input, Output: action.Output}]
         return state
 
@@ -50,6 +52,7 @@ define ['redux'], () ->
     Selected = (state = { Node: -1, Field: '', Type: ''}, action) ->
         switch action.type
             when 'START_CONNECTING'
+                console.log action
                 return {
                     Node: action.node
                     Field: action.field

@@ -1,11 +1,10 @@
 define 'Actions', [''], () ->
-    i = 0
-    addNode = (nodeType, pos) ->
+    addNode = (nodeType, pos, input) ->
         return {
             type: 'ADD_NODE',
             nodeType: nodeType
-            id: i++
             pos: pos
+            input: input
         }
     setPos = (node, pos) ->
         return {
@@ -39,11 +38,9 @@ define 'Actions', [''], () ->
             id: id
         }
 
-    j = 0
     addConnection = (Input, Output) ->
         return {
             type: 'ADD_CONNECTION'
-            id: j++
             Input: Input
             Output: Output
     }

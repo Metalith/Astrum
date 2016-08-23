@@ -63,6 +63,7 @@ define ["react"], (React) ->
             <path d={@d}  stroke="white" strokeWidth="2" fill="none"/>
 
     mapStateToProps = (state, ownProps) =>
+        console.log ownProps
         return {
             Input: state.Nodes[ownProps.Connection.Input.Node]
             Output: state.Nodes[ownProps.Connection.Output.Node]

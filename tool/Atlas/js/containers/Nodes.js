@@ -4,17 +4,25 @@
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
-  define(["react", "reactredux", "Actions", "Node", 'MenuItem'], function(React, t, Actions, Node, MenuItem) {
+  define(["react", "Actions", "Node", 'MenuItem'], function(React, Actions, Node, MenuItem) {
     var Nodes, connect, mapStateToProps;
     connect = require('reactredux').connect;
     Nodes = (function(superClass) {
       extend(Nodes, superClass);
 
       function Nodes(props) {
+        this.updateInput = bind(this.updateInput, this);
         this.update = bind(this.update, this);
+        var Inputs, i, node, ref;
         Nodes.__super__.constructor.call(this, props);
+        Inputs = [];
+        ref = props.nodes;
+        for (i in ref) {
+          node = ref[i];
+          Inputs[i] = node.input;
+        }
         this.state = {
-          Inputs: []
+          Inputs: Inputs
         };
       }
 
@@ -24,6 +32,31 @@
         Inputs[0] = {
           val: "5000"
         };
+        return this.setState({
+          Inputs: Inputs
+        });
+      };
+
+      Nodes.prototype.componentWillReceiveProps = function(nextProps) {
+        return this.updateInputs(nextProps.nodes);
+      };
+
+      Nodes.prototype.updateInputs = function(nodes) {
+        var Inputs, i, node;
+        Inputs = [];
+        for (i in nodes) {
+          node = nodes[i];
+          Inputs[i] = node.input;
+        }
+        return this.setState({
+          Inputs: Inputs
+        });
+      };
+
+      Nodes.prototype.updateInput = function(node, input) {
+        var Inputs;
+        Inputs = this.state.Inputs;
+        Inputs[node] = input;
         return this.setState({
           Inputs: Inputs
         });
@@ -39,9 +72,9 @@
             return React.createElement(GenNode, {
               "key": node.id,
               "pos": node.pos,
-              "update": _this.update,
+              "update": _this.updateInput,
+              "cons": node.Connections,
               "inputs": _this.state.Inputs[node.id],
-              "ConIDs": node.Connections,
               "id": node.id
             });
           };

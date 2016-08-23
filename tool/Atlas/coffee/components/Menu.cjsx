@@ -16,6 +16,6 @@ define ["react", "reactredux", "Actions", "Node", 'MenuItem'], ( React, t, Actio
                 style={ left: @props.pos[0], top: @props.pos[1]} >
                 &nbsp;&nbsp;Create Node
                 {NodeTypes.map((type) =>
-                    <MenuItem key={i++} name={type} hide={@props.hide} />)}
+                    <MenuItem key={i++} name={type} hide={@props.hide} defaultInput={Node[type].input}/>)}
             </div>)
     return Menu

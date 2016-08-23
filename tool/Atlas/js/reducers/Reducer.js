@@ -24,6 +24,7 @@
             y: -1
           },
           Connections: [],
+          input: {},
           dragging: false
         };
       }
@@ -34,6 +35,7 @@
             id: action.id,
             pos: action.pos,
             Connections: [],
+            input: action.input,
             dragging: false
           };
         case 'SET_POS':
@@ -47,7 +49,7 @@
         case 'ADD_CONNECTION':
           if (state.id === action.Input.Node || state.id === action.Output.Node) {
             return Object.assign({}, state, {
-              Connections: slice.call(state.Connections).concat([action.id])
+              Connections: Connections(state.Connections, action)
             });
           }
           break;
@@ -73,6 +75,7 @@
       }
       switch (action.type) {
         case 'ADD_NODE':
+          action.id = state.length;
           return slice.call(state).concat([Node(void 0, action)]);
         case 'SET_POS':
         case 'SET_VAL':
@@ -93,6 +96,7 @@
       }
       switch (action.type) {
         case 'ADD_CONNECTION':
+          action.id = state.length;
           return slice.call(state).concat([{
               id: action.id,
               Input: action.Input,
@@ -123,6 +127,7 @@
       }
       switch (action.type) {
         case 'START_CONNECTING':
+          console.log(action);
           return {
             Node: action.node,
             Field: action.field,

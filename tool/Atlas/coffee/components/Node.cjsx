@@ -11,9 +11,9 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
                     x: @props.pos.x
                     y: @props.pos.y
                 rel: null
-            testA = [2132, 21, 52, 821, 29, 2003, 763]
-            testB = [2, 5]
-            console.log testB.map((i) -> testA[i])
+            @input = @constructor.input
+            if @props.inputs
+                @input = @props.inputs
 
         componentWillUpdate: (props, state) =>
             if !@state.dragging && state.dragging
@@ -22,7 +22,9 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
             else if @state.dragging && !state.dragging
                 document.removeEventListener('mousemove', @onDrag)
                 document.removeEventListener('mouseup', @onMouseUp)
-            console.log "b"
+
+        componentWillReceiveProps: (nextProps) ->
+            @input = nextProps.inputs
 
         onMouseDown: (e) =>
             if e.target.tagName != "INPUT" && !e.target.classList.contains("Field") && e.target.className != "Handle"
@@ -49,7 +51,7 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
 
         render: ->
             return <div className="Node" id={"Node" + @props.id} style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
-                <Input input={@input} node={@props.id}/>
+                <Input input={@input} node={@props.id} cons={@props.cons}/>
                 <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center()}</div></div>
                 <Output output={@output} node={@props.id}/>
             </div>
@@ -59,8 +61,8 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         name: 'Test Node'
         constructor: (props) ->
             super props
-        input:
-            TestInput: "Test"
+        @input:
+            TestInput: ''
         center: ->
             <input type="number" name="fname" onChange={@update}/>
 
@@ -68,21 +70,19 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         name: 'Value'
         constructor: (props) ->
             super props
-
-        center: ->
-            <input type="number" name="fname" value={@Value}/>
-        Value: "20"
-        input:
-            Test: 0
+        center: =>
+            <input type="number" onChange={(e) => @props.update 0, {Value: e.target.value}; @props.update 1, {Value: e.target.value}} value={@input.Value}/>
+        @input:
+            Value: 10
         output:
-            Val: 2
+            Value: 10
 
     class OutputNode extends Node
         name: 'Output'
         constructor: (props) ->
             super props
         center: -> ""
-        input:
+        @input:
             Program: ""
 
     class MathNode extends Node
@@ -90,21 +90,15 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         constructor: (props) ->
             super props
         center: -> ''
-        input:
+        @input:
             Value1: 0
             Value2: 0
         output:
             Result: 0
 
-    mapSelectedToProps = (state, ownProps) =>
-        return {
-            Selected: state.Selected
-            Connections: ownProps.ConIDs.map((i) -> state.Connections[i])
-        }
-
     return {
-        TestNode: connect(mapSelectedToProps)(TestNode)
-        Value: connect(mapSelectedToProps)(ValueNode)
-        Output: connect(mapSelectedToProps)(OutputNode)
-        MathNode: connect(mapSelectedToProps)(MathNode)
+        TestNode: connect()(TestNode)
+        Value: connect()(ValueNode)
+        Output: connect()(OutputNode)
+        MathNode: connect()(MathNode)
     }

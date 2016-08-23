@@ -17,6 +17,7 @@
       }
 
       Field.prototype.startConnection = function(e) {
+        console.log(this.props.node);
         this.props.dispatch(Actions.startConnecting(this.props.node, this.props.field, e.target.parentElement.className));
         return document.addEventListener('mouseup', this.endConnection);
       };

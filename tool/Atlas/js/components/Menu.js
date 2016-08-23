@@ -30,7 +30,8 @@
             return React.createElement(MenuItem, {
               "key": i++,
               "name": type,
-              "hide": _this.props.hide
+              "hide": _this.props.hide,
+              "defaultInput": Node[type].input
             });
           };
         })(this)));

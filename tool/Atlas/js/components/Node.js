@@ -5,7 +5,7 @@
     hasProp = {}.hasOwnProperty;
 
   define(["react", "Actions", "Input", "Output"], function(React, Actions, Input, Output) {
-    var MathNode, Node, OutputNode, TestNode, ValueNode, connect, mapSelectedToProps;
+    var MathNode, Node, OutputNode, TestNode, ValueNode, connect;
     connect = require('reactredux').connect;
     Node = (function(superClass) {
       extend(Node, superClass);
@@ -17,7 +17,6 @@
         this.onDrag = bind(this.onDrag, this);
         this.onMouseDown = bind(this.onMouseDown, this);
         this.componentWillUpdate = bind(this.componentWillUpdate, this);
-        var testA, testB;
         Node.__super__.constructor.call(this, props);
         this.state = {
           dragging: false,
@@ -27,22 +26,24 @@
           },
           rel: null
         };
-        testA = [2132, 21, 52, 821, 29, 2003, 763];
-        testB = [2, 5];
-        console.log(testB.map(function(i) {
-          return testA[i];
-        }));
+        this.input = this.constructor.input;
+        if (this.props.inputs) {
+          this.input = this.props.inputs;
+        }
       }
 
       Node.prototype.componentWillUpdate = function(props, state) {
         if (!this.state.dragging && state.dragging) {
           document.addEventListener('mousemove', this.onDrag);
-          document.addEventListener('mouseup', this.onMouseUp);
+          return document.addEventListener('mouseup', this.onMouseUp);
         } else if (this.state.dragging && !state.dragging) {
           document.removeEventListener('mousemove', this.onDrag);
-          document.removeEventListener('mouseup', this.onMouseUp);
+          return document.removeEventListener('mouseup', this.onMouseUp);
         }
-        return console.log("b");
+      };
+
+      Node.prototype.componentWillReceiveProps = function(nextProps) {
+        return this.input = nextProps.inputs;
       };
 
       Node.prototype.onMouseDown = function(e) {
@@ -87,7 +88,8 @@
           "onMouseDown": this.onMouseDown
         }, React.createElement(Input, {
           "input": this.input,
-          "node": this.props.id
+          "node": this.props.id,
+          "cons": this.props.cons
         }), React.createElement("div", {
           "className": "Center"
         }, React.createElement("div", {
@@ -112,8 +114,8 @@
         TestNode.__super__.constructor.call(this, props);
       }
 
-      TestNode.prototype.input = {
-        TestInput: "Test"
+      TestNode.input = {
+        TestInput: ''
       };
 
       TestNode.prototype.center = function() {
@@ -133,25 +135,33 @@
       ValueNode.prototype.name = 'Value';
 
       function ValueNode(props) {
+        this.center = bind(this.center, this);
         ValueNode.__super__.constructor.call(this, props);
       }
 
       ValueNode.prototype.center = function() {
         return React.createElement("input", {
           "type": "number",
-          "name": "fname",
-          "value": this.Value
+          "onChange": ((function(_this) {
+            return function(e) {
+              _this.props.update(0, {
+                Value: e.target.value
+              });
+              return _this.props.update(1, {
+                Value: e.target.value
+              });
+            };
+          })(this)),
+          "value": this.input.Value
         });
       };
 
-      ValueNode.prototype.Value = "20";
-
-      ValueNode.prototype.input = {
-        Test: 0
+      ValueNode.input = {
+        Value: 10
       };
 
       ValueNode.prototype.output = {
-        Val: 2
+        Value: 10
       };
 
       return ValueNode;
@@ -170,7 +180,7 @@
         return "";
       };
 
-      OutputNode.prototype.input = {
+      OutputNode.input = {
         Program: ""
       };
 
@@ -190,7 +200,7 @@
         return '';
       };
 
-      MathNode.prototype.input = {
+      MathNode.input = {
         Value1: 0,
         Value2: 0
       };
@@ -202,21 +212,11 @@
       return MathNode;
 
     })(Node);
-    mapSelectedToProps = (function(_this) {
-      return function(state, ownProps) {
-        return {
-          Selected: state.Selected,
-          Connections: ownProps.ConIDs.map(function(i) {
-            return state.Connections[i];
-          })
-        };
-      };
-    })(this);
     return {
-      TestNode: connect(mapSelectedToProps)(TestNode),
-      Value: connect(mapSelectedToProps)(ValueNode),
-      Output: connect(mapSelectedToProps)(OutputNode),
-      MathNode: connect(mapSelectedToProps)(MathNode)
+      TestNode: connect()(TestNode),
+      Value: connect()(ValueNode),
+      Output: connect()(OutputNode),
+      MathNode: connect()(MathNode)
     };
   });
 

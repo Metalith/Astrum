@@ -1,10 +1,11 @@
 define 'Actions', [''], () ->
-    addNode = (nodeType, pos, input) ->
+    addNode = (nodeType, pos, input, output) ->
         return {
             type: 'ADD_NODE',
             nodeType: nodeType
             pos: pos
             input: input
+            output: output
         }
     setPos = (node, pos) ->
         return {
@@ -24,6 +25,17 @@ define 'Actions', [''], () ->
     stopConnecting = () ->
         return {
             type: 'STOP_CONNECTING'
+        }
+
+    updateNode = (node, inputs, outputs, cons) ->
+        return {
+            type: 'UPDATE_NODE'
+            node: node
+            inputs: inputs
+            outputs: outputs
+            outputFields: cons.map((con) -> con.Output.Field)
+            connectedNodes: cons.map((con) -> con.Input.Node)
+            connectedFields: cons.map((con) -> con.Input.Field)
         }
 
     startDragging = (id) ->
@@ -53,4 +65,5 @@ define 'Actions', [''], () ->
         startConnecting: startConnecting
         stopConnecting: stopConnecting
         addConnection: addConnection
+        updateNode: updateNode
     }

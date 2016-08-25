@@ -29,7 +29,7 @@
         }
       };
 
-      Connector.prototype.componentWillMount = function() {
+      Connector.prototype.componentDidMount = function() {
         return this.updateD();
       };
 
@@ -97,7 +97,6 @@
     })(React.Component);
     mapStateToProps = (function(_this) {
       return function(state, ownProps) {
-        console.log(ownProps);
         return {
           Input: state.Nodes[ownProps.Connection.Input.Node],
           Output: state.Nodes[ownProps.Connection.Output.Node]

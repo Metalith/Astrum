@@ -41,6 +41,7 @@ define ["react", "Actions", "Node", 'MenuItem'], ( React, Actions, Node, MenuIte
                         update={@updateInput}
                         cons={node.Connections}
                         inputs={@state.Inputs[node.id]}
+                        outputs={node.output}
                         id={node.id} />)}
             </div>
 

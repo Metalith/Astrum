@@ -31,7 +31,8 @@
               "key": i++,
               "name": type,
               "hide": _this.props.hide,
-              "defaultInput": Node[type].input
+              "defaultInput": Node[type].input,
+              "defaultOutput": Node[type].output
             });
           };
         })(this)));

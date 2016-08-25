@@ -6,7 +6,6 @@ define ["react", "Actions"], (React, Actions) ->
             super props
 
         startConnection: (e) =>
-            console.log @props.node
             @props.dispatch Actions.startConnecting @props.node, @props.field, e.target.parentElement.className
             document.addEventListener 'mouseup', @endConnection
 

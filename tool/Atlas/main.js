@@ -17,7 +17,7 @@ function createWindow() {
         webPreferences: { nodeIntegration: false }
     });
     BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/0.15.3_0');
-    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/2.5.1.2_0');
+    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/2.5.1.4_0');
     // and load the index.html of the app.
     win.loadURL(`file://${__dirname}/index.html`);
 

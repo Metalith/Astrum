@@ -6,7 +6,7 @@ define ["react", 'Actions', "reactredux"], (React, Actions) ->
             super props
 
         render: ->
-            <div className="context-menu-item" onClick={(e) => @props.dispatch(Actions.addNode(@props.name, {x: e.pageX, y: e.pageY}, @props.defaultInput); @props.hide())}>
+            <div className="context-menu-item" onClick={(e) => @props.dispatch(Actions.addNode(@props.name, {x: e.pageX, y: e.pageY}, @props.defaultInput, @props.defaultOutput); @props.hide())}>
                 &nbsp;&nbsp;{@props.name}
             </div>
     return MenuItem = connect()(MenuItem)

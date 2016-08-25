@@ -21,7 +21,7 @@
               return _this.props.dispatch(Actions.addNode(_this.props.name, {
                 x: e.pageX,
                 y: e.pageY
-              }, _this.props.defaultInput), _this.props.hide());
+              }, _this.props.defaultInput, _this.props.defaultOutput), _this.props.hide());
             };
           })(this))
         }, "                  ", this.props.name);

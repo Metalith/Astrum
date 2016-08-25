@@ -15,6 +15,7 @@
     var Connecting, Connections, Dragging, Node, Nodes, Selected, combineReducers;
     combineReducers = require('redux').combineReducers;
     Node = function(state, action) {
+      var Inputs, conNodesArray, i, input;
       if (state == null) {
         state = {
           nodeType: '',
@@ -24,6 +25,7 @@
             y: -1
           },
           Connections: [],
+          output: {},
           input: {},
           dragging: false
         };
@@ -35,6 +37,7 @@
             id: action.id,
             pos: action.pos,
             Connections: [],
+            output: action.output,
             input: action.input,
             dragging: false
           };
@@ -47,7 +50,15 @@
             dragging: false
           });
         case 'ADD_CONNECTION':
-          if (state.id === action.Input.Node || state.id === action.Output.Node) {
+          if (state.id === action.Input.Node) {
+            input = Inputs = Object.assign({}, state.input);
+            input[action.Input.Field] = action.value;
+            return Object.assign({}, state, {
+              input: input,
+              Connections: Connections(state.Connections, action)
+            });
+          }
+          if (state.id === action.Output.Node) {
             return Object.assign({}, state, {
               Connections: Connections(state.Connections, action)
             });
@@ -66,6 +77,26 @@
               dragging: false
             });
           }
+          break;
+        case 'UPDATE_NODE':
+          if (state.id === action.node) {
+            return Object.assign({}, state, {
+              input: action.inputs,
+              output: action.outputs
+            });
+          }
+          conNodesArray = action.connectedNodes.slice(0);
+          console.log(conNodesArray.indexOf(state.id, 1));
+          if (conNodesArray.indexOf(state.id) !== -1) {
+            Inputs = Object.assign({}, state.input);
+            i = -1;
+            while ((i = conNodesArray.indexOf(state.id, i + 1)) !== -1) {
+              Inputs[action.connectedFields[i]] = action.outputs[action.outputFields[i]];
+            }
+            return Object.assign({}, state, {
+              input: Inputs
+            });
+          }
       }
       return state;
     };
@@ -77,11 +108,17 @@
         case 'ADD_NODE':
           action.id = state.length;
           return slice.call(state).concat([Node(void 0, action)]);
-        case 'SET_POS':
-        case 'SET_VAL':
         case 'ADD_CONNECTION':
+          action.value = state[action.Output.Node].output[action.Output.Field];
+          return state.map((function(_this) {
+            return function(t) {
+              return Node(t, action);
+            };
+          })(this));
+        case 'SET_POS':
         case 'START_DRAGGING':
         case 'STOP_DRAGGING':
+        case 'UPDATE_NODE':
           return state.map((function(_this) {
             return function(t) {
               return Node(t, action);
@@ -127,7 +164,6 @@
       }
       switch (action.type) {
         case 'START_CONNECTING':
-          console.log(action);
           return {
             Node: action.node,
             Field: action.field,

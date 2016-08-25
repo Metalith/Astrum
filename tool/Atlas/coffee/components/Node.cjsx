@@ -11,9 +11,6 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
                     x: @props.pos.x
                     y: @props.pos.y
                 rel: null
-            @input = @constructor.input
-            if @props.inputs
-                @input = @props.inputs
 
         componentWillUpdate: (props, state) =>
             if !@state.dragging && state.dragging
@@ -22,9 +19,6 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
             else if @state.dragging && !state.dragging
                 document.removeEventListener('mousemove', @onDrag)
                 document.removeEventListener('mouseup', @onMouseUp)
-
-        componentWillReceiveProps: (nextProps) ->
-            @input = nextProps.inputs
 
         onMouseDown: (e) =>
             if e.target.tagName != "INPUT" && !e.target.classList.contains("Field") && e.target.className != "Handle"
@@ -51,9 +45,9 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
 
         render: ->
             return <div className="Node" id={"Node" + @props.id} style={position: "absolute", left: @state.pos.x, top: @state.pos.y} onMouseDown={@onMouseDown}>
-                <Input input={@input} node={@props.id} cons={@props.cons}/>
+                <Input input={@props.inputs} node={@props.id} cons={@props.cons}/>
                 <div className="Center"><div className="NodeName">{@name}</div><div className="Values">{@center()}</div></div>
-                <Output output={@output} node={@props.id}/>
+                <Output output={@props.outputs} node={@props.id}/>
             </div>
 
 
@@ -61,7 +55,7 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         name: 'Test Node'
         constructor: (props) ->
             super props
-        @input:
+        @inputs:
             TestInput: ''
         center: ->
             <input type="number" name="fname" onChange={@update}/>
@@ -70,11 +64,12 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         name: 'Value'
         constructor: (props) ->
             super props
+
         center: =>
-            <input type="number" onChange={(e) => @props.update 0, {Value: e.target.value}; @props.update 1, {Value: e.target.value}} value={@input.Value}/>
+            <input type="number" onChange={(e) => @props.dispatch(Actions.updateNode @props.id, {Value: parseInt(e.target.value)}, {Value: parseInt(e.target.value)}, @props.cons)} value={@props.inputs.Value}/>
         @input:
             Value: 10
-        output:
+        @output:
             Value: 10
 
     class OutputNode extends Node
@@ -89,11 +84,14 @@ define ["react", "Actions", "Input", "Output"], (React, Actions, Input, Output) 
         name: 'Math'
         constructor: (props) ->
             super props
-        center: -> ''
+
+        center: =>
+            <input type="number" value={@props.inputs.Value1 + @props.inputs.Value2}/>
+
         @input:
             Value1: 0
             Value2: 0
-        output:
+        @output:
             Result: 0
 
     return {

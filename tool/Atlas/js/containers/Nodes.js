@@ -75,6 +75,7 @@
               "update": _this.updateInput,
               "cons": node.Connections,
               "inputs": _this.state.Inputs[node.id],
+              "outputs": node.output,
               "id": node.id
             });
           };

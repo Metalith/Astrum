@@ -14,7 +14,7 @@ define ["react"], (React) ->
                 document.addEventListener('mousemove', @updateD)
             else if @props.Input.dragging && !nextProps.Input.dragging
                 document.removeEventListener('mousemove', @updateD) || (@props.Output.dragging && !nextProps.Output.dragging)
-        componentWillMount: ->
+        componentDidMount: ->
             @updateD()
         updateD: =>
             InHandleRect = document.querySelector('#Node'+@props.Connection.Input.Node+'>.Input>#'+@props.Connection.Input.Field+'>.Handle').getBoundingClientRect()
@@ -63,7 +63,6 @@ define ["react"], (React) ->
             <path d={@d}  stroke="white" strokeWidth="2" fill="none"/>
 
     mapStateToProps = (state, ownProps) =>
-        console.log ownProps
         return {
             Input: state.Nodes[ownProps.Connection.Input.Node]
             Output: state.Nodes[ownProps.Connection.Output.Node]

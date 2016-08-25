@@ -26,10 +26,6 @@
           },
           rel: null
         };
-        this.input = this.constructor.input;
-        if (this.props.inputs) {
-          this.input = this.props.inputs;
-        }
       }
 
       Node.prototype.componentWillUpdate = function(props, state) {
@@ -40,10 +36,6 @@
           document.removeEventListener('mousemove', this.onDrag);
           return document.removeEventListener('mouseup', this.onMouseUp);
         }
-      };
-
-      Node.prototype.componentWillReceiveProps = function(nextProps) {
-        return this.input = nextProps.inputs;
       };
 
       Node.prototype.onMouseDown = function(e) {
@@ -87,7 +79,7 @@
           },
           "onMouseDown": this.onMouseDown
         }, React.createElement(Input, {
-          "input": this.input,
+          "input": this.props.inputs,
           "node": this.props.id,
           "cons": this.props.cons
         }), React.createElement("div", {
@@ -97,7 +89,7 @@
         }, this.name), React.createElement("div", {
           "className": "Values"
         }, this.center())), React.createElement(Output, {
-          "output": this.output,
+          "output": this.props.outputs,
           "node": this.props.id
         }));
       };
@@ -114,7 +106,7 @@
         TestNode.__super__.constructor.call(this, props);
       }
 
-      TestNode.input = {
+      TestNode.inputs = {
         TestInput: ''
       };
 
@@ -144,15 +136,14 @@
           "type": "number",
           "onChange": ((function(_this) {
             return function(e) {
-              _this.props.update(0, {
-                Value: e.target.value
-              });
-              return _this.props.update(1, {
-                Value: e.target.value
-              });
+              return _this.props.dispatch(Actions.updateNode(_this.props.id, {
+                Value: parseInt(e.target.value)
+              }, {
+                Value: parseInt(e.target.value)
+              }, _this.props.cons));
             };
           })(this)),
-          "value": this.input.Value
+          "value": this.props.inputs.Value
         });
       };
 
@@ -160,7 +151,7 @@
         Value: 10
       };
 
-      ValueNode.prototype.output = {
+      ValueNode.output = {
         Value: 10
       };
 
@@ -193,11 +184,15 @@
       MathNode.prototype.name = 'Math';
 
       function MathNode(props) {
+        this.center = bind(this.center, this);
         MathNode.__super__.constructor.call(this, props);
       }
 
       MathNode.prototype.center = function() {
-        return '';
+        return React.createElement("input", {
+          "type": "number",
+          "value": this.props.inputs.Value1 + this.props.inputs.Value2
+        });
       };
 
       MathNode.input = {
@@ -205,7 +200,7 @@
         Value2: 0
       };
 
-      MathNode.prototype.output = {
+      MathNode.output = {
         Result: 0
       };
 

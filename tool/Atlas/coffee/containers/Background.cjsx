@@ -14,6 +14,7 @@ define ['three', 'react'], (THREE, React) ->
             @renderer.domElement.style.position = "absolute"
             @renderer.domElement.style.top = 0
             @renderer.domElement.style.zIndex = 0
+            @renderer.domElement.className = "background"
             @renderer.setClearColor 0x0e1112, 1
             geometry = new THREE.PlaneBufferGeometry window.innerWidth, window.innerHeight
 
@@ -34,10 +35,10 @@ define ['three', 'react'], (THREE, React) ->
             @renderScene()
 
         componentDidMount: ->
-            document.getElementById("background").appendChild( @renderer.domElement )
+            document.getElementById("bg-container").appendChild( @renderer.domElement )
 
         render: =>
-            <div id="background"></div>
+            <div id="bg-container"></div>
 
         renderScene: =>
             requestAnimationFrame @renderScene # See http://stackoverflow.com/questions/6065169/requestanimationframe-with-this-keyword // Swithed to fat arrow

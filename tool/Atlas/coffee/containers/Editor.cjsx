@@ -12,7 +12,9 @@ define ["react", "Menu", "Background", "Nodes", "Connectors"], (React, Menu, Bac
             )
 
         render: ->
-            <div id="Editor" onContextMenu={(e) => @setState(showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]); e.preventDefault()}>
+            <div id="Editor" onContextMenu={(e) => if e.target.className == "background"
+                    @setState(showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5])
+                    e.preventDefault()}>
                 <Background />
                 <Nodes />
                 <Connectors />

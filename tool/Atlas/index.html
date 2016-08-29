@@ -1,51 +1,52 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/node.css">
-    <title>Atlas - World Editor</title>
-</head>
-<body>
-    <div id="container"></div>
-    <label class="switch">
-        <input type="checkbox">
-        <div class="slider"></div>
-    </label>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/node.css">
+        <title>Atlas - World Editor</title>
+    </head>
+    <body>
+        <div id="container"></div>
+        <label class="switch">
+            <input type="checkbox">
+            <div class="slider"></div>
+        </label>
 
-    <!-- Shaders -->
-    <script type="x-shader/x-vertex" id="vertexShader">
-    varying vec2 pos;
+        <!-- Shaders -->
+        <script type="x-shader/x-vertex" id="vertexShader">
+        varying vec2 pos;
 
-    void main() {
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-    }
-    </script>
+        void main() {
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }
+        </script>
 
-    <script type="x-shader/x-fragment" id="fragmentShader">
-    precision highp float;
+        <script type="x-shader/x-fragment" id="fragmentShader">
+        precision highp float;
 
-    float hex(vec2 p) {
-        p.x *= 0.57735*2.0;
-    	p.y += mod(floor(p.x), 2.0)*0.5;
-    	p = abs((mod(p, 1.0) - 0.5));
-    	return abs(max(p.x*1.5 + p.y, p.y*2.0) - 1.0);
-    }
+        float hex(vec2 p) {
+            p.x *= 0.57735*2.0;
+        	p.y += mod(floor(p.x), 2.0)*0.5;
+        	p = abs((mod(p, 1.0) - 0.5));
+        	return abs(max(p.x*1.5 + p.y, p.y*2.0) - 1.0);
+        }
 
-    void main(void) {
-    	vec2 pos = gl_FragCoord.xy;
-    	vec2 p = pos/50.0;
-    	float  r = 0.05;
-        float h = smoothstep(r, 0.0,hex(p));
-        if (h == 0.0) discard;
-    	gl_FragColor = vec4(vec3(0.1), 1.0);
-    }
-    </script>
-    <script type="x-shader/x-fragment" id="displayFragmentShader">
-    void main(void) {
-    	gl_FragColor = vec4(vec3(0.0), 1.0);
-    }
-    </script>
-    <script data-main="js/App.js" src="js/lib/require.js"></script>
-</body>
+        void main(void) {
+        	vec2 pos = gl_FragCoord.xy;
+        	vec2 p = pos/50.0;
+        	float  r = 0.05;
+            float h = smoothstep(r, 0.0,hex(p));
+            if (h == 0.0) discard;
+        	gl_FragColor = vec4(vec3(0.1), 1.0);
+        }
+        </script>
+        <script type="x-shader/x-fragment" id="displayFragmentShader">
+        void main(void) {
+        	gl_FragColor = vec4(vec3(0.0), 1.0);
+        }
+        </script>
+        <script src="https://cdn.jsdelivr.net/kute.js/1.5.0/kute.min.js"></script>
+        <script src="bundle.js"></script>
+    </body>
 </html>

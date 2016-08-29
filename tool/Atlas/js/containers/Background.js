@@ -30,6 +30,7 @@
         this.renderer.domElement.style.position = "absolute";
         this.renderer.domElement.style.top = 0;
         this.renderer.domElement.style.zIndex = 0;
+        this.renderer.domElement.className = "background";
         this.renderer.setClearColor(0x0e1112, 1);
         geometry = new THREE.PlaneBufferGeometry(window.innerWidth, window.innerHeight);
         material = new THREE.ShaderMaterial({
@@ -47,12 +48,12 @@
       }
 
       Background.prototype.componentDidMount = function() {
-        return document.getElementById("background").appendChild(this.renderer.domElement);
+        return document.getElementById("bg-container").appendChild(this.renderer.domElement);
       };
 
       Background.prototype.render = function() {
         return React.createElement("div", {
-          "id": "background"
+          "id": "bg-container"
         });
       };
 

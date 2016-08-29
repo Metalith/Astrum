@@ -14,13 +14,12 @@ function createWindow() {
     win = new BrowserWindow({
         width: 1024,
         height: 768,
-        webPreferences: { nodeIntegration: false }
+        webPreferences: { nodeIntegration: true }
     });
-    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/0.15.3_0');
-    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/2.5.1.4_0');
+    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/0.15.4_1');
+    BrowserWindow.addDevToolsExtension('/home/caleb/.config/google-chrome/Default/Extensions/lmhkpmbekcpmknklioeibfkpmmfibljd/2.5.1.6_0');
     // and load the index.html of the app.
     win.loadURL(`file://${__dirname}/index.html`);
-
     // Emitted when the window is closed.
     win.on('closed', () => {
         // Dereference the window object, usually you would store windows

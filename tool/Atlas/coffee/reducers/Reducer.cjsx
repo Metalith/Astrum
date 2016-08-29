@@ -41,7 +41,6 @@ define ['redux'], () ->
                 if state.id == action.node
                     return Object.assign({}, state, {input: action.inputs, output: action.outputs})
                 conNodesArray = action.connectedNodes.slice(0)
-                console.log conNodesArray.indexOf(state.id, 1)
                 if (conNodesArray.indexOf(state.id) != -1)
                     Inputs = Object.assign({}, state.input)
                     i = -1

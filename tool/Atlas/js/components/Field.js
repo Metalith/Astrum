@@ -13,33 +13,40 @@
       function Field(props) {
         this.endConnection = bind(this.endConnection, this);
         this.startConnection = bind(this.startConnection, this);
+        this.componentDidMount = bind(this.componentDidMount, this);
         Field.__super__.constructor.call(this, props);
       }
 
+      Field.prototype.componentDidMount = function() {};
+
       Field.prototype.startConnection = function(e) {
-        this.props.dispatch(Actions.startConnecting(this.props.node, this.props.field, e.target.parentElement.className));
+        this.props.dispatch(Actions.startConnecting(this.props.node, this.props.field, this.props.type));
         return document.addEventListener('mouseup', this.endConnection);
       };
 
       Field.prototype.endConnection = function(e) {
-        var Selected;
+        var Selected, el;
         this.props.dispatch(Actions.stopConnecting());
-        if (e.target.classList.contains("Field")) {
-          if (e.target.parentElement.className !== this.props.Selected.Type) {
-            if (e.target.parentElement.parentElement.id !== "Node" + this.props.Selected.Node) {
+        el = e.target;
+        if (el.className === 'Handle') {
+          el = e.target.parentElement;
+        }
+        if (el.classList.contains("Field")) {
+          if (el.parentElement.className !== this.props.Selected.Type) {
+            if (el.parentElement.parentElement.id !== "Node" + this.props.Selected.Node) {
               Selected = {
                 Node: this.props.Selected.Node,
                 Field: this.props.Selected.Field
               };
               if (this.props.Selected.Type === "Input") {
                 this.props.dispatch(Actions.addConnection(Selected, {
-                  Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
-                  Field: e.target.textContent
+                  Node: parseInt(el.parentElement.parentElement.id.replace(/^\D+/g, '')),
+                  Field: el.textContent
                 }));
               } else {
                 this.props.dispatch(Actions.addConnection({
-                  Node: parseInt(e.target.parentElement.parentElement.id.replace(/^\D+/g, '')),
-                  Field: e.target.textContent
+                  Node: parseInt(el.parentElement.parentElement.id.replace(/^\D+/g, '')),
+                  Field: el.textContent
                 }, Selected));
               }
             } else {
@@ -61,7 +68,15 @@
               return _this.el = c;
             };
           })(this)),
-          "onMouseDown": this.startConnection,
+          "onMouseDown": ((function(_this) {
+            return function(e) {
+              e.stopPropagation();
+              KUTE.to("#Test", {
+                path: 'M100 100L500 500'
+              }).start();
+              return _this.startConnection();
+            };
+          })(this)),
           "onMouseEnter": ((function(_this) {
             return function() {
               return _this.el.classList.add('hov');
@@ -72,9 +87,19 @@
               return _this.el.classList.remove('hov');
             };
           })(this))
-        }, this.props.field, React.createElement("div", {
-          "className": "Handle"
-        }));
+        }, this.props.field, React.createElement("svg", {
+          "className": "Handle",
+          "viewBox": "0 0 150 150",
+          "width": "8",
+          "height": "8",
+          "style": {
+            preserveAspectRatio: "xMinYMax meet"
+          }
+        }, React.createElement("path", {
+          "id": "Test",
+          "className": "HandlePath",
+          "d": "M 75, 75m 75, 0a 75,75 0 1,0 -150,0a 75,75 0 1,0 150,0"
+        })));
       };
 
       return Field;

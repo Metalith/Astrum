@@ -46,23 +46,24 @@
     position: relative;
     text-align: left;
     cursor: default;
-    /*display: inline-block;*/
 }
 
 .Field.hov {
     color: orange;
 }
 
-.Field.hov>.Handle {
-    background-color: orange;
+.Field.hov>.Handle>path {
+    fill: orange;
+    stroke: orange;
 }
 
 .Field.sel {
     color: #333;
 }
 
-.Field.sel>.Handle {
-    background-color: #333;
+.Field.sel>.Handle>path {
+    fill: #333;
+    stroke: #333;
 }
 
 
@@ -72,11 +73,15 @@
     content: "";
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    background-color: white;
 }
 
-.Output > .Field > .Handle {
+.Handle > path {
+    fill: white;
+    stroke: white;
+    stroke-width: 5;
+}
+
+.Output > .Field >.Handle {
     margin-left: 5px;
     left: 100%;
     bottom: 6px;

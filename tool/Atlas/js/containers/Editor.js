@@ -1,6 +1,8 @@
 import React from 'react'
 import Menu from '../components/Menu'
-
+import Nodes from './Nodes'
+import Background from './Background'
+import Connectors from './Connectors'
 class Editor extends React.Component {
     constructor(props) {
         super(props)
@@ -18,6 +20,9 @@ class Editor extends React.Component {
             onContextMenu={(e) => {
                 this.setState({showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]});
                 e.preventDefault()}}>
+            <Background />
+            <Nodes />
+            <Connectors />
             <Menu
                 hide={this.hideContextMenu}
                 show={this.state.showContextMenu}

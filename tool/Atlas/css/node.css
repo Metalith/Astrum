@@ -61,9 +61,16 @@
     color: #333;
 }
 
-.Field.sel>.Handle>path {
-    fill: #333;
-    stroke: #333;
+.Field.hov>.Handle {
+    background-color: orange;
+}
+
+.Field.sel {
+    color: #333;
+}
+
+.Field.sel>.Handle {
+    background-color: #333;
 }
 
 
@@ -73,15 +80,11 @@
     content: "";
     width: 8px;
     height: 8px;
+    border-radius: 50%;
+    background-color: white;
 }
 
-.Handle > path {
-    fill: white;
-    stroke: white;
-    stroke-width: 5;
-}
-
-.Output > .Field >.Handle {
+.Output > .Field > .Handle {
     margin-left: 5px;
     left: 100%;
     bottom: 6px;

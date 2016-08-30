@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import Actions from '../Actions'
-
 class MenuItem extends React.Component {
     render() {
         return <div

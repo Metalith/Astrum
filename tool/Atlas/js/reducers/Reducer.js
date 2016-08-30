@@ -34,7 +34,7 @@ var Node = (state = initialNodeState, action) => {
             break;
         case 'ADD_CONNECTION':
             if (state.id === action.Input.Node) {
-                let input = Inputs = Object.assign({}, state.input);
+                let input = Object.assign({}, state.input);
                 input[action.Input.Field] = action.value;
                 return Object.assign({}, state, {
                     input: input,

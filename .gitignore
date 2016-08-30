@@ -11,3 +11,5 @@ tags
 *.settings
 *project
 *.bmp
+tool/Atlas/bundle.js
+node_modules/

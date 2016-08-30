@@ -12,7 +12,13 @@ class Menu extends React.Component {
             onMouseLeave={this.props.hide}
             style={{left: this.props.pos[0], top: this.props.pos[1]}} >
             &nbsp;&nbsp;Create Node
-            {NodeTypes.map(type => <MenuItem key={i++} name={type} hide={this.props.hide} defaultInput={Node[type].input} defaultOutput={Node[type].output}/>)}
+            {NodeTypes.map(type => {
+                return <MenuItem
+                    key={i++}
+                    name={type}
+                    hide={this.props.hide}
+                    defaultInput={Node[type].input}
+                    defaultOutput={Node[type].output}/>})}
         </div>
     }
 }

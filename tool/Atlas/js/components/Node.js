@@ -59,9 +59,9 @@ class Node extends React.Component {
     }
     render() {
         return <div className="Node" id={"Node" + this.props.id} style={{position: "absolute", left: this.state.pos.x, top: this.state.pos.y}} onMouseDown={this.onMouseDown}>
-            <Input input={this.props.inputs} node={this.props.id} cons={this.props.cons}/>
+            <Input input={this.props.inputs} node={this.props.id} cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}/>
             <div className="Center"><div className="NodeName">{this.name}</div><div className="Values">{this.center()}</div></div>
-            <Output output={this.props.outputs} node={this.props.id}/>
+            <Output output={this.props.outputs} node={this.props.id} cons={this.props.cons.filter(con => {return (con.Output.Node == this.props.id) ? true : false })}/>
         </div>
     }
 }

@@ -9,6 +9,7 @@ class Connector extends React.Component {
         };
         this.d = 'M150 150 L0 0';
         this.updateD = this.updateD.bind(this);
+        this.Connection = props.Connection;
     }
 
     componentWillUpdate(nextProps, nextState) {
@@ -17,10 +18,15 @@ class Connector extends React.Component {
         else if (this.props.Input.dragging && !nextProps.Input.dragging)
             document.removeEventListener('mousemove', this.updateD) || (this.props.Output.dragging && !nextProps.Output.dragging)
     }
+
+    componentWillReceiveProps(nextProps) {
+        this.Connection = nextProps.Connection;
+        this.updateD();
+    }
     componentDidMount() { this.updateD() }
     updateD() {
-        let InHandleRect = document.querySelector('#Node'+this.props.Connection.Input.Node+'>.Input>#'+this.props.Connection.Input.Field+'>.Handle').getBoundingClientRect()
-        let OutHandleRect = document.querySelector('#Node'+this.props.Connection.Output.Node+'>.Output>#'+this.props.Connection.Output.Field+'>.Handle').getBoundingClientRect()
+        let InHandleRect = document.querySelector('#Node'+this.Connection.Input.Node+'>.Input>#'+this.Connection.Input.Field+'>.Handle').getBoundingClientRect()
+        let OutHandleRect = document.querySelector('#Node'+this.Connection.Output.Node+'>.Output>#'+this.Connection.Output.Field+'>.Handle').getBoundingClientRect()
         let InHandle = {
             x: InHandleRect.left + InHandleRect.width / 2,
             y: InHandleRect.top + InHandleRect.height / 2
@@ -33,8 +39,8 @@ class Connector extends React.Component {
         this.d += "h-50"
         if (InHandle.x < OutHandle.x + 100) {
             let half = (OutHandle.y - InHandle.y) / 2
-            let h1 = document.querySelector("#Node" + this.props.Connection.Input.Node).getBoundingClientRect()
-            let h2 = document.querySelector("#Node" + this.props.Connection.Output.Node).getBoundingClientRect()
+            let h1 = document.querySelector("#Node" + this.Connection.Input.Node).getBoundingClientRect()
+            let h2 = document.querySelector("#Node" + this.Connection.Output.Node).getBoundingClientRect()
             let height = 0
             if (half >= 0)
                 height = h1.bottom - h2.top

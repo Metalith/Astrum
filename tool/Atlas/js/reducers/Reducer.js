@@ -12,7 +12,8 @@ var initialNodeState  = {
     input: {},
     dragging: false
 }
-var Node = (state = initialNodeState, action) => {
+
+const Node = (state = initialNodeState, action) => {
     switch (action.type) {
         case 'ADD_NODE':
             return {
@@ -36,16 +37,23 @@ var Node = (state = initialNodeState, action) => {
             if (state.id === action.Input.Node) {
                 let input = Object.assign({}, state.input);
                 input[action.Input.Field] = action.value;
+                action.fromNode = true;
                 return Object.assign({}, state, {
                     input: input,
                     Connections: Connections(state.Connections, action)
                 });
             }
             if (state.id === action.Output.Node) {
+                action.fromNode = true;
                 return Object.assign({}, state, {
                     Connections: Connections(state.Connections, action)
                 });
             }
+            let i = state.Connections.map(con => con.id).indexOf(action.id);
+            if (i != -1)
+                return Object.assign({}, state, {
+                    Connections: [...state.Connections.slice(0,i), ...state.Connections.slice(i+1)]
+                });
             break;
         case 'START_DRAGGING':
             if (state.id === action.id) {
@@ -83,7 +91,7 @@ var Node = (state = initialNodeState, action) => {
     return state;
 };
 
-var Nodes = function(state = [], action) {
+const Nodes = function(state = [], action) {
     switch (action.type) {
         case 'ADD_NODE':
             action.id = state.length;
@@ -100,16 +108,36 @@ var Nodes = function(state = [], action) {
     return state;
 };
 
-var Connections = function(state = [], action) {
+var newConnectionID = 0;
+const Connections = function(state = [], action) {
     switch (action.type) {
         case 'ADD_CONNECTION':
-            action.id = state.length;
+            let Inputs = state.map(con => con.Input.Node);
+            let Fields = state.map(con  => con.Input.Field);
+            if (!action.fromNode) {
+                console.log(Inputs)
+                console.log(Fields)
+            }
+            let i = Inputs.indexOf(action.Input.Node);
+            let j = Fields.indexOf(action.Input.Field, i);
+            console.log(i);
+            console.log(j);
+            if (i == j && i != -1 ) {
+                let connections = [...state];
+                if (action.fromNode) action.fromNode = false;
+                action.id = state[i].id;
+                connections[i] = {id: action.id, Input: action.Input, Output: action.Output}
+                return [...state.slice(0,i), {id: action.id, Input: action.Input, Output: action.Output}, ...state.slice(i+1)];
+                return state
+            }
+            if (!action.fromNode) action.id = newConnectionID++;
+            else action.fromNode = false;
             return [...state, {id: action.id, Input: action.Input, Output: action.Output}]
     }
     return state;
 }
 
-var Connecting = function(state = false, action) {
+const Connecting = function(state = false, action) {
     switch (action.type) {
         case 'START_CONNECTING':
             return true;
@@ -125,7 +153,7 @@ var initialSelectedState = {
     Type: ''
 };
 
-var Selected = function(state = initialSelectedState, action) {
+const Selected = function(state = initialSelectedState, action) {
     switch (action.type) {
         case 'START_CONNECTING':
             return {
@@ -137,7 +165,7 @@ var Selected = function(state = initialSelectedState, action) {
     return state;
 };
 
-var Dragging = function(state = false, action) {
+const Dragging = function(state = false, action) {
     switch (action.type) {
         case 'START_DRAGGING':
             return true;
@@ -148,9 +176,9 @@ var Dragging = function(state = false, action) {
 };
 
 export default combineReducers({
-    Nodes: Nodes,
     Connections: Connections,
     Connecting: Connecting,
+    Nodes: Nodes,
     Selected: Selected,
     Dragging: Dragging
 });

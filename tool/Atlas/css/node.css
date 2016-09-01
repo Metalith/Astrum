@@ -9,7 +9,7 @@
     color: white;
 
     border-radius: 0.75em;
-    padding: 3px 18px 10px 18px;
+    padding: 3px 22px 10px 22px;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none;   /* Chrome/Safari/Opera */
     -khtml-user-select: none;    /* Konqueror */
@@ -52,48 +52,26 @@
     color: orange;
 }
 
-.Field.hov>.Handle>path {
-    fill: orange;
-    stroke: orange;
-}
-
-.Field.sel {
-    color: #333;
-}
-
-.Field.hov>.Handle {
-    background-color: orange;
-}
-
-.Field.sel {
-    color: #333;
-}
-
-.Field.sel>.Handle {
-    background-color: #333;
-}
-
 
 
 .Handle {
     position: absolute;
     content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: white;
+    top: 2px;
+    height: 12px;
+    width: 12px;
+    stroke-width: 50;
+    fill: white;
 }
 
 .Output > .Field > .Handle {
     margin-left: 5px;
     left: 100%;
-    bottom: 6px;
 }
 
 .Input > .Field > .Handle {
     margin-right: 5px;
     right: 100%;
-    bottom: 6px;
 }
 
 

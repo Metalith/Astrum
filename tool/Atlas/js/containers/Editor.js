@@ -18,8 +18,10 @@ class Editor extends React.Component {
     render() {
         return <div id="Editor"
             onContextMenu={(e) => {
-                this.setState({showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]});
-                e.preventDefault()}}>
+                if (e.target.className == "background")
+                    this.setState({showContextMenu: true, menuPos: [e.pageX - 5, e.pageY - 5]});
+                e.preventDefault()
+                }}>
             <Background />
             <Nodes />
             <Connectors />

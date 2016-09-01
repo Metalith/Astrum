@@ -1,16 +1,60 @@
 import React from 'react';
 import Actions from '../Actions';
 import { connect } from 'react-redux';
+import { MorphReplace } from 'react-svg-morph';
+
+class Connect extends React.Component {
+    render() {
+        return (
+            <svg width="24" height="24" stroke="white" strokeWidth="0" viewBox="0 0 300 300">
+                <path d="   M150, 300 L300 150 L150 0L0 150L150 300 "/>
+            </svg>
+        );
+    }
+}
+
+class Disconnect extends React.Component {
+    render() {
+        return (
+            <svg width="24" height="24" stroke="Black" strokeWidth="5" viewBox="0 0 300 300">
+                <path d="   M150, 150 L0, 300Z
+                            M150, 150 L300, 0Z
+                            M150, 150 L0, 0Z
+                            M150, 150 L300, 300Z"/>
+            </svg>
+        );
+    }
+}
+
+
+
 class Field extends React.Component {
     constructor(props) {
         super(props);
         this.startConnection = this.startConnection.bind(this);
         this.endConnection = this.endConnection.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.state = {
+            showDisconnect: false
+        };
     }
 
-    startConnection(e) {
+    onMouseDown(e) {
+        if (e.button == 0)
+            if (!this.state.showDisconnect)
+                this.startConnection()
+            else
+                // Remove Connections
+                this.setState({ showDisconnect: false})
+        else
+            if (this.props.connected)
+                this.setState({ showDisconnect: !this.state.showDisconnect})
+        return false;
+    }
+    startConnection() {
         this.props.dispatch(Actions.startConnecting(this.props.node, this.props.field, this.props.type))
         document.addEventListener('mouseup', this.endConnection)
+        this.setState({checked: !this.state.checked});
     }
     endConnection(e) {
         this.props.dispatch(Actions.stopConnecting());
@@ -43,11 +87,13 @@ class Field extends React.Component {
     render() {
         return <div className="Field" id={this.props.field}
             ref={(c) => this.el = c}
-            onMouseDown={(e) => {e.stopPropagation(); this.startConnection()}}
+            onMouseDown={this.onMouseDown}
             onMouseEnter={() => this.el.classList.add('hov')}
             onMouseLeave={() => this.el.classList.remove('hov')}>
             {this.props.field}
-            <div className="Handle"></div>
+            <MorphReplace rotation="counterclock" duration={250} width={100} height={100} className="Handle">
+                {this.state.showDisconnect ?  <Disconnect key="disconnect" /> : <Connect key="connect" />}
+            </MorphReplace>
         </div>
     }
 }

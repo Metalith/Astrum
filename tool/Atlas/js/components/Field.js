@@ -6,7 +6,7 @@ import { MorphReplace } from 'react-svg-morph';
 class Connect extends React.Component {
     render() {
         return (
-            <svg width="24" height="24" stroke="white" strokeWidth="0" viewBox="0 0 300 300">
+            <svg width="24" height="24" viewBox="0 0 300 300">
                 <path d="   M150, 300 L300 150 L150 0L0 150L150 300 "/>
             </svg>
         );
@@ -16,7 +16,7 @@ class Connect extends React.Component {
 class Disconnect extends React.Component {
     render() {
         return (
-            <svg width="24" height="24" stroke="Black" strokeWidth="5" viewBox="0 0 300 300">
+            <svg width="24" height="24" viewBox="0 0 300 300">
                 <path d="   M150, 150 L0, 300Z
                             M150, 150 L300, 0Z
                             M150, 150 L0, 0Z
@@ -79,9 +79,9 @@ class Field extends React.Component {
                             Field: el.textContent},
                             Selected))
                 } else
-                    alert("Error: Cannot connect a node to itself")
+                    console.log("Error: Cannot connect a node to itself")
              } else
-                alert("Error: Fields of same type")
+                console.log("Error: Fields of same type")
         }
         document.removeEventListener('mouseup', this.endConnection);
     }

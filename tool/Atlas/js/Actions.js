@@ -6,6 +6,12 @@ const addNode = (nodeType, pos, input, output) =>
         input: input,
         output: output
     })
+const removeNode = (node, cons) =>
+    ({
+        type: 'REMOVE_NODE',
+        id: node,
+        connections: cons.map(con => con.id)
+    })
 
 const setPos = (node, pos) =>
     ({
@@ -66,6 +72,7 @@ const removeConnections = (Type, Node, Field) =>
 
 export default {
     addNode: addNode,
+    removeNode: removeNode,
     setPos: setPos,
     startDragging: startDragging,
     stopDragging: stopDragging,

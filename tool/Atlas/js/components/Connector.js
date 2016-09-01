@@ -77,8 +77,8 @@ class Connector extends React.Component {
 
 const mapStateToProps = (state, ownProps) =>
     ({
-        Input: state.Nodes[ownProps.Connection.Input.Node],
-        Output: state.Nodes[ownProps.Connection.Output.Node]
+        Input: state.Nodes[state.Nodes.map(node => node.id).indexOf(ownProps.Connection.Input.Node)],
+        Output: state.Nodes[state.Nodes.map(node => node.id).indexOf(ownProps.Connection.Output.Node)]
     })
 
 export default connect(mapStateToProps)(Connector)

@@ -17,12 +17,14 @@ class Nodes extends React.Component {
         this.setState({Inputs: Inputs})
     }
 
-    componentWillReceiveProps(nextProps) { this.updateInputs(nextProps.nodes) }
+    componentWillReceiveProps(nextProps) {
+        this.updateInputs(nextProps.nodes)
+    }
 
     // NOTE: Pretty slow, runs after every action involving nodes, cant imagine performance issues with small amount of nodes
     updateInputs(nodes) {
         let Inputs = [];
-        nodes.forEach((node, i) => {Inputs[i] = node.input});
+        nodes.forEach((node, i) => {Inputs[node.id] = node.input});
         this.setState({Inputs: Inputs});
     }
 

@@ -20,9 +20,32 @@
     white-space: nowrap;
 }
 
+.removeNodeButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 12px;
+    height: 12px;
+
+    stroke-width: 25px;
+    stroke: white;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    -moz-transition: opacity .3s ease-in-out;
+    -webkit-transition: opacity .3s ease-in-out;
+}
+
+.Node:hover .removeNodeButton {
+    opacity: 1.0;
+    transition: opacity .3s ease-in-out;
+    -moz-transition: opacity .3s ease-in-out;
+    -webkit-transition: opacity .3s ease-in-out;
+}
+
 .NodeName {
     font-family: "Lato light";
     text-align: Center;
+    /*position: relative;*/
 }
 
 .Input {
@@ -60,6 +83,7 @@
     top: 2px;
     height: 12px;
     width: 12px;
+    stroke: white;
     stroke-width: 50;
     fill: white;
 }

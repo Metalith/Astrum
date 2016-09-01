@@ -13,19 +13,27 @@ var initialNodeState  = {
     dragging: false
 }
 var newNodeID = 0;
+var emptyNodeIDs = [];
 var value = '';
 const Node = (state = initialNodeState, action) => {
     switch (action.type) {
         case 'ADD_NODE':
+            let id;
+            if (emptyNodeIDs.length==0) id = newNodeID;
+            else id = emptyNodeIDs.shift();
             return {
                 nodeType: action.nodeType,
-                id: newNodeID++,
+                id: id,
                 pos: action.pos,
                 Connections: [],
                 output: action.output,
                 input: action.input,
                 dragging: false
             };
+        case 'REMOVE_NODE':
+            return Object.assign({}, state, {
+                Connections: state.Connections.filter(t => !action.connections.includes(t.id))
+            })
         case 'SET_POS':
             if (state.id == action.id) {
                 return Object.assign({}, state, {
@@ -50,7 +58,7 @@ const Node = (state = initialNodeState, action) => {
                     Connections: Connections(state.Connections, action)
                 });
             }
-            let i = state.Connections.map(con => con.id).indexOf(action.id);
+            let i = state.Connections.map(con => con.id).indexOf(currentConnectionID);
             if (i != -1)
                 return Object.assign({}, state, {
                     Connections: [...state.Connections.slice(0,i), ...state.Connections.slice(i+1)]
@@ -99,9 +107,13 @@ const Node = (state = initialNodeState, action) => {
 const Nodes = function(state = [], action) {
     switch (action.type) {
         case 'ADD_NODE':
+            newNodeID = state.length;
             return [...state, Node(undefined, action)];
+        case 'REMOVE_NODE':
+            emptyNodeIDs.push(action.id);
+            return state.map(t => Node(t, action)).filter(t => t.id != action.id)
         case 'ADD_CONNECTION':
-            value = state[action.Output.Node].output[action.Output.Field];
+            value = state[state.map(node => node.id).indexOf(action.Output.Node)].output[action.Output.Field];
             return state.map(t => Node(t, action));
         case 'REMOVE_CONNECTIONS':
         case 'SET_POS':
@@ -113,7 +125,7 @@ const Nodes = function(state = [], action) {
     return state;
 };
 
-var newConnectionID = 0;
+var emptyConnectionIDs = [];
 var currentConnectionID = 0;
 var fromNode = false;
 var ConnectionsToRemove = [];
@@ -128,15 +140,21 @@ const Connections = function(state = [], action) {
                 let i = state.map(con => con.id).indexOf(MatchedCon.id)
                 return [...state.slice(0,i), {id: currentConnectionID, Input: action.Input, Output: action.Output}, ...state.slice(i+1)];
             }
-            if (!fromNode) currentConnectionID = newConnectionID++;
+            if (!fromNode) {
+                if (emptyConnectionIDs.length==0) currentConnectionID = state.length;
+                else currentConnectionID = emptyConnectionIDs.shift();
+            }
             else fromNode = false;
             return [...state, {id: currentConnectionID, Input: action.Input, Output: action.Output}]
         case 'REMOVE_CONNECTIONS':
             ConnectionsToRemove = state.filter(con => con[action.FieldType].Node == action.Node)
             ConnectionsToRemove = ConnectionsToRemove.filter(con => con[action.FieldType].Field == action.Field)
             ConnectionsToRemove = ConnectionsToRemove.map(con => con.id)
+            emptyConnectionIDs.push(...ConnectionsToRemove);
             let Connections = state.slice(0)
             return Connections.filter(con => !ConnectionsToRemove.includes(con.id));
+        case 'REMOVE_NODE':
+            return state.filter(t => !action.connections.includes(t.id))
     }
     return state;
 }

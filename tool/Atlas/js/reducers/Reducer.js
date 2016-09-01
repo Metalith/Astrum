@@ -12,13 +12,14 @@ var initialNodeState  = {
     input: {},
     dragging: false
 }
-
+var newNodeID = 0;
+var value = '';
 const Node = (state = initialNodeState, action) => {
     switch (action.type) {
         case 'ADD_NODE':
             return {
                 nodeType: action.nodeType,
-                id: action.id,
+                id: newNodeID++,
                 pos: action.pos,
                 Connections: [],
                 output: action.output,
@@ -36,7 +37,7 @@ const Node = (state = initialNodeState, action) => {
         case 'ADD_CONNECTION':
             if (state.id === action.Input.Node) {
                 let input = Object.assign({}, state.input);
-                input[action.Input.Field] = action.value;
+                input[action.Input.Field] = value;
                 fromNode = true;
                 return Object.assign({}, state, {
                     input: input,
@@ -98,10 +99,9 @@ const Node = (state = initialNodeState, action) => {
 const Nodes = function(state = [], action) {
     switch (action.type) {
         case 'ADD_NODE':
-            action.id = state.length;
             return [...state, Node(undefined, action)];
         case 'ADD_CONNECTION':
-            action.value = state[action.Output.Node].output[action.Output.Field];
+            value = state[action.Output.Node].output[action.Output.Field];
             return state.map(t => Node(t, action));
         case 'REMOVE_CONNECTIONS':
         case 'SET_POS':
@@ -114,7 +114,7 @@ const Nodes = function(state = [], action) {
 };
 
 var newConnectionID = 0;
-var useConnectionID = 0;
+var currentConnectionID = 0;
 var fromNode = false;
 var ConnectionsToRemove = [];
 const Connections = function(state = [], action) {
@@ -124,13 +124,13 @@ const Connections = function(state = [], action) {
             let MatchedCon = MatchCons.filter(con => con.Input.Field == action.Input.Field)[0]
             if (MatchedCon) {
                 if (fromNode) fromNode = false;
-                useConnectionID = MatchedCon.id;
+                currentConnectionID = MatchedCon.id;
                 let i = state.map(con => con.id).indexOf(MatchedCon.id)
-                return [...state.slice(0,i), {id: useConnectionID, Input: action.Input, Output: action.Output}, ...state.slice(i+1)];
+                return [...state.slice(0,i), {id: currentConnectionID, Input: action.Input, Output: action.Output}, ...state.slice(i+1)];
             }
-            if (!fromNode) useConnectionID = newConnectionID++;
+            if (!fromNode) currentConnectionID = newConnectionID++;
             else fromNode = false;
-            return [...state, {id: useConnectionID, Input: action.Input, Output: action.Output}]
+            return [...state, {id: currentConnectionID, Input: action.Input, Output: action.Output}]
         case 'REMOVE_CONNECTIONS':
             ConnectionsToRemove = state.filter(con => con[action.FieldType].Node == action.Node)
             ConnectionsToRemove = ConnectionsToRemove.filter(con => con[action.FieldType].Field == action.Field)

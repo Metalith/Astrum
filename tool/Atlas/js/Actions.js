@@ -56,6 +56,13 @@ const addConnection = (Input, Output) =>
         Input: Input,
         Output: Output
     })
+const removeConnections = (Type, Node, Field) =>
+    ({
+        type: 'REMOVE_CONNECTIONS',
+        Node: Node,
+        FieldType: Type,
+        Field: Field
+    })
 
 export default {
     addNode: addNode,
@@ -65,5 +72,6 @@ export default {
     startConnecting: startConnecting,
     stopConnecting: stopConnecting,
     addConnection: addConnection,
+    removeConnections: removeConnections,
     updateNode: updateNode
 }

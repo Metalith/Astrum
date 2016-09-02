@@ -5,10 +5,11 @@ class Nodes extends React.Component {
     constructor(props) {
         super(props);
         let Inputs = [];
-        props.nodes.forEach((node, i) => Inputs[i] = node.input);
-        this.state = { Inputs };
+        let Dirty = [];
+        props.nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty})
+        this.state = { Inputs, Dirty };
 
-        this.updateInputs = this.updateInputs.bind(this);
+        this.updateNodes = this.updateNodes.bind(this);
     }
 
     update() {
@@ -18,14 +19,15 @@ class Nodes extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.updateInputs(nextProps.nodes)
+        this.updateNodes(nextProps.nodes)
     }
 
     // NOTE: Pretty slow, runs after every action involving nodes, cant imagine performance issues with small amount of nodes
-    updateInputs(nodes) {
+    updateNodes(nodes) {
         let Inputs = [];
-        nodes.forEach((node, i) => {Inputs[node.id] = node.input});
-        this.setState({Inputs: Inputs});
+        let Dirty  = [];
+        nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty});
+        this.setState({Inputs: Inputs, Dirty: Dirty});
     }
 
     updateInput(node, input) {
@@ -46,6 +48,7 @@ class Nodes extends React.Component {
                     cons={node.Connections}
                     inputs={this.state.Inputs[node.id]}
                     outputs={node.output}
+                    dirty={this.state.Dirty[node.id]}
                     id={node.id} />})}
         </div>
     }

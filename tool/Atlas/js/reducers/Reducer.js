@@ -10,7 +10,8 @@ var initialNodeState  = {
     Connections: [],
     output: {},
     input: {},
-    dragging: false
+    dragging: false,
+    dirty: false
 }
 var newNodeID = 0;
 var emptyNodeIDs = [];
@@ -49,7 +50,8 @@ const Node = (state = initialNodeState, action) => {
                 fromNode = true;
                 return Object.assign({}, state, {
                     input: input,
-                    Connections: Connections(state.Connections, action)
+                    Connections: Connections(state.Connections, action),
+                    dirty: true
                 });
             }
             if (state.id === action.Output.Node) {
@@ -86,7 +88,8 @@ const Node = (state = initialNodeState, action) => {
             if (state.id === action.node) {
                 return Object.assign({}, state, {
                     input: action.inputs,
-                    output: action.outputs
+                    output: action.outputs,
+                    dirty: false
                 });
             }
             let conNodesArray = action.connectedNodes.slice(0);
@@ -97,7 +100,8 @@ const Node = (state = initialNodeState, action) => {
                     Inputs[action.connectedFields[i]] = action.outputs[action.outputFields[i]];
                 }
                 return Object.assign({}, state, {
-                    input: Inputs
+                    input: Inputs,
+                    dirty: true
                 });
             }
     }

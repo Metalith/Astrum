@@ -33,6 +33,13 @@ class Node extends React.Component {
         }
     }
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.dirty)
+            this.props.dispatch(Actions.updateNode(this.props.id,
+                nextProps.inputs,
+                this.getOutputs(nextProps.inputs),
+            this.props.cons))
+    }
     onMouseDown(e) {
         if (e.target.tagName != "INPUT" && !e.target.classList.contains("Field") && e.target.className != "Handle") {
             this.setState({
@@ -78,7 +85,7 @@ class Node extends React.Component {
                             M150, 150 L300, 300Z"/>
             </svg>
             <Input
-                input={this.props.inputs}
+                input={this.show.inputs}
                 node={this.props.id}
                 cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}
             />
@@ -91,7 +98,7 @@ class Node extends React.Component {
                 </div>
             </div>
             <Output
-                output={this.props.outputs}
+                output={this.show.outputs}
                 node={this.props.id}
                 cons={this.props.cons.filter(con => {return (con.Output.Node == this.props.id) ? true : false })}
             />
@@ -99,20 +106,10 @@ class Node extends React.Component {
     }
 }
 
-class TestNode extends Node {
-    get name() {return 'Test Node'}
-    constructor(props) { super(props) }
-    static get input() {return {
-        TestInput: ''
-    }}
-    static get output() {return {
-    }}
-    center() {return <input type="number" name="fname" onChange={this.update}/>}
-}
-
 class ValueNode extends Node {
     get name() { return 'Value'; }
     constructor(props) { super(props); }
+    getOutputs(inputs) { return { Value: inputs.Value } }
     center() {
         return <input
             type="number"
@@ -126,6 +123,12 @@ class ValueNode extends Node {
     static get input() {return {
         Value: 10
     }}
+    get show() {
+        return {
+            inputs: {Value: ''},
+            outputs: {Value: ''}
+        }
+    }
     static get output() {return {
         Value: 10
     }}
@@ -135,19 +138,29 @@ class MathNode extends Node {
     get name() {return 'Math'}
     constructor(props) { super(props) }
 
+    getOutputs(inputs) { return { Result: inputs.Value1 + inputs.Value2 } }
     center() { return <input type="number" value={this.props.inputs.Value1 + this.props.inputs.Value2}/> }
 
     static get input() {return {
         Value1: 0,
         Value2: 0
     }}
+
+    get show() {
+        return {
+            inputs: {
+                Value1: 0,
+                Value2: 0
+            },
+            outputs: {Result: ''}
+        }
+    }
     static get output() {return {
         Result: 0
     }}
 }
 
 export default {
-    TestNode: connect()(TestNode),
     Value: connect()(ValueNode),
     // Output: connect()(OutputNode),
     MathNode: connect()(MathNode)

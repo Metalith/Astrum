@@ -201,10 +201,24 @@ const Dragging = function(state = false, action) {
     return state;
 };
 
+const Editor = (state = { dragging: false }, action) => {
+    switch (action.type) {
+        case 'TOGGLE_DRAG_EDITOR':
+            return Object.assign({}, state, {
+                dragging: !state.dragging
+            });
+    }
+    return state;
+}
+
+// const Program = (state = )
+
 export default combineReducers({
     Connections: Connections,
     Connecting: Connecting,
     Nodes: Nodes,
     Selected: Selected,
-    Dragging: Dragging
+    Dragging: Dragging,
+    Editor: Editor
+    // Program: Program
 });

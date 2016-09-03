@@ -70,6 +70,11 @@ const removeConnections = (Type, Node, Field) =>
         Field: Field
     })
 
+const toggleDragEditor = () =>
+    ({
+        type: 'TOGGLE_DRAG_EDITOR'
+    })
+
 export default {
     addNode: addNode,
     removeNode: removeNode,
@@ -80,5 +85,6 @@ export default {
     stopConnecting: stopConnecting,
     addConnection: addConnection,
     removeConnections: removeConnections,
-    updateNode: updateNode
+    updateNode: updateNode,
+    toggleDragEditor: toggleDragEditor
 }

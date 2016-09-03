@@ -10,7 +10,7 @@ class MenuItem extends React.Component {
                 this.props.dispatch(
                     Actions.addNode(
                         this.props.name,
-                        {x: e.pageX, y: e.pageY},
+                        {x: e.pageX - this.props.globalOffset.x, y: e.pageY - this.props.globalOffset.y},
                         this.props.defaultInput,
                         this.props.defaultOutput));
                 this.props.hide()}}

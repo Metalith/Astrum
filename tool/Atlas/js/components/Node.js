@@ -74,7 +74,7 @@ class Node extends React.Component {
         return <div
             className="Node"
             id={"Node" + this.props.id}
-            style={{position: "absolute", left: this.state.pos.x, top: this.state.pos.y}}
+            style={{position: "absolute", left: this.props.globalOffset.x + this.state.pos.x, top: this.props.globalOffset.y + this.state.pos.y}}
             onMouseDown={this.onMouseDown}
         >
 
@@ -125,7 +125,7 @@ class ValueNode extends Node {
     }}
     get show() {
         return {
-            inputs: {Value: ''},
+            inputs: {},
             outputs: {Value: ''}
         }
     }
@@ -136,9 +136,12 @@ class ValueNode extends Node {
 
 class MathNode extends Node {
     get name() {return 'Math'}
-    constructor(props) { super(props) }
+    constructor(props) {
+        super(props)
+    }
 
-    getOutputs(inputs) { return { Result: inputs.Value1 + inputs.Value2 } }
+    getOutputs(inputs) { return { Result: `${inputs.Value1} + ${inputs.Value2}` } }
+    // center() {}
     center() { return <input type="number" value={this.props.inputs.Value1 + this.props.inputs.Value2}/> }
 
     static get input() {return {
@@ -160,8 +163,27 @@ class MathNode extends Node {
     }}
 }
 
+class OutputNode extends Node {
+    get name() { return 'Output'; }
+    constructor(props) { super(props); }
+    getOutputs(inputs) {
+    }
+    center() {}
+    static get input() {return {
+        Color: 0
+    }}
+    get show() {
+        return {
+            inputs: { Height: ''},
+            outputs: {}
+        }
+    }
+    static get output() {return {
+    }}
+}
+
 export default {
     Value: connect()(ValueNode),
-    // Output: connect()(OutputNode),
-    MathNode: connect()(MathNode)
+    MathNode: connect()(MathNode),
+    Output: connect()(OutputNode)
 }

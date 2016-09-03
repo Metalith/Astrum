@@ -44,6 +44,7 @@ class Nodes extends React.Component {
                 return <GenNode
                     key={node.id}
                     pos={node.pos}
+                    globalOffset={this.props.globalOffset}
                     update={this.updateInput}
                     cons={node.Connections}
                     inputs={this.state.Inputs[node.id]}

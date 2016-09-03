@@ -13,10 +13,10 @@ class Connector extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        if ((!this.props.Input.dragging && nextProps.Input.dragging) || (!this.props.Output.dragging && nextProps.Output.dragging))
+        if ((!this.props.Input.dragging && nextProps.Input.dragging) || (!this.props.Output.dragging && nextProps.Output.dragging) || (!this.props.Editor.dragging && nextProps.Editor.dragging))
             document.addEventListener('mousemove', this.updateD)
-        else if (this.props.Input.dragging && !nextProps.Input.dragging)
-            document.removeEventListener('mousemove', this.updateD) || (this.props.Output.dragging && !nextProps.Output.dragging)
+        else if ((this.props.Input.dragging && !nextProps.Input.dragging) || (this.props.Output.dragging && !nextProps.Output.dragging) || (this.props.Editor.dragging && !nextProps.Editor.dragging))
+            document.removeEventListener('mousemove', this.updateD)
     }
 
     componentWillReceiveProps(nextProps) {
@@ -78,7 +78,8 @@ class Connector extends React.Component {
 const mapStateToProps = (state, ownProps) =>
     ({
         Input: state.Nodes[state.Nodes.map(node => node.id).indexOf(ownProps.Connection.Input.Node)],
-        Output: state.Nodes[state.Nodes.map(node => node.id).indexOf(ownProps.Connection.Output.Node)]
+        Output: state.Nodes[state.Nodes.map(node => node.id).indexOf(ownProps.Connection.Output.Node)],
+        Editor: state.Editor
     })
 
 export default connect(mapStateToProps)(Connector)

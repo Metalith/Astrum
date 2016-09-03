@@ -18,7 +18,8 @@ class Menu extends React.Component {
                     name={type}
                     hide={this.props.hide}
                     defaultInput={Node[type].input}
-                    defaultOutput={Node[type].output}/>})}
+                    defaultOutput={Node[type].output}
+                    globalOffset={this.props.globalOffset}/>})}
         </div>
     }
 }

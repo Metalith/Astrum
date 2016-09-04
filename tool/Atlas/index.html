@@ -8,37 +8,59 @@
     </head>
     <body>
         <div id="container"></div>
-        <label class="switch">
-            <input type="checkbox">
-            <div class="slider"></div>
-        </label>
-
         <!-- Shaders -->
         <script type="x-shader/x-vertex" id="vertexShader">
         varying vec2 pos;
 
         void main() {
+            pos = position.xy;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
         }
         </script>
 
         <script type="x-shader/x-fragment" id="fragmentShader">
         precision highp float;
-
-        float hex(vec2 p) {
+        varying vec2 pos;
+         float hex(vec2 p) {
             p.x *= 0.57735*2.0;
         	p.y += mod(floor(p.x), 2.0)*0.5;
         	p = abs((mod(p, 1.0) - 0.5));
         	return abs(max(p.x*1.5 + p.y, p.y*2.0) - 1.0);
         }
+        vec4 hexagon( vec2 p ) {
+            vec2 q = vec2( p.x*2.0*0.5773503, p.y + p.x*0.5773503 );
+
+            vec2 pi = floor(q);
+            vec2 pf = fract(q);
+
+            float v = mod(pi.x + pi.y, 3.0);
+
+            float ca = step(1.0,v);
+            float cb = step(2.0,v);
+            vec2  ma = step(pf.xy,pf.yx);
+
+            // distance to borders
+            float e = dot( ma, 1.0-pf.yx + ca*(pf.x+pf.y-1.0) + cb*(pf.yx-2.0*pf.xy) );
+
+            // distance to center
+            p = vec2( q.x + floor(0.5+p.y/1.5), 4.0*p.y/3.0 )*0.5 + 0.5;
+            float f = length( (fract(p) - 0.5)*vec2(1.0,0.85) );
+
+            return vec4( pi + ca - cb*ma, e, f );
+        }
+
+        float hash1( vec2  p ) { float n = dot(p,vec2(127.1,311.7) ); return fract(sin(n)*43758.5453); }
 
         void main(void) {
-        	vec2 pos = gl_FragCoord.xy;
-        	vec2 p = pos/50.0;
-        	float  r = 0.05;
-            float h = smoothstep(r, 0.0,hex(p));
-            if (h == 0.0) discard;
-        	gl_FragColor = vec4(vec3(0.1), 1.0);
+        	/*vec2 pos = gl_FragCoord.xy / vec2(256, 256);*/
+            /*pos = pos / vec2(256.0);*/
+        	vec2 p = pos / vec2(256.0);
+        	vec4 h = hexagon(8.0*p);
+        	vec3 col = 0.15 + 0.15*hash1(h.xy+1.2)*vec3(1.0);
+            col *= vec3(0.05, 0.07, 0.07)*2.5;
+        	/*col *= smoothstep( 0.10, 0.11, h.w );*/
+        	col *= smoothstep( 0.01, 0.025, h.z );
+        	gl_FragColor = vec4(vec3(col), 1.0);
         }
         </script>
         <script type="x-shader/x-fragment" id="displayFragmentShader">

@@ -116,12 +116,13 @@ class ValueNode extends Node {
             onChange={(e) => {
                 this.props.dispatch(Actions.updateNode(
                     this.props.id,
-                    {Value: parseInt(e.target.value)},
-                    {Value: parseInt(e.target.value)},
+                    {Value: (e.target.value.length == 0) ? "0" : e.target.value },
+                    {Value: parseFloat((e.target.value.length == 0) ? "0" : e.target.value)},
                     this.props.cons))}}
-                value={this.props.inputs.Value}/>}
+                value={this.props.inputs.Value}
+                step="0.01"/>}
     static get input() {return {
-        Value: 10
+        Value: "10"
     }}
     get show() {
         return {
@@ -130,7 +131,7 @@ class ValueNode extends Node {
         }
     }
     static get output() {return {
-        Value: 10
+        Value: 10.0
     }}
 }
 
@@ -141,7 +142,6 @@ class MathNode extends Node {
     }
 
     getOutputs(inputs) { return { Result: `${inputs.Value1} + ${inputs.Value2}` } }
-    // center() {}
     center() { return <input type="number" value={this.props.inputs.Value1 + this.props.inputs.Value2}/> }
 
     static get input() {return {
@@ -167,6 +167,15 @@ class OutputNode extends Node {
     get name() { return 'Output'; }
     constructor(props) { super(props); }
     getOutputs(inputs) {
+        let Vertex = `
+        varying vec2 pos;
+        void main() {
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }`
+        let Fragment = `void main(void) {
+            gl_FragColor = vec4(vec3(${inputs.Color}), 1.0);
+        }`
+        this.props.dispatch(Actions.setProgram(Vertex, Fragment))
     }
     center() {}
     static get input() {return {
@@ -174,7 +183,7 @@ class OutputNode extends Node {
     }}
     get show() {
         return {
-            inputs: { Height: ''},
+            inputs: { Color: ''},
             outputs: {}
         }
     }

@@ -75,6 +75,18 @@ const toggleDragEditor = () =>
         type: 'TOGGLE_DRAG_EDITOR'
     })
 
+const setProgram = (Vertex, Fragment) =>
+    ({
+        type: 'SET_PROGRAM',
+        Vertex: Vertex,
+        Fragment: Fragment
+    })
+
+const switchView = () =>
+    ({
+        type: 'SWITCH_VIEW'
+    })
+
 export default {
     addNode: addNode,
     removeNode: removeNode,
@@ -86,5 +98,7 @@ export default {
     addConnection: addConnection,
     removeConnections: removeConnections,
     updateNode: updateNode,
-    toggleDragEditor: toggleDragEditor
+    toggleDragEditor: toggleDragEditor,
+    setProgram: setProgram,
+    switchView: switchView
 }

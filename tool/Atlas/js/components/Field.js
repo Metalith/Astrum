@@ -60,8 +60,8 @@ class Field extends React.Component {
     endConnection(e) {
         this.props.dispatch(Actions.stopConnecting());
         let el = e.target;
-        if (el.className == 'Handle')
-            el = e.target.parentElement;
+        if (el.tagName == 'path')
+            el = e.target.parentElement.parentElement;
         if (el.classList.contains("Field")) {
             if (el.parentElement.className != this.props.Selected.Type) {
                 if (el.parentElement.parentElement.id != "Node" + this.props.Selected.Node) {

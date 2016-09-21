@@ -3,7 +3,7 @@ const electron = require('electron');
 const {app} = electron;
 // Module to create native browser window.
 const {BrowserWindow} = electron;
-require('electron-reload')(__dirname);
+require('electron-reload')(__dirname, {ignored: /node_modules|[\/\\]\.|\/js\//});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

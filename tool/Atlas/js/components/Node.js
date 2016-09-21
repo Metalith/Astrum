@@ -247,7 +247,7 @@ class TrigNode extends Node {
 class PerlinNode extends Node {
     get name() { return 'Perlin'; }
     constructor(props) { super(props); }
-    getOutputs(inputs) { return 'perlin(vec3(position.x, position.y, 0.0))' }
+    getOutputs(inputs) { return 'cnoise(vec3(position.x, position.y, 0.0))' }
     center() {}
     static get input() {return {
     }}
@@ -260,7 +260,7 @@ class PerlinNode extends Node {
         }
     }
     static get output() {return {
-        Value: 'perlin(position.x, position.y, 0.0)'
+        Value: 'cnoise(vec3(position.x, 0.0, position.z))'
     }}
 }
 
@@ -291,119 +291,162 @@ class OutputNode extends Node {
     constructor(props) { super(props); }
     getOutputs(inputs) {
         let Vertex = `
-        varying vec3 pos;
-        varying vec3 newPosition;
-        uniform int p[512];
-        float grad(int hash, float x, float y, float z) {
-            int h = int(mod(float(hash), 16.0));
-            float u = h < 8 ? x : y;
-            float v;
-            if(h < 4 /* 0b0100 */)
-                v = y;
-            else if(h == 12 /* 0b1100 */ || h == 14 /* 0b1110*/)
-                v = x;
-            else
-                v = z;
-            return (floor(mod(float(hash), 2.0)) == 0.0 ? u : -u)+(floor(mod(float(hash / 2), 2.0)) == 0.0 ? v : -v);
-        }
-        float fade(float t) {
-                                                        // Fade function as defined by Ken Perlin.  This eases coordinate values
-                                                        // so that they will ease towards integral values.  This ends up smoothing
-                                                        // the final output.
-            return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); // 6t^5 - 15t^4 + 10t^3
-        }
-        int inc(int num) {
-            num++;
-
-            return num;
-        }
-        float perlin(float x, float y, float z) {
-            float repeat = 0.0;
-            if(repeat > 0.0) {
-                x = mod(x,repeat);
-                y = mod(y,repeat);
-                z = mod(z,repeat);
-            }
-
-            int xi = int(mod(x, 256.0));                              // Calculate the "unit cube" that the point asked will be located in
-            int yi = int(mod(y, 256.0));                              // The left bound is ( |_x_|,|_y_|,|_z_| ) and the right bound is that
-            int zi = int(mod(z, 256.0));                              // plus 1.  Next we calculate the location (from 0.0 to 1.0) in that cube.
-            float xf = fract(x);
-            float yf = fract(y);
-            float zf = fract(z);
-
-            float u = fade(xf);
-            float v = fade(yf);
-            float w = fade(zf);
-
-            int aaa, aba, aab, abb, baa, bba, bab, bbb;
-            aaa = p[p[p[    xi ]+    yi ]+    zi ];
-            aba = p[p[p[    xi ]+inc(yi)]+    zi ];
-            aab = p[p[p[    xi ]+    yi ]+inc(zi)];
-            abb = p[p[p[    xi ]+inc(yi)]+inc(zi)];
-            baa = p[p[p[inc(xi)]+    yi ]+    zi ];
-            bba = p[p[p[inc(xi)]+inc(yi)]+    zi ];
-            bab = p[p[p[inc(xi)]+    yi ]+inc(zi)];
-            bbb = p[p[p[inc(xi)]+inc(yi)]+inc(zi)];
-
-            float x1, x2, y1, y2;
-            x1 = mix(  grad (aaa, xf    , yf    , zf),           // The gradient function calculates the dot product between a pseudorandom
-                        grad (baa, xf-1.0, yf    , zf),             // gradient vector and the vector from the input coordinate to the 8
-                        u);                                     // surrounding points in its unit cube.
-            x2 = mix(  grad (aba, xf    , yf-1.0, zf),           // This is all then mixed together as a sort of weighted average based on the faded (u,v,w)
-                        grad (bba, xf-1.0, yf-1.0, zf),             // values we made earlier.
-                        u);
-            y1 = mix(x1, x2, v);
-            x1 = mix(  grad (aab, xf    , yf    , zf-1.0),
-                        grad (bab, xf-1.0, yf    , zf-1.0),
-                        u);
-            x2 = mix(  grad (abb, xf    , yf-1.0, zf-1.0),
-                        grad (bbb, xf-1.0, yf-1.0, zf-1.0),
-                        u);
-            y2 = mix (x1, x2, v);
-
-            return mix (y1, y2, w);                      // For convenience we bind the result to 0 - 1 (theoretical min/max before is [-1, 1])
-        }
+        varying vec2 vUv;
         void main() {
-            float offset = 0.0;
-            if (position.z > 0.1)
-                offset = min(${inputs.Height}, 10.0);
-            newPosition = vec3(position.xy,position.z + offset);
-            pos = (modelViewMatrix * vec4(newPosition, 1.0)).xyz;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition,1.0);
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
         }`
         let Fragment = `
-        varying vec3 pos;
-        varying vec3 newPosition;
+        precision highp float;
+
+        uniform vec2 resolution;
+        uniform int view;
+        vec3 mod289(vec3 x) {
+            return x - floor(x * (1.0 / 289.0)) * 289.0;
+        }
+
+        vec2 mod289(vec2 x) {
+            return x - floor(x * (1.0 / 289.0)) * 289.0;
+        }
+
+        vec3 permute(vec3 x) {
+            return mod289(((x*34.0)+1.0)*x);
+        }
+
+        float snoise(vec2 v)
+        {
+            const vec4 C = vec4(0.211324865405187,  // (3.0-sqrt(3.0))/6.0
+                              0.366025403784439,  // 0.5*(sqrt(3.0)-1.0)
+                             -0.577350269189626,  // -1.0 + 2.0 * C.x
+                              0.024390243902439); // 1.0 / 41.0
+            // First corner
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+
+            // Other corners
+            vec2 i1;
+            //i1.x = step( x0.y, x0.x ); // x0.x > x0.y ? 1.0 : 0.0
+            //i1.y = 1.0 - i1.x;
+            i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            // x0 = x0 - 0.0 + 0.0 * C.xx ;
+            // x1 = x0 - i1 + 1.0 * C.xx ;
+            // x2 = x0 - 1.0 + 2.0 * C.xx ;
+            vec4 x12 = x0.xyxy + C.xxzz;
+            x12.xy -= i1;
+
+            // Permutations
+            i = mod289(i); // Avoid truncation effects in permutation
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+            	+ i.x + vec3(0.0, i1.x, 1.0 ));
+
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ;
+            m = m*m ;
+
+            // Gradients: 41 points uniformly over a line, mapped onto a diamond.
+            // The ring size 17*17 = 289 is close to a multiple of 41 (41*7 = 287)
+
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+
+            // Normalise gradients implicitly by scaling m
+            // Approximation of: m *= inversesqrt( a0*a0 + h*h );
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+
+            // Compute final noise value at P
+            vec3 g;
+            g.x  = a0.x  * x0.x  + h.x  * x0.y;
+            g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+
+        float scene(vec3 position) {
+            return position.y - ${inputs.Height};
+        }
+
+        vec3 getNormal(vec3 p) {
+            float eps = 0.001;
+            return normalize(vec3(
+        		scene(vec3(p.x+eps,p.y,p.z))-scene(vec3(p.x-eps,p.y,p.z)),
+        		scene(vec3(p.x,p.y+eps,p.z))-scene(vec3(p.x,p.y-eps,p.z)),
+        		scene(vec3(p.x,p.y,p.z+eps))-scene(vec3(p.x,p.y,p.z-eps))
+        	));
+        }
+
+        float raymarch(vec3 ro, vec3 rd) {
+            float sceneDist = 1e4;
+        	float rayDepth = 0.0; // Ray depth. "start" is usually zero, but for various reasons, you may wish to start the ray further away from the origin.
+        	for ( int i = 0; i < 128; i++ ) {
+
+        		sceneDist = scene(ro + rd * rayDepth); // Distance from the point along the ray to the nearest surface point in the scene.
+                if (( sceneDist < 0.005 ) || (rayDepth >= 100.0)) {
+    		          break;
+        		}
+        		rayDepth += sceneDist * 0.5;
+
+        	}
+            if ( sceneDist >= 0.005 ) rayDepth = 5000.0;
+        	else rayDepth += sceneDist;
+
+        	return rayDepth;
+        }
         void main(void) {
-            // vec3 N = normalize(cross(dFdx(pos), dFdy(pos)));
-            // vec3 L = normalize(vec3(5, 5, 5));
-            // vec4 diffuse = vec4(0.4, 0.4, 1.0, 1.0) * max(dot(L, N), 0.0);
-            // gl_FragColor = diffuse;
-            // float h = mod(newPosition.z, 1.0);
-            // vec3 color = (h >= 0.1) ? vec3(1.0) : vec3 (0.0);
-            // gl_FragColor = vec4(color, 1.0);
-            // vec3 f  = fract (newPosition * 3.0);
-            // vec3 df = fwidth(newPosition * 3.0);
-            //
-            // vec3 g = smoothstep(df * 1.0, df * 2.0, f);
-            //
-            // float c = g.z;
-            //
-            // gl_FragColor = vec4(c, c, c, 1.0);
-            vec3 P = newPosition;
-            float gsize = 10.0;
-            float gwidth = 1.0;
-            vec3 f  = abs(fract (P * gsize)-0.5);
-        	vec3 df = fwidth(P * gsize);
-        	float mi=max(0.0,gwidth-1.0), ma=max(1.0,gwidth);//should be uniforms
-        	vec3 g=clamp((f-df*mi)/(df*(ma-mi)),max(0.0,1.0-gwidth),1.0);//max(0.0,1.0-gwidth) should also be sent as uniform
-        	float c = g.z;
-            // vec3 N = normalize(cross(dFdx(pos), dFdy(pos)));
-            // vec3 L = normalize(vec3(5, 5, 5));
-            // vec4 diffuse = vec4(0.4, 0.4, 1.0, 1.0) * max(dot(L, N), 0.0);
-            // gl_FragColor = diffuse * c;
-        	gl_FragColor = vec4(vec3(newPosition.z / 2.0), 1.0);
+            vec2 aspect = vec2(resolution.x/resolution.y, 1.0);
+        	vec2 screenCoords = (2.0*gl_FragCoord.xy/resolution.xy - 1.0)*aspect;
+            if (view == 1) {
+            	vec3 lookAt = vec3(0.0, 0.0, 0.0);  // This is the point you look towards, or at.
+            	vec3 camPos = vec3(20.0, 10.0, 20.0); // This is the point you look from, or camera you look at the scene through. Whichever way you wish to look at it.
+
+                // Camera setup.
+                vec3 forward = normalize(lookAt-camPos); // Forward vector.
+
+                vec3 right = normalize(vec3(forward.z, 0., -forward.x )); // Right vector... or is it left? Either way, so long as the correct-facing up-vector is produced.
+                vec3 up = normalize(cross(forward,right)); // Cross product the two vectors above to get the up vector.
+
+                float FOV = 0.5;
+
+                vec3 ro = camPos;
+                vec3 rd = normalize(forward + FOV*screenCoords.x*right + FOV*screenCoords.y*up);
+
+                float dist = raymarch(ro, rd);
+                if ( dist >= 5000.0 ) {
+            	    gl_FragColor = vec4(vec3(0.05, 0.066, 0.07), 1.0);
+            	    return;
+            	}
+                vec3 sp = ro + rd*dist;
+                vec3 surfNormal = getNormal(sp);
+
+                vec3 lp = vec3(15, 10, 15);
+            	vec3 ld = lp-sp;
+
+            	float len = length( ld ); // Distance from the light to the surface point.
+            	ld /= len; // Normalizing the light-to-surface, aka light-direction, vector.
+                float diffuse = max( 0.0, dot(surfNormal, ld) ); //The object's diffuse value, which depends on the angle that the light hits the object.
+                vec3 Color = vec3(0.4, 0.6, 1.0);
+                gl_FragColor = vec4(Color * diffuse, 1.0);
+            } else {
+
+            	vec3 forward = vec3(0, -1, 0);
+                vec3 up = vec3(0, 0, 1);
+                vec3 right = vec3(1, 0, 0);
+
+                vec3 ro = vec3(0,10,0)  + screenCoords.x*right + screenCoords.y*up;
+                vec3 rd = forward;
+
+                float dist = raymarch(ro, rd);
+                vec3 P = ro + rd * dist;
+                P.y += 1.0;
+                P.y /= 2.0;
+                float f  = fract (P.y * 20.0);
+                float df = fwidth(P.y * 25.0);
+
+                float g = smoothstep(df * 0.5, df * 1.0, f);
+
+                float c = g;
+                gl_FragColor = vec4(vec3(0.4, 0.6, 1.0) * c * floor(P.y * 20.0) / 20.0, 1.0);
+            }
         }`
         this.props.dispatch(Actions.setProgram(Vertex, Fragment))
     }

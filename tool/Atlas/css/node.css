@@ -1,15 +1,15 @@
 .Node {
     display: inline-table;
     position: absolute;
-    font-family: "Lato thin";
-    font-size: 16px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
     text-align: center;
 
     background-color: #cc443e;
     color: white;
 
     border-radius: 0.75em;
-    padding: 3px 22px 10px 22px;
+    padding: 5px 20px 5px 20px;
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none;   /* Chrome/Safari/Opera */
     -khtml-user-select: none;    /* Konqueror */
@@ -24,8 +24,8 @@
     position: absolute;
     top: 5px;
     right: 5px;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
 
     stroke-width: 25px;
     stroke: white;
@@ -43,7 +43,7 @@
 }
 
 .NodeName {
-    font-family: "Lato light";
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     text-align: Center;
     /*position: relative;*/
 }
@@ -51,18 +51,23 @@
 .Input {
     float: left;
     display: inline-block;
+    margin-right: -10px;
 }
 
 .Center {
-    margin-left: 20px;
-    margin-right: 20px;
     float: left;
     text-align: center;
+}
+
+.Values {
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
 .Output {
     float: right;
     display: inline-block;
+    margin-left: -10px;
 }
 
 .Field {
@@ -85,9 +90,9 @@
 .Handle {
     position: absolute;
     content: "";
-    top: 2px;
-    height: 12px;
-    width: 12px;
+    top: 3px;
+    height: 10px;
+    width: 10px;
     stroke: white;
     stroke-width: 50;
     fill: white;
@@ -108,10 +113,12 @@ input[type=number] {
     border: none;
     float: left;
     width: 100px;
-    height: 20px;
+    height: 16px;
+    line-height: 0.5;
     border-bottom: solid 1px #c9c9c9;
     background-color: #cc9999;
-    font-family: "Lato";
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
     color: white;
     box-sizing: border-box;
     vertical-align:middle;
@@ -133,9 +140,9 @@ input:focus {
 }
 
 select {
-    width: 100px;
-    height: 20px;
-    font-family: "Lato";
+    height: 16px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
     color: white;
     border: none;
     border-radius: 4px;

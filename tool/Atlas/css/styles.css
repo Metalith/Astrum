@@ -10,6 +10,71 @@
     background: #0e1112;
 }
 
+#Code {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+#OpenCode {
+    float:left;
+    color: white;
+    padding-left: 25px;
+    padding-bottom: 2px;
+    padding-right: 5px;
+    padding-top: 3px;
+    background: #bbb;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently */
+    cursor: pointer;
+    border-top: 1px solid white;
+    border-right: 1px solid white;
+    border-radius: 0px 0.75em 0px 0px;
+}
+
+#OpenCode:before {
+    content: '';
+    display: block;
+    position: absolute;
+    height:2px;
+    width: 15px;
+    background: #FFFFFF;
+    left: 5px;
+    top: 4px;
+    box-shadow: 0 5px 0 #FFF, 0 10px 0 #FFF;
+}
+
+#LoadCode {
+    float: left;
+    color: white;
+    padding-left: 10px;
+    padding-bottom: 2px;
+    padding-right: 10px;
+    padding-top: 3px;
+    background: #bbb;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    text-align: center;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;           /* Non-prefixed version, currently */
+    cursor: pointer;
+    border-top: 1px solid white;
+    border-right: 1px solid white;
+    border-left: 1px solid white;
+    border-radius: 0.75em 0.75em 0px 0px;
+}
+
 .Connectors {
     position: absolute;
     pointer-events:none;
@@ -118,7 +183,8 @@
     position: absolute;
     content: "2D";
     height: 26px;
-    font: 14px Lato light;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
     text-align: center;
     width: 26px;
     left: 2px;

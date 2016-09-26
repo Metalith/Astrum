@@ -44,7 +44,7 @@ class Field extends React.Component {
             if (!this.state.showDisconnect)
                 this.startConnection()
             else {
-                this.props.dispatch(Actions.removeConnections(this.props.type, this.props.node, this.props.field));
+                this.props.removeConnections(this.props.type, this.props.node, this.props.field);
                 this.setState({ showDisconnect: false});
             }
         else

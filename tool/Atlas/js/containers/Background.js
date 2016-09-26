@@ -55,8 +55,8 @@ class Background extends React.Component {
         this.onWindowResize = this.onWindowResize.bind(this);
 
 
-        this.stats = new Stats();
-        document.body.appendChild(this.stats.dom);
+        // this.stats = new Stats();
+        // document.body.appendChild(this.stats.dom);
 
         window.addEventListener( 'resize', this.onWindowResize, false );
         this.renderScene();
@@ -83,7 +83,7 @@ class Background extends React.Component {
     }
 
     renderScene() {
-        this.stats.begin();
+        // this.stats.begin();
         if (this.transition) {
             if (this.props.View == "3D") {
                 this.view = 1;
@@ -102,7 +102,7 @@ class Background extends React.Component {
             this.renderer.render(this.sceneRTT, this.camera, this.rtTexture, true );
             this.drawScene = false;
         }
-        this.stats.end();
+        // this.stats.end();
         this.renderer.render(this.scene, this.camera);
     }
 

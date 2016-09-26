@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import Actions from '../Actions';
 import Node from '../components/Node'
 class Nodes extends React.Component {
     constructor(props) {
@@ -20,6 +21,17 @@ class Nodes extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         this.updateNodes(nextProps.nodes)
+    }
+
+    componentWillMount() {
+        this.props.dispatch(Actions.addNode(
+            "Output",
+            {x: 0.0, y: 0.0},
+            {
+                Height: 0.0,
+                Color: 0.0
+            },
+            {}))
     }
 
     // NOTE: Pretty slow, runs after every action involving nodes, cant imagine performance issues with small amount of nodes

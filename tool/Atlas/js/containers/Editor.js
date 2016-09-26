@@ -6,6 +6,7 @@ import ViewToggle from '../components/ViewToggle'
 import Nodes from './Nodes'
 import Background from './Background'
 import Connectors from './Connectors'
+import Code from './Code'
 class Editor extends React.Component {
     constructor(props) {
         super(props)
@@ -79,6 +80,7 @@ class Editor extends React.Component {
             <Nodes globalOffset={this.state.pos}/>
             <Connectors />
             <ViewToggle />
+            <Code    />
             <Menu
                 hide={this.hideContextMenu}
                 show={this.state.showContextMenu}

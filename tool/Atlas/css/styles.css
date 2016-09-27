@@ -51,7 +51,7 @@
     box-shadow: 0 5px 0 #FFF, 0 10px 0 #FFF;
 }
 
-#LoadCode {
+.CodeButton {
     float: left;
     color: white;
     padding-left: 10px;

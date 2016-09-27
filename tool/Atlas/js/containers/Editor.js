@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux';
 import Actions from '../Actions';
-import Menu from '../components/Menu'
+import NodeMenu from '../components/NodeMenu'
 import ViewToggle from '../components/ViewToggle'
 import Nodes from './Nodes'
 import Background from './Background'
@@ -81,7 +81,7 @@ class Editor extends React.Component {
             <Connectors />
             <ViewToggle />
             <Code    />
-            <Menu
+            <NodeMenu
                 hide={this.hideContextMenu}
                 show={this.state.showContextMenu}
                 pos={this.state.menuPos}

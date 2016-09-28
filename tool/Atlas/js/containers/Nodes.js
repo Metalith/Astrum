@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import Actions from '../Actions';
 import Input from '../components/NodeTypes/Input'
 import Output from '../components/NodeTypes/Output'
+import Maths from '../components/NodeTypes/Math'
 class Nodes extends React.Component {
     constructor(props) {
         super(props);
@@ -10,7 +11,7 @@ class Nodes extends React.Component {
         let Dirty = [];
         props.nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty})
         this.state = { Inputs, Dirty };
-        this.nodeTypes = Object.assign({}, Input, Output);
+        this.nodeTypes = Object.assign({}, Input, Output, Maths);
         this.updateNodes = this.updateNodes.bind(this);
     }
 

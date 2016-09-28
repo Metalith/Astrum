@@ -74,6 +74,7 @@ const Node = (state = initialNodeState, action) => {
                     input[action.Field] = '';
                     return Object.assign({}, state, {
                         input: input,
+                        dirty: true,
                         Connections:  state.Connections.filter(con => !ConnectionsToRemove.includes(con.id))
                     });
                 }

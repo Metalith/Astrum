@@ -149,12 +149,12 @@ class OutputNode extends Node {
 
         float raymarch(vec3 rayOrigin, vec3 rayDirection) {
             float t = 0.0;
-            for(int i = 0; i < 128; ++i) {
+            for(int i = 0; i < 1000; ++i) {
                 float d = scene(rayOrigin + rayDirection * t);
                 if(d < 0.005 * t || t > 100.0) {
                     return t;
                 }
-                t += d * 0.25;
+                t += d * 0.1;
             }
             return t;
         }

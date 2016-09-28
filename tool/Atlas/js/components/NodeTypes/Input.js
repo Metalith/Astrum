@@ -23,7 +23,7 @@ class ValueNode extends Node {
     }}
     get show() {
         return {
-            inputs: {Value: ''},
+            inputs: {},
             outputs: {Value: ''}
         }
     }

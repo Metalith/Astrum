@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Actions from '../../Actions';
-import Input from '../Input'
+import Fields from '../../containers/Fields'
 import Node from './Node.js';
 
 class OutputNode extends Node {
@@ -238,9 +238,10 @@ class OutputNode extends Node {
             <div className="NodeName">
                 {this.name}
             </div>
-            <Input
-                input={this.show.inputs}
+            <Fields
+                fields={this.show.inputs}
                 node={this.props.id}
+                type={"Input"}
                 cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}
             />
             <div className="Seperator"></div>

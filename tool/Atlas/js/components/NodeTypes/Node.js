@@ -1,8 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Actions from '../../Actions';
-import Input from '../Input'
-import Output from '../Output'
+import Fields from '../../containers/Fields'
 class Node extends React.Component {
     el: ''
     constructor(props) {
@@ -83,9 +82,10 @@ class Node extends React.Component {
                             M150, 150 L0, 0Z
                             M150, 150 L300, 300Z"/>
             </svg>
-            <Input
-                input={this.show.inputs}
+            <Fields
+                fields={this.show.inputs}
                 node={this.props.id}
+                type={"Input"}
                 cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}
             />
             <div className="Center">
@@ -96,9 +96,10 @@ class Node extends React.Component {
                     {this.center()}
                 </div>
             </div>
-            <Output
-                output={this.show.outputs}
+            <Fields
+                fields={this.show.outputs}
                 node={this.props.id}
+                type={"Output"}
                 cons={this.props.cons.filter(con => {return (con.Output.Node == this.props.id) ? true : false })}
             />
         </div>

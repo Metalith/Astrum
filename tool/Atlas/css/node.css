@@ -86,6 +86,8 @@
     text-align: left;
     cursor: default;
     margin-top: 2px;
+    line-height: 20px;
+    height: 20px;
 }
 
 .Field.hov {
@@ -102,7 +104,7 @@
 .Handle {
     position: absolute;
     content: "";
-    top: 3px;
+    top: 5px;
     height: 10px;
     width: 10px;
     stroke: white;
@@ -154,7 +156,7 @@ input[type=number] {
     border: none;
     display:block;
     width: 100px;
-    height: 16px;
+    height: 20px;
     padding-left: 2px;
     border-bottom: solid 1px #c9c9c9;
     background-color: #cc9999;

@@ -1,16 +1,16 @@
 import React from 'react';
-import Field from './Field';
+import Field from '../components/Field';
 
-class Input extends React.Component {
+class Fields extends React.Component {
     render() {
         let i = 0;
-        let connectedFields = (this.props.cons.map(con => con.Input.Field));
-        return <div className="Input">
-            {Object.keys(this.props.input).map(field =>
+        let connectedFields = (this.props.cons.map(con => con[this.props.type].Field));
+        return <div className={this.props.type}>
+            {Object.keys(this.props.fields).map(field =>
                     <Field
                         key={i++}
                         field={field}
-                        type={"Input"}
+                        type={this.props.type}
                         node={this.props.node}
                         removeConnections={this.props.removeConnections}
                         connected={connectedFields.includes(field)}/>)}
@@ -18,4 +18,4 @@ class Input extends React.Component {
     }
 }
 
-export default Input
+export default Fields

@@ -62,7 +62,7 @@ const addConnection = (Input, Output) =>
         Input: Input,
         Output: Output
     })
-const removeConnections = (Type, Node, Field) =>
+const removeConnections = (Node, Type, Field) =>
     ({
         type: 'REMOVE_CONNECTIONS',
         Node: Node,

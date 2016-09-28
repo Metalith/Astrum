@@ -57,7 +57,6 @@
     float: left;
     display: inline-block;
     margin-right: -10px;
-    margin-top:4px;
 }
 
 .Center {
@@ -68,14 +67,12 @@
 .Values {
     margin-left: 20px;
     margin-right: 20px;
-    margin-top:2px;
 }
 
 .Output {
     float: right;
     display: inline-block;
     margin-left: -10px;
-    margin-top:4px;
 }
 
 .Output:before {
@@ -88,6 +85,7 @@
     position: relative;
     text-align: left;
     cursor: default;
+    margin-top: 2px;
 }
 
 .Field.hov {
@@ -154,7 +152,7 @@
 
 input[type=number] {
     border: none;
-    float: left;
+    display:block;
     width: 100px;
     height: 16px;
     padding-left: 2px;
@@ -169,6 +167,7 @@ input[type=number] {
      -webkit-appearance: none;
      appearance: none;
     margin: 0;
+    margin-top: 2px;
 }
 
 input::-webkit-outer-spin-button,

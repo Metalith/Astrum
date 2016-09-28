@@ -20,7 +20,6 @@ class Node extends React.Component {
         this.onDrag = this.onDrag.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
         this.removeNode = this.removeNode.bind(this);
-        this.removeConnections = this.removeConnections.bind(this);
     }
 
     componentWillUpdate(props, state) {
@@ -42,7 +41,7 @@ class Node extends React.Component {
             this.props.cons))
     }
     onMouseDown(e) {
-        if (e.target != "svg" && !e.target.classList.contains("Field") && e.target.tagName != "path") {
+        if (e.target.tagName != "svg" && !e.target.classList.contains("Field") && e.target.tagName != "path") {
             this.setState({
                 dragging: true,
                 rel: {
@@ -66,9 +65,6 @@ class Node extends React.Component {
     onMouseUp(e) {
         this.setState({dragging: false})
         this.props.dispatch(Actions.setPos(this.props.id, this.state.pos))
-    }
-    removeConnections(type, field) {
-        this.props.dispatch(Actions.removeConnections(type, this.props.id, field, this.output[field]))
     }
     removeNode(e) {
         this.props.dispatch(Actions.removeNode(this.props.id, this.props.cons));

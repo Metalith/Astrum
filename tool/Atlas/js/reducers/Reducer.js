@@ -67,9 +67,21 @@ const Node = (state = initialNodeState, action) => {
                 });
             break;
         case 'REMOVE_CONNECTIONS':
-            return Object.assign({}, state, {
-                Connections:  state.Connections.filter(con => !ConnectionsToRemove.includes(con.id))
-            });
+            let match = state.Connections.findIndex(con => ConnectionsToRemove.includes(con.id))
+            if (match != -1) {
+                if (state.Connections[match].Input.Node == state.id) {
+                    let input = Object.assign({}, state.input);
+                    input[action.Field] = '';
+                    return Object.assign({}, state, {
+                        input: input,
+                        Connections:  state.Connections.filter(con => !ConnectionsToRemove.includes(con.id))
+                    });
+                }
+                return Object.assign({}, state, {
+                    Connections:  state.Connections.filter(con => !ConnectionsToRemove.includes(con.id))
+                });
+            }
+            break;
         case 'START_DRAGGING':
             if (state.id === action.id) {
                 return Object.assign({}, state, {

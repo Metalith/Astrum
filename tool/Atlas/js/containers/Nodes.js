@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import Actions from '../Actions';
-import Node from '../components/Node'
+import Input from '../components/NodeTypes/Input'
+import Output from '../components/NodeTypes/Output'
 class Nodes extends React.Component {
     constructor(props) {
         super(props);
@@ -9,7 +10,7 @@ class Nodes extends React.Component {
         let Dirty = [];
         props.nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty})
         this.state = { Inputs, Dirty };
-
+        this.nodeTypes = Object.assign({}, Input, Output);
         this.updateNodes = this.updateNodes.bind(this);
     }
 
@@ -38,7 +39,11 @@ class Nodes extends React.Component {
     updateNodes(nodes) {
         let Inputs = [];
         let Dirty  = [];
-        nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty});
+        nodes.forEach((node, i) => {
+            for (let input in node.input) if (node.input[input] == '') node.input[input] = this.nodeTypes[node.nodeType].input[input]
+            Inputs[node.id] = node.input;
+            Dirty[node.id] = node.dirty}
+        );
         this.setState({Inputs: Inputs, Dirty: Dirty});
     }
 
@@ -52,7 +57,7 @@ class Nodes extends React.Component {
         let i = 0;
         return <div>
             {this.props.nodes.map(node => {
-                let GenNode = Node[node.nodeType];
+                let GenNode = this.nodeTypes[node.nodeType];
                 return <GenNode
                     key={node.id}
                     pos={node.pos}

@@ -152,7 +152,6 @@
             float d = d1 * 0.05 + d2 * 0.19 + d3 * 0.8;
             float g = snoise(vec3(0.0, p.x, p.z) * 0.03) * 2.0;
             return (g + d) * 1.3 - 0.3;
-            /*return mod(p.x, 4.0);*/
         }
         float scene(vec3 p) {
             return p.y - density(p);

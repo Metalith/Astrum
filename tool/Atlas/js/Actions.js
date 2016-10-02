@@ -75,11 +75,11 @@ const toggleDragEditor = () =>
         type: 'TOGGLE_DRAG_EDITOR'
     })
 
-const setProgram = (Vertex, Fragment) =>
+const setProgram = (Height, Color) =>
     ({
         type: 'SET_PROGRAM',
-        Vertex: Vertex,
-        Fragment: Fragment
+        Height: Height,
+        Color: Color
     })
 
 const switchView = () =>

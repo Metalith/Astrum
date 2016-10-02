@@ -225,29 +225,15 @@ const Editor = (state = { dragging: false }, action) => {
 }
 
 const initialProgram = {
-    Vertex: `
-    varying vec3 pos;
-    void main() {
-        vec3 newPosition = vec3(position.xy,position.z);
-        pos = (modelViewMatrix * vec4(newPosition, 1.0)).xyz;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition,1.0);
-    }`,
-    Fragment: `
-    varying vec3 pos;
-    void main(void) {
-        vec3 N = normalize(cross(dFdx(pos), dFdy(pos)));
-        vec3 L = normalize(vec3(5000, 5000, 5000));
-        vec4 diffuse = vec4(0.4, 0.4, 1.0, 1.0) * max(dot(L, N), 0.0);
-        gl_FragColor = diffuse;
-    }
-    `
+    Height: `0.0`,
+    Color: `vec3(0.0, 0.0, 0.0)`
 }
 const Program = (state = initialProgram, action) => {
     switch (action.type) {
         case 'SET_PROGRAM':
             return Object.assign({}, state, {
-                Vertex: action.Vertex,
-                Fragment: action.Fragment
+                Height: action.Height,
+                Color: action.Color
             });
     }
     return state;

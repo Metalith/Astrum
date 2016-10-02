@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import Actions from '../Actions';
 import Inputs from './NodeTypes/Input';
 import Maths from './NodeTypes/Math';
+import Noise from './NodeTypes/Noise';
 class MenuItem extends React.Component {
     render() {
         return <div
@@ -58,6 +59,7 @@ class NodeMenu extends React.Component {
             <div className="NodeMenuItem Seperator"></div>
             <SubMenu {...props} nodegroup={Inputs}>Input</SubMenu>
             <SubMenu {...props} nodegroup={Maths}>Math</SubMenu>
+            <SubMenu {...props} nodegroup={Noise}>Noise</SubMenu>
         </div>
     }
 }

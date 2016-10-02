@@ -4,6 +4,7 @@ import Actions from '../Actions';
 import Input from '../components/NodeTypes/Input'
 import Output from '../components/NodeTypes/Output'
 import Maths from '../components/NodeTypes/Math'
+import Noise from '../components/NodeTypes/Noise'
 class Nodes extends React.Component {
     constructor(props) {
         super(props);
@@ -11,7 +12,7 @@ class Nodes extends React.Component {
         let Dirty = [];
         props.nodes.forEach((node, i) => {Inputs[node.id] = node.input; Dirty[node.id] = node.dirty})
         this.state = { Inputs, Dirty };
-        this.nodeTypes = Object.assign({}, Input, Output, Maths);
+        this.nodeTypes = Object.assign({}, Input, Output, Maths, Noise);
         this.updateNodes = this.updateNodes.bind(this);
     }
 

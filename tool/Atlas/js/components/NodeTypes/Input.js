@@ -13,10 +13,9 @@ class ValueNode extends Node {
             onChange={(e) => {
                 this.props.dispatch(Actions.updateNode(
                     this.props.id,
-                    {Value: (e.target.value.length == 0) ? "0" : e.target.value },
+                    {Value: e.target.value},
                     {Value: (e.target.value.length == 0) ? "0.0" : parseFloat(e.target.value).toFixed(Math.max(1, (e.target.value.split('.')[1] || []).length))},
                     this.props.cons))}}
-                value={parseFloat(this.props.inputs.Value)}
                 step="0.01"/>}
     static get input() {return {
         Value: "0.0"
@@ -78,9 +77,9 @@ class VectorNode extends Node {
     }
     center() {
         return <div>
-            <input type="number" onChange={(e) => {this.updateInput("X", e.target.value)}} value={parseFloat(this.props.inputs.X)} step="0.01"/>
-            <input type="number" onChange={(e) => {this.updateInput("Y", e.target.value)}} value={parseFloat(this.props.inputs.Y)} step="0.01"/>
-            <input type="number" onChange={(e) => {this.updateInput("Z", e.target.value)}} value={parseFloat(this.props.inputs.Z)} step="0.01"/>
+            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("X", e.target.value)}} step="0.01"/></div>
+            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("Y", e.target.value)}} step="0.01"/></div>
+            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("Z", e.target.value)}} step="0.01"/></div>
         </div>
         }
     static get input() {return {

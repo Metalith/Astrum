@@ -158,7 +158,7 @@ class Background extends React.Component {
 
                 float fBM(vec3 p, int octaves, float frequency, float lacunarity, float amplitude, float gain) {
                     float total = 0.0;
-                    for (int i = 0; i < 8; ++i) {
+                    for (int i = 0; i < 8; i++) {
                         total += snoise(p * frequency) * amplitude;
                         frequency *= lacunarity;
                         amplitude *= gain;

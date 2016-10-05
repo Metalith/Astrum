@@ -12,8 +12,8 @@ class OutputNode extends Node {
     }
     center() {}
     static get input() {return {
-        Height: 0.0,
-        Color: 0.0
+        Height: "0.0",
+        Color: "0.0"
     }}
     get show() {
         return {

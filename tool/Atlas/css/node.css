@@ -187,7 +187,6 @@ input.ColorInput {
 }
 .ColorInput + div {
     content: ' ';
-    background: white;
     position: absolute;
     width: 20px;
     height: 20px;
@@ -242,11 +241,12 @@ input.ColorInput {
 
 .Selector {
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     border: 4px double gray;
-    pointer-events: none
+    pointer-events: none;
+    box-sizing: border-box;
 }
 
 /*.Values {

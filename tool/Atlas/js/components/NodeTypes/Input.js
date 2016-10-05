@@ -146,8 +146,47 @@ class ColorNode extends Node {
         this.state.Shade = 100;
         this.state.Level = 100;
         this.moveSelector = this.moveSelector.bind(this)
+        this.handleString = this.handleString.bind(this)
     }
-    getOutputs(inputs) { return PositionNode.output }
+    getOutputs(inputs) {
+        // $(CurrentNode).find('#color_text').val(
+        //     (((1 << 24) + (R * 255 << 16) + (G * 255 << 8) + B * 255).toString(16).slice(1,7).toUpperCase())
+        // );
+    }
+    convertRGB(HSL) {
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+        var H = HSL.H;
+        var S = HSL.S;
+        var L = HSL.L;
+        var R, G, B;
+        L /= 100;
+        S /= 100;
+        if (S == 0) {
+            R = L;
+            G = L;
+            B = L;
+        } else {
+            var temp1, temp2;
+            function Hue2RGB(H) {
+                if ( H < 0 ) H += 1;
+                if ( H > 1 ) H -= 1;
+                if ( H < 1 / 6) return temp2 + (temp1 - temp2) * 6 * H;
+                if ( H < 1 / 2 ) return temp1;
+                if ( H < 2 / 3 ) return temp2 + (temp1 - temp2) * ( (2 / 3) - H) * 6;
+                return temp2;
+            }
+            temp1 = L < 0.5 ? L * (1 + S) : L + S - L * S;
+            temp2 = 2 * L - temp1;
+            H = H / 360.0;
+            R = Hue2RGB(H + 1/3);
+            G = Hue2RGB(H);
+            B = Hue2RGB(H - 1/3);
+        }
+        return {R:R, G:G, B:B}
+    }
     drawSLPicker(canvas, hue) {
         var ctx = canvas.getContext('2d');
         for(let row=0; row<100; row++){
@@ -165,23 +204,71 @@ class ColorNode extends Node {
             ctx.fillRect(0,hue,100,1);
         }
     }
+    handleString(e) {
+        if (e.target.value.length <= 6) {
+            var hex = /([a-f\d]{1,2})($|[a-f\d]{1,2})($|[a-f\d]{1,2})$/i.exec(e.target.value || "0");
+            let RGB = {
+                R: parseInt(hex[1], 16) || 0,
+                G: parseInt(hex[2], 16) || 0,
+                B: parseInt(hex[3], 16) || 0
+            }
+            let newInput = this.updateHSL(RGB);
+            this.drawSLPicker(this.refs.SLPicker,  newInput.H);
+            newInput.string = e.target.value;
+            this.props.dispatch(Actions.updateNode(
+                this.props.id,
+                newInput,
+                this.getOutputs(newInput),
+                this.props.cons))
+        }
+    }
+    updateHSL(RGB) {
+        var R = RGB.R /255;
+        var G = RGB.G /255;
+        var B = RGB.B /255;
+        var H, S, L;
+        var max = Math.max(R, G, B);
+        var min = Math.min(R, G, B);
+        L = (min + max) / 2.0;
+        if (min == max) {
+            S = 0;
+            H = 0;
+        } else {
+            if ( L < 0.5 ) S = (max-min)/(max+min);
+            else S = (max - min) / (2.0 - max - min);
+
+            if (max == R) H = (G-B)/(max-min);
+            if (max == G) H = 2.0 + (B-R)/(max-min);
+            if (max == B) H = 4.0 + (R-G)/(max-min);
+            H *= 60;
+        }
+        if (H < 0) H+=360;
+        return {H:H, S:S * 100, L:L * 100}
+    }
     moveSelector(e) {
-        if (e.target.className == "SLPicker")
-            this.setState({
-                SLSelector: {
-                    X: e.pageX - e.target.getBoundingClientRect().left,
-                    Y: e.pageY - e.target.getBoundingClientRect().top
-                }
+        if (e.target.className == "SLPicker") {
+            let newInput = Object.assign({}, this.props.inputs, {
+                S: 100 - ((e.pageX - e.target.getBoundingClientRect().left) * (100 / 255)),
+                L: 100 - ((e.pageY - e.target.getBoundingClientRect().top) * (100 / 255)),
             })
-        if (e.target.className == "HPicker") {
-            this.drawSLPicker(this.refs.SLPicker, (e.pageY - e.target.getBoundingClientRect().top - 10) * (360 / 255));
-            this.setState({
-                HSelector: {
-                    X: e.pageX - e.target.getBoundingClientRect().left + e.target.offsetLeft - 10,
-                    Y: e.pageY - e.target.getBoundingClientRect().top
-                },
-                Hue: (e.pageY - e.target.getBoundingClientRect().top - 10) * (360 / 255)
-            })
+            let RGB = this.convertRGB(newInput);
+            newInput.string = (((1 << 24) + (RGB.R * 255 << 16) + (RGB.G * 255 << 8) + RGB.B * 255).toString(16).slice(1,7).toUpperCase());
+            this.props.dispatch(Actions.updateNode(
+                this.props.id,
+                newInput,
+                this.getOutputs(newInput),
+                this.props.cons))
+        }
+        else if (e.target.className == "HPicker") {
+            this.drawSLPicker(this.refs.SLPicker, (e.pageY - e.target.getBoundingClientRect().top) * (360 / 255));
+            let newInput = Object.assign({}, this.props.inputs, {H: (e.pageY - e.target.getBoundingClientRect().top) * (360 / 255)})
+            let RGB = this.convertRGB(newInput);
+            newInput.string = (((1 << 24) + (RGB.R * 255 << 16) + (RGB.G * 255 << 8) + RGB.B * 255).toString(16).slice(1,7).toUpperCase());
+            this.props.dispatch(Actions.updateNode(
+                this.props.id,
+                newInput,
+                this.getOutputs(newInput),
+                this.props.cons))
         }
     }
     componentDidMount() {
@@ -195,23 +282,23 @@ class ColorNode extends Node {
                 Y: this.refs.HPicker.offsetTop - 10
             }
         })
-        this.drawSLPicker(this.refs.SLPicker, 0)
+        this.drawSLPicker(this.refs.SLPicker, this.props.inputs.H)
         this.drawHPicker(this.refs.HPicker)
     }
     center() {
         return <div className="Color" onMouseLeave={() => this.setState({showColor: false})}>
-            <input type="text" placeholder="000000" maxlength="6" size="6" className="ColorInput" onFocus={() => this.setState({showColor: true})} />
-            <div id={"CNP" + this.props.id}></div>
+            <input type="text" placeholder="000000" maxlength="6" size="6" className="ColorInput" onFocus={() => this.setState({showColor: true})} onChange={this.handleString} value={this.props.inputs.string}/>
+            <div id={"CNP" + this.props.id} style={{backgroundColor: `hsl(${this.props.inputs.H}, ${this.props.inputs.S}%, ${this.props.inputs.L}%)`}}/>
             <div className={"ColorPickerBox "}>
                 <canvas
                     className="SLPicker"
                     width="100" height="100"
                     ref="SLPicker"
-                    // onMouseMove={this.moveSelector}
+                    onMouseDown={this.moveSelector}
                 />
                 <div
                     className="Selector"
-                    style={{left:this.state.SLSelector.X+"px", top:this.state.SLSelector.Y+"px"}}>
+                    style={{left:this.props.inputs.S*255/-100+255+"px", top:this.props.inputs.L*255/-100+255+"px"}}>
                 </div>
                 <canvas
                     className="HPicker"
@@ -221,16 +308,17 @@ class ColorNode extends Node {
                 />
                 <div
                     className="Selector"
-                    style={{left:this.state.HSelector.X+"px", top:this.state.HSelector.Y+"px"}}
+                    style={{left:this.state.HSelector.X+16+"px", top:this.props.inputs.H*255/360+"px"}}
                 >
                 </div>
             </div>
         </div>
     }
     static get input() {return {
-        R: '255.0',
-        B: '255.0',
-        G: '255.0'
+        H: '0',
+        S: '100',
+        L: '100',
+        string: 'FFFFFF'
     }}
     get show() {
         return {

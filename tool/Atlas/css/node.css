@@ -159,7 +159,7 @@
     margin-bottom: 2px;
 }
 
-input[type=number] {
+input[type=number],input[type=text] {
     border: none;
     width: 100px;
     height: 20px;
@@ -175,6 +175,131 @@ input[type=number] {
      -webkit-appearance: none;
      appearance: none;
     margin: 0;
+}
+
+input.ColorInput {
+    position: relative;
+    padding-left: 35px;
+}
+
+.Color {
+    position: relative;
+}
+.ColorInput + div {
+    content: ' ';
+    background: white;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 0px;
+    top: 0px;
+}
+
+.ColorInput + div::after {
+    content: '#';
+    color: white;
+    position: relative;
+    margin-left: 20px;
+    padding: 0px 2px;
+    border-right: 1px solid white;
+    height: 20px;
+    width: 20px;
+    line-height: 20px;
+}
+
+.Hidden {
+    display: none;
+}
+.ColorPickerBox {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background-color: #cc9999;
+    z-index: 2;
+    height: 276px;
+
+    cursor: default;
+}
+
+.SLPicker {
+    float:left;
+    background-color: black;
+    width: 256px;
+    height: 256px;
+    margin: 10px;
+}
+
+.HPicker {
+    float: left;
+    position: relative;
+    margin: 10px;
+    margin-left: 276px;
+    background-color: blue;
+    width: 32px;
+    height: 256px;
+    bottom: 276px;
+}
+
+.Selector {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 4px double gray;
+    pointer-events: none
+}
+
+/*.Values {
+    position: relative;
+    margin: 10px;
+    margin-left: 316px;
+}
+
+.Values > .Preview {
+    position: static;
+    width: 64px;
+    height: 32px;
+}
+
+.Value {
+    position: relative;;
+    margin: 10px;
+    font-weight: bold;
+    text-align: left;
+    margin-left: 0px;
+    width: 16px;
+    height: 16px;
+    padding: 4px;
+    line-height: 20px;
+}
+
+.Value > input {
+    position: absolute;
+    top: 0px;
+    left: 100%;
+    width: 28px;
+    height: 100%;
+    font-family: "Lato";
+    border: 1px solid gray;
+    background: #ccaaaa;
+    color: white;
+    padding-left: 10px;
+    box-sizing: content-box;
+}*/
+
+::-webkit-input-placeholder { /* Chrome */
+  color: lightgray;
+}
+:-ms-input-placeholder { /* IE 10+ */
+  color: lightgray;
+}
+::-moz-placeholder { /* Firefox 19+ */
+  color: lightgray;
+  opacity: 1;
+}
+:-moz-placeholder { /* Firefox 4 - 18 */
+  color: lightgray;
+  opacity: 1;
 }
 
 input::-webkit-outer-spin-button,

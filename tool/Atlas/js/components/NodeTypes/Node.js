@@ -40,7 +40,7 @@ class Node extends React.Component {
             this.props.cons))
     }
     onMouseDown(e) {
-        if (e.target.tagName != "svg" && !e.target.classList.contains("Field") && e.target.tagName != "path") {
+        if (e.target.className == "Node" || e.target.className == "NodeName") {
             this.setState({
                 dragging: true,
                 rel: {

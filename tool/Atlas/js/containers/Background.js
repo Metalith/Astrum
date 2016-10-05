@@ -82,6 +82,14 @@ class Background extends React.Component {
                 //               https://github.com/ashima/webgl-noise
                 //               https://github.com/stegu/webgl-noise
                 //
+                float rand(vec2 co) {
+                    float a = 12.9898;
+                    float b = 78.233;
+                    float c = 43758.5453;
+                    float dt= dot(co.xy ,vec2(a,b));
+                    float sn= mod(dt,3.14);
+                    return fract(sin(sn) * c);
+                }
                 vec3 mod289(vec3 x) {
                     return x - floor(x * (1.0 / 289.0)) * 289.0;
                 }

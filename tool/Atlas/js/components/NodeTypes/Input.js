@@ -145,13 +145,12 @@ class ColorNode extends Node {
         this.state.Hue = 0;
         this.state.Shade = 100;
         this.state.Level = 100;
+        this.state.showColor = false;
         this.moveSelector = this.moveSelector.bind(this)
         this.handleString = this.handleString.bind(this)
     }
     getOutputs(inputs) {
-        // $(CurrentNode).find('#color_text').val(
-        //     (((1 << 24) + (R * 255 << 16) + (G * 255 << 8) + B * 255).toString(16).slice(1,7).toUpperCase())
-        // );
+        return this.convertRGB(inputs);
     }
     convertRGB(HSL) {
         function componentToHex(c) {
@@ -287,9 +286,9 @@ class ColorNode extends Node {
     }
     center() {
         return <div className="Color" onMouseLeave={() => this.setState({showColor: false})}>
-            <input type="text" placeholder="000000" maxlength="6" size="6" className="ColorInput" onFocus={() => this.setState({showColor: true})} onChange={this.handleString} value={this.props.inputs.string}/>
+            <input type="text" placeholder="000000" maxlength="6" size="6" className="ColorInput" onMouseDown={() => this.setState({showColor: true})} onChange={this.handleString} value={this.props.inputs.string}/>
             <div id={"CNP" + this.props.id} style={{backgroundColor: `hsl(${this.props.inputs.H}, ${this.props.inputs.S}%, ${this.props.inputs.L}%)`}}/>
-            <div className={"ColorPickerBox "}>
+            <div className={"ColorPickerBox " + (this.state.showColor ? "" : "Hidden")}>
                 <canvas
                     className="SLPicker"
                     width="100" height="100"
@@ -308,7 +307,7 @@ class ColorNode extends Node {
                 />
                 <div
                     className="Selector"
-                    style={{left:this.state.HSelector.X+16+"px", top:this.props.inputs.H*255/360+"px"}}
+                    style={{left:266+16+"px", top:this.props.inputs.H*255/360+"px"}}
                 >
                 </div>
             </div>

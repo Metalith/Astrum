@@ -226,14 +226,18 @@ const Editor = (state = { dragging: false }, action) => {
 
 const initialProgram = {
     Height: `0.0`,
-    Color: `vec3(0.0, 0.0, 0.0)`
+    R: `1.0`,
+    G: `1.0`,
+    B: `1.0`
 }
 const Program = (state = initialProgram, action) => {
     switch (action.type) {
         case 'SET_PROGRAM':
             return Object.assign({}, state, {
                 Height: action.Height,
-                Color: action.Color
+                R: action.R,
+                G: action.G,
+                B: action.B
             });
     }
     return state;

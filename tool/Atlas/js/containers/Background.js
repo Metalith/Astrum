@@ -202,6 +202,7 @@ class Background extends React.Component {
                 void main(void) {
                     vec2 aspect = vec2(resolution.x/resolution.y, 1.0);
                 	vec2 screenCoords = (2.0*gl_FragCoord.xy/resolution.xy - 1.0) * aspect;
+                    vec3 Color = vec3(${nextProps.Program.R}, ${nextProps.Program.G}, ${nextProps.Program.B});
                     if (view == 1) {
                     	vec3 lookAt = vec3(0.0, 0.0, 0.0);  // This is the point you look towards, or at.
                     	vec3 camPos = vec3(20.0, 10.0, 20.0); // This is the point you look from, or camera you look at the scene through. Whichever way you wish to look at it.
@@ -224,7 +225,6 @@ class Background extends React.Component {
                     	float len = length( ld ); // Distance from the light to the surface point.
                     	ld /= len; // Normalizing the light-to-surface, aka light-direction, vector.
                         float diffuse = max( 0.0, dot(surfNormal, ld) ); //The object's diffuse value, which depends on the angle that the light hits the object.
-                        vec3 Color = vec3(0.4, 0.6, 1.0);
                         gl_FragColor = vec4(Color * diffuse, 1.0);
                     } else {
                     	vec3 forward = vec3(0, -1, 0);
@@ -238,7 +238,7 @@ class Background extends React.Component {
                         float df = fwidth(height * 25.0);
                         float g = smoothstep(df * 0.5, df * 1.0, f);
                         float c = g;
-                        gl_FragColor = vec4(vec3(0.4, 0.6, 1.0) * c * floor(height * 20.0) / 20.0, 1.0);
+                        gl_FragColor = vec4(Color * c * floor(height * 20.0) / 20.0, 1.0);
                     }
                 }`;
             this.screenRTT.material.needsUpdate = true;

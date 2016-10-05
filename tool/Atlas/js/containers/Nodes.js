@@ -32,7 +32,9 @@ class Nodes extends React.Component {
             {x: 0.0, y: 0.0},
             {
                 Height: 0.0,
-                Color: 0.0
+                R: "1.0",
+                G: "1.0",
+                B: "1.0"
             },
             {}))
     }

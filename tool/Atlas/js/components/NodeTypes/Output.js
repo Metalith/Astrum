@@ -8,18 +8,22 @@ class OutputNode extends Node {
     get name() { return 'Output'; }
     constructor(props) { super(props); }
     getOutputs(inputs) {
-        this.props.dispatch(Actions.setProgram(inputs.Height, inputs.Color))
+        this.props.dispatch(Actions.setProgram(inputs.Height, inputs.R, inputs.G, inputs.B))
     }
     center() {}
     static get input() {return {
         Height: "0.0",
-        Color: "0.0"
+        R: "0.4",
+        G: "0.6",
+        B: "1.0"
     }}
     get show() {
         return {
             inputs: {
                  Height: '',
-                 Color: ''
+                 R: '',
+                 G: '',
+                 B: ''
              },
             outputs: {}
         }

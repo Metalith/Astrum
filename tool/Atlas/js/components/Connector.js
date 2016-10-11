@@ -37,38 +37,7 @@ class Connector extends React.Component {
             y: OutHandleRect.top + OutHandleRect.height / 2
         }
         this.d = "M" + InHandle.x + " " + InHandle.y
-        this.d += "h-50"
-        if (InHandle.x < OutHandle.x + 100) {
-            let half = (OutHandle.y - InHandle.y) / 2
-            let h1 = document.querySelector("#Node" + this.Connection.Input.Node).getBoundingClientRect()
-            let h2 = document.querySelector("#Node" + this.Connection.Output.Node).getBoundingClientRect()
-            let height = 0
-            if (half >= 0)
-                height = h1.bottom - h2.top
-            else
-                height = h2.bottom - h1.top
-            if  (height + 25 >= 0) {
-                let h = h1.height+h2.height+25
-                let t = 1
-                if (half < 0)
-                    t = -1
-                this.d += "v"+(t * h)
-                this.d += "H"+(OutHandle.x+50)
-                this.d += "v"+(t*(-h+(t*half)*2))
-                this.d += "h-50"
-            } else {
-                this.d += "v"+half
-                this.d += "H"+(OutHandle.x+50)
-                this.d += "v"+half
-                this.d += "h-50"
-            }
-        } else {
-            let half = (OutHandle.x - InHandle.x) / 2 + 50
-            this.d += "h"+half
-            this.d += "V"+(OutHandle.y)
-            this.d += "h"+half
-            this.d += "h-50"
-        }
+        this.d += "L" + OutHandle.x + " " + OutHandle.y
         this.setState(this.state)
     }
     render() {

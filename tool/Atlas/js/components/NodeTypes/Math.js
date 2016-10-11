@@ -129,7 +129,7 @@ class TrigNode extends Node {
     static get output() {return {
         Function: 'sin(0.0)'
     }}
-    static get height() { return [0, 1] }
+    static get height() { return [0, 1]}
 }
 
 class MinMaxNode extends Node {
@@ -146,10 +146,17 @@ class MinMaxNode extends Node {
         }
         return 'Error';
     }
-    getOutputs(inputs) {
+    getOutputs(inputs) {null
         return {
             Result: `${this.getFunction(inputs.Function)}(${inputs.Value1},${inputs.Value2})`
         }
+    }
+    getHeight(heights, fun = this.props.inputs.Function) {
+        if (!heights.Value1)
+            heights.Value1 = [0, 0]
+        if (!heights.Value2)
+            heights.Value2 = [0, 0]
+        return [Math[this.getFunction(fun)](heights.Value1[0], heights.Value2[0]), Math[this.getFunction(fun)](heights.Value1[1], heights.Value2[1])]
     }
     center() {
         return <select onChange={(e) => {
@@ -157,6 +164,7 @@ class MinMaxNode extends Node {
                 this.props.id,
                 {Function: e.target.value },
                 {Result:`${this.getFunction(e.target.value)}(${this.props.inputs.Value1},${this.props.inputs.Value2})` },
+                this.getHeight(this.props.heights, e.target.value),
                 this.props.cons))}}
             value={this.props.inputs.Function}
         >
@@ -183,6 +191,7 @@ class MinMaxNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() { return [0, 0]}
 }
 
 class RoundNode extends Node {
@@ -207,6 +216,13 @@ class RoundNode extends Node {
             Result: `${this.getFunction(inputs.Function)}(${inputs.Value}${round})`
         }
     }
+    getHeight(heights, fun = this.props.inputs.Function) {
+        if (!heights.Value)
+            heights.Value = [0, 0]
+        let round = 0.0;
+        if (fun == 'Round') round = 0.5
+        return [Math[this.getFunction(fun)](heights.Value[0] + round), Math[this.getFunction(fun)](heights.Value[1] + round)]
+    }
     center() {
         return <select onChange={(e) => {
             let round = '';
@@ -215,6 +231,7 @@ class RoundNode extends Node {
                 this.props.id,
                 {Function: e.target.value },
                 {Result:`${this.getFunction(e.target.value)}(${this.props.inputs.Value}${round})` },
+                this.getHeight(this.props.heights, e.target.value),
                 this.props.cons))}}
             value={this.props.inputs.Function}
         >
@@ -240,6 +257,7 @@ class RoundNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() { return [0, 0]}
 }
 
 class AbsNode extends Node {

@@ -6,9 +6,15 @@ import Node from './Node.js';
 
 class OutputNode extends Node {
     get name() { return 'Output'; }
-    constructor(props) { super(props); }
+    constructor(props) {
+        super(props);
+        Object.assign(this.state, {showFilter: false, showCamera: false})
+    }
     getOutputs(inputs) {
         this.props.dispatch(Actions.setProgram(inputs.Height, inputs.R, inputs.G, inputs.B))
+    }
+    getHeight(heights) {
+        return heights.Height;
     }
     center() {}
     static get input() {return {
@@ -28,8 +34,8 @@ class OutputNode extends Node {
             outputs: {}
         }
     }
-    static get output() {return {
-    }}
+    static get height() { return [0, 0] } ;
+    static get output() { return {} }
     render() {
         return <div
             className="Node OutputNode"
@@ -39,18 +45,35 @@ class OutputNode extends Node {
             <div className="NodeName">
                 {this.name}
             </div>
+
             <Fields
                 fields={this.show.inputs}
                 node={this.props.id}
                 type={"Input"}
                 cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}
             />
-            <div className="Seperator"></div>
-            <select>
-                <option>Topographic</option>
-                <option>Shaded</option>
-                <option>Combined</option>
-            </select>
+            <div className="Values"><div className="Value">[ { this.props.height[0].toFixed(2) } | {this.props.height[1].toFixed(2) } ]</div></div>
+            <div className="OutputSection">
+                <div className="Seperator" onMouseDown={() => this.setState({showFilter: !this.state.showFilter})}>Filter</div>
+                <div className={(this.state.showFilter ? "" : "Hidden")}>
+                    <div className="Value"><select>
+                        <option>Shaded</option>
+                        <option>Topographic</option>
+                        <option>Combined</option>
+                    </select></div>
+                    <div className="Value">
+                        Width
+                        <input
+                            type="Number"
+                            onChange={(e) => this.props.dispatch(Actions.setTopoWidth(e.target.value))}
+                            placeholder="0.2" step="any"/>
+                    </div>
+                </div>
+                <div className="Seperator" onMouseDown={() => this.setState({showCamera: !this.state.showCamera})}>Camera</div>
+                <div className={(this.state.showCamera ? "" : "Hidden")}>
+                    <div className="Value">Scale<input type="Number" placeholder="0.2"/></div>
+                </div>
+            </div>
         </div>
     }
 }

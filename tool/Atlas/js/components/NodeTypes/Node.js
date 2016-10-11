@@ -37,6 +37,7 @@ class Node extends React.Component {
             this.props.dispatch(Actions.updateNode(this.props.id,
                 nextProps.inputs,
                 this.getOutputs(nextProps.inputs),
+                this.getHeight(nextProps.heights),
             this.props.cons))
     }
     onMouseDown(e) {

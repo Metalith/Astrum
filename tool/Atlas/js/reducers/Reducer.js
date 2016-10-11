@@ -10,12 +10,15 @@ var initialNodeState  = {
     Connections: [],
     output: {},
     input: {},
+    height: 0.0,
+    heights: {},
     dragging: false,
     dirty: false
 }
 var newNodeID = 0;
 var emptyNodeIDs = [];
 var value = '';
+var valueH = 0.0;
 const Node = (state = initialNodeState, action) => {
     switch (action.type) {
         case 'ADD_NODE':
@@ -29,6 +32,8 @@ const Node = (state = initialNodeState, action) => {
                 Connections: [],
                 output: action.output,
                 input: action.input,
+                height: action.height,
+                heights: {},
                 dragging: false
             };
         case 'REMOVE_NODE':
@@ -46,10 +51,13 @@ const Node = (state = initialNodeState, action) => {
         case 'ADD_CONNECTION':
             if (state.id === action.Input.Node) {
                 let input = Object.assign({}, state.input);
+                let heights = Object.assign({}, state.heights);
                 input[action.Input.Field] = value;
+                heights[action.Input.Field] = valueH;
                 fromNode = true;
                 return Object.assign({}, state, {
                     input: input,
+                    heights: heights,
                     Connections: Connections(state.Connections, action),
                     dirty: true
                 });
@@ -99,21 +107,26 @@ const Node = (state = initialNodeState, action) => {
             break;
         case 'UPDATE_NODE':
             if (state.id === action.node) {
+                console.log(action.height)
                 return Object.assign({}, state, {
                     input: Object.assign({}, state.input, action.inputs),
                     output: Object.assign({}, state.output, action.outputs),
+                    height: action.height,
                     dirty: false
                 });
             }
             let conNodesArray = action.connectedNodes.slice(0);
             if (conNodesArray.indexOf(state.id) !== -1) {
                 let Inputs = Object.assign({}, state.input);
+                let Heights = Object.assign({}, state.heights);
                 let i = -1;
                 while ((i = conNodesArray.indexOf(state.id, i + 1)) !== -1) {
                     Inputs[action.connectedFields[i]] = action.outputs[action.outputFields[i]];
+                    Heights[action.connectedFields[i]] = action.height;
                 }
                 return Object.assign({}, state, {
                     input: Inputs,
+                    heights: Heights,
                     dirty: true
                 });
             }
@@ -131,6 +144,7 @@ const Nodes = function(state = [], action) {
             return state.map(t => Node(t, action)).filter(t => t.id != action.id)
         case 'ADD_CONNECTION':
             value = state[state.map(node => node.id).indexOf(action.Output.Node)].output[action.Output.Field];
+            valueH = state[state.map(node => node.id).indexOf(action.Output.Node)].height;
             return state.map(t => Node(t, action));
         case 'REMOVE_CONNECTIONS':
         case 'SET_POS':
@@ -228,7 +242,8 @@ const initialProgram = {
     Height: `0.0`,
     R: `1.0`,
     G: `1.0`,
-    B: `1.0`
+    B: `1.0`,
+    Width: 0.2,
 }
 const Program = (state = initialProgram, action) => {
     switch (action.type) {
@@ -239,6 +254,10 @@ const Program = (state = initialProgram, action) => {
                 G: action.G,
                 B: action.B
             });
+        case 'SET_WIDTH':
+            return Object.assign({}, state, {
+                Width: action.width
+            })
     }
     return state;
 }

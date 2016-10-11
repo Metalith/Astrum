@@ -7,15 +7,22 @@ class ValueNode extends Node {
     get name() { return 'Value'; }
     constructor(props) { super(props); }
     getOutputs(inputs) { return { Value: inputs.Value } }
+    getHeight(heights) {
+        let value = parseFloat(this.props.inputs.Value)
+        return [ value, value ]
+    }
     center() {
         return <input
             type="number"
             onChange={(e) => {
+                let value = (e.target.value.length == 0) ? 0.0 : parseFloat(e.target.value);
                 this.props.dispatch(Actions.updateNode(
                     this.props.id,
                     {Value: e.target.value},
                     {Value: (e.target.value.length == 0) ? "0.0" : parseFloat(e.target.value).toFixed(Math.max(1, (e.target.value.split('.')[1] || []).length))},
+                    [value, value],
                     this.props.cons))}}
+                placeholder="0.00"
                 step="any"
                 />}
     static get input() {return {
@@ -30,12 +37,14 @@ class ValueNode extends Node {
     static get output() {return {
         Value: "0.0"
     }}
+    static get height() { return [0, 0] }
 }
 
 class RandomNode extends Node {
     get name() { return 'Random'; }
     constructor(props) { super(props); }
     getOutputs(inputs) { return RandomNode.output }
+    getHeight(heights) { return RandomNode.height }
     center() { return <input id={"random"+this.props.id} type="number" value={Math.random()} step="any" readOnly /> }
     componentDidMount() {
         this.loop = setInterval(() => {
@@ -58,58 +67,14 @@ class RandomNode extends Node {
     static get output() {return {
         Random: 'rand(vec2(position.x, position.z))',
     }}
+    static get height() { return [0, 1] }
 }
-
-class VectorNode extends Node {
-    get name() { return 'Vector'; }
-    constructor(props) {
-        super(props);
-        this.updateInput = this.updateInput.bind(this)
-    }
-    getOutputs(inputs) { return inputs }
-    updateInput(o, val) {
-        let output = Object.assign({}, this.props.inputs);
-        output[o] = (val.length == 0) ? "0.0" : parseFloat(val).toFixed(Math.max(1, (val.split('.')[1] || []).length));
-        this.props.dispatch(Actions.updateNode(
-            this.props.id,
-            output,
-            output,
-            this.props.cons))
-    }
-    center() {
-        return <div>
-            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("X", e.target.value)}} step="any"/></div>
-            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("Y", e.target.value)}} step="any"/></div>
-            <div className="Value"><input type="number" onChange={(e) => {this.updateInput("Z", e.target.value)}} step="any"/></div>
-        </div>
-        }
-    static get input() {return {
-        X: '0.0',
-        Y: '0.0',
-        Z: '0.0'
-    }}
-    get show() {
-        return {
-            inputs: {},
-            outputs: {
-                X: '',
-                Y: '',
-                Z: ''
-            }
-        }
-    }
-    static get output() {return {
-        X: '0.0',
-        Y: '0.0',
-        Z: '0.0'
-    }}
-}
-
 
 class PositionNode extends Node {
     get name() { return 'Position'; }
     constructor(props) { super(props); }
     getOutputs(inputs) { return PositionNode.output }
+    getHeight(heights) { return PositionNode.height }
     center() {}
     static get input() {return {
     }}
@@ -128,6 +93,7 @@ class PositionNode extends Node {
         Y: 'position.y',
         Z: 'position.z'
     }}
+    static get height() { return [ Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY ] }
 }
 
 class ColorNode extends Node {
@@ -152,6 +118,7 @@ class ColorNode extends Node {
     getOutputs(inputs) {
         return this.convertRGB(inputs);
     }
+    getHeight(heights) { return [0, 1 ]}
     convertRGB(HSL) {
         function componentToHex(c) {
             var hex = c.toString(16);
@@ -334,11 +301,11 @@ class ColorNode extends Node {
         G: '1.0',
         B: '1.0'
     }}
+    static get height() { return [0, 1] }
 }
 
 export default {
     Value: connect()(ValueNode),
-    Vector: connect()(VectorNode),
     Random: connect()(RandomNode),
     Position: connect()(PositionNode),
     Color: connect()(ColorNode)

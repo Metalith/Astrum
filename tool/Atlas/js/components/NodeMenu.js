@@ -14,7 +14,8 @@ class MenuItem extends React.Component {
                         this.props.name,
                         {x: e.pageX - this.props.globalOffset.x, y: e.pageY - this.props.globalOffset.y},
                         this.props.defaultInput,
-                        this.props.defaultOutput));
+                        this.props.defaultOutput,
+                        this.props.defaultHeight));
                 this.props.hide()}}
         >
             {this.props.name}
@@ -36,6 +37,7 @@ class SubMenu extends React.Component {
                         hide={this.props.hide}
                         defaultInput={this.props.nodegroup[type].input}
                         defaultOutput={this.props.nodegroup[type].output}
+                        defaultHeight={this.props.nodegroup[type].height}
                         globalOffset={this.props.globalOffset}/>})}
             </div>
         </div>

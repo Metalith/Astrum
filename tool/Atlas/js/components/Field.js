@@ -69,6 +69,7 @@ class Field extends React.Component {
                         Node: this.props.Selected.Node,
                         Field: this.props.Selected.Field
                     }
+
                     if (this.props.Selected.Type == "Input")
                         this.props.dispatch(Actions.addConnection(Selected, {
                             Node: parseInt(el.parentElement.parentElement.id.replace( /^\D+/g, '')),

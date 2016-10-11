@@ -26,12 +26,30 @@ class OperatorNode extends Node {
             Result: `${inputs.Value1}${this.getFunction(inputs.Function)}${inputs.Value2}`
         }
     }
+    getHeight(heights, fun = this.props.inputs.Function) {
+        if (!heights.Value1)
+            heights.Value1 = [0, 0]
+        if (!heights.Value2)
+            heights.Value2 = [0, 0]
+        switch (fun) {
+            case 'Add':
+                return [heights.Value1[0]+heights.Value2[0],heights.Value1[1]+heights.Value2[1]];
+            case 'Subtract':
+                return [heights.Value1[0]-heights.Value2[0],heights.Value1[1]-heights.Value2[1]];
+            case 'Multiply':
+                return [heights.Value1[0]*heights.Value2[0],heights.Value1[1]*heights.Value2[1]];
+            case 'Divide':
+                return [heights.Value1[0]/heights.Value2[0],heights.Value1[1]/heights.Value2[1]];;
+        }
+        return [null, null]
+    }
     center() {
         return <select onChange={(e) => {
             this.props.dispatch(Actions.updateNode(
                 this.props.id,
                 {Function: e.target.value },
                 {Result:`${this.props.inputs.Value1}${this.getFunction(e.target.value)}${this.props.inputs.Value2}` },
+                this.getHeight(this.props.heights, e.target.value),
                 this.props.cons))}}
             value={this.props.inputs.Function}
         >
@@ -60,6 +78,7 @@ class OperatorNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() { return [0, 0]}
 }
 
 class TrigNode extends Node {
@@ -77,6 +96,7 @@ class TrigNode extends Node {
         return 'Error';
     }
     getOutputs(inputs) { return { Function: `${this.getFunction(inputs.Function)}(${inputs.Value})` } }
+    getHeight(heights) { return [0, 1]}
     center() {
         return <select onChange={(e) => {
             this.props.dispatch(Actions.updateNode(
@@ -109,6 +129,7 @@ class TrigNode extends Node {
     static get output() {return {
         Function: 'sin(0.0)'
     }}
+    static get height() { return [0, 1] }
 }
 
 class MinMaxNode extends Node {

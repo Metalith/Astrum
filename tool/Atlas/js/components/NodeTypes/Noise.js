@@ -8,6 +8,7 @@ class PerlinNode extends Node {
     get name() { return 'Perlin Noise'; }
     constructor(props) { super(props); }
     getOutputs(inputs) { return { Value: `fBM(vec3(${inputs.X}, ${inputs.Y}, ${inputs.Z}), ${inputs.Octaves}, ${inputs.Frequency}, ${inputs.Lacunarity}, ${inputs.Amplitude}, ${inputs.Gain})` } }
+    getHeight(heights) { return [-1, 1] }
     updateInput(i, val) {
         let inputs = Object.assign({}, this.props.inputs);
         if (i != "Octaves")
@@ -77,6 +78,7 @@ class PerlinNode extends Node {
     static get output() {return {
         Value: 'fBM(vec3(0.0), 0, 0.0, 0.0, 0.0, 0.0)'
     }}
+    static get height() { return [-1, 1] }
 }
 
 

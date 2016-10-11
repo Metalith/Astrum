@@ -96,7 +96,7 @@ class TrigNode extends Node {
         return 'Error';
     }
     getOutputs(inputs) { return { Function: `${this.getFunction(inputs.Function)}(${inputs.Value})` } }
-    getHeight(heights) { return [0, 1]}
+    getHeight(heights) { return [-1, 1]}
     center() {
         return <select onChange={(e) => {
             this.props.dispatch(Actions.updateNode(
@@ -129,7 +129,7 @@ class TrigNode extends Node {
     static get output() {return {
         Function: 'sin(0.0)'
     }}
-    static get height() { return [0, 1]}
+    static get height() { return [-1, 1]}
 }
 
 class MinMaxNode extends Node {
@@ -270,6 +270,11 @@ class AbsNode extends Node {
             Result: `abs(${inputs.Value})`
         }
     }
+    getHeight(heights) {
+        if (!heights.Value)
+            heights.Value = [0, 0]
+        return [Math.abs(heights.Value[0]), Math.abs(heights.Value[1])]
+    }
     center() {}
 
     static get input() {return {
@@ -289,6 +294,9 @@ class AbsNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() {
+        return [0,0]
+    }
 }
 
 class ModNode extends Node {
@@ -301,6 +309,13 @@ class ModNode extends Node {
             Result: `mod(${inputs.Value1}, ${inputs.Value2})`
         }
     }
+    getHeight(heights) {
+        if (!heights.Value1)
+            heights.Value1 = [0, 0]
+        if (!heights.Value2)
+            heights.Value2 = [0, 0]
+        return [0.0, Math.min(heights.Value1[1], heights.Value2[1])]
+    }
     center() {}
 
     static get input() {return {
@@ -322,6 +337,7 @@ class ModNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() { return [0,0] }
 }
 
 class PowNode extends Node {
@@ -334,6 +350,13 @@ class PowNode extends Node {
             Result: `pow(${inputs.Value1}, ${inputs.Value2})`
         }
     }
+    getHeight(heights) {
+        if (!heights.Value1)
+            heights.Value1 = [0, 0]
+        if (!heights.Value2)
+            heights.Value2 = [0, 0]
+        return [Math.pow(heights.Value1[0], heights.Value2[1]), Math.pow(heights.Value1[1], heights.Value2[1])]
+    }
     center() {}
 
     static get input() {return {
@@ -355,6 +378,9 @@ class PowNode extends Node {
     static get output() {return {
         Result: '0.0'
     }}
+    static get height() {
+        return [0,0]
+    }
 }
 
 export default {

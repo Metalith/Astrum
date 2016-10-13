@@ -202,7 +202,6 @@ class Background extends React.Component {
                 void main(void) {
                     vec2 aspect = vec2(resolution.x/resolution.y, 1.0);
                 	vec2 screenCoords = (2.0*gl_FragCoord.xy/resolution.xy - 1.0) * aspect;
-                    vec3 Color = vec3(${nextProps.Program.R}, ${nextProps.Program.G}, ${nextProps.Program.B});
                     if (view == 1) {
                     	vec3 lookAt = vec3(0.0, 0.0, 0.0);  // This is the point you look towards, or at.
                     	vec3 camPos = vec3(20.0, 10.0, 20.0); // This is the point you look from, or camera you look at the scene through. Whichever way you wish to look at it.
@@ -218,26 +217,28 @@ class Background extends React.Component {
                     	    gl_FragColor = vec4(vec3(0.05, 0.066, 0.07), 1.0);
                     	    return;
                     	}
-                        vec3 sp = ro + rd*dist;
-                        vec3 surfNormal = getNormal(sp);
+                        vec3 position = ro + rd*dist;
+                        vec3 surfNormal = getNormal(position);
                         vec3 lp = vec3(15, 10, 15);
-                    	vec3 ld = lp-sp;
+                    	vec3 ld = lp-position;
                     	float len = length( ld ); // Distance from the light to the surface point.
                     	ld /= len; // Normalizing the light-to-surface, aka light-direction, vector.
                         float diffuse = max( 0.0, dot(surfNormal, ld) ); //The object's diffuse value, which depends on the angle that the light hits the object.
+                        vec3 Color = vec3(${nextProps.Program.R}, ${nextProps.Program.G}, ${nextProps.Program.B});
                         gl_FragColor = vec4(Color * diffuse, 1.0);
                     } else {
                     	vec3 forward = vec3(0, -1, 0);
                         vec3 up = vec3(0, 0, 1);
                         vec3 right = vec3(1, 0, 0);
-                        vec3 P = vec3(0,10,0)  + screenCoords.x*right + screenCoords.y*up;
-                        float height = density(P);
+                        vec3 position = vec3(0,10,0)  + screenCoords.x*right + screenCoords.y*up;
+                        float height = density(position);
                         height += 1.0;
                         height /= 2.0;
                         float f  = fract (height * 20.0);
                         float df = fwidth(height * 25.0);
                         float g = smoothstep(df * 0.5, df * 1.0, f);
                         float c = g;
+                        vec3 Color = vec3(${nextProps.Program.R}, ${nextProps.Program.G}, ${nextProps.Program.B});
                         gl_FragColor = vec4(Color * c * floor(height * 20.0) / 20.0, 1.0);
                     }
                 }`;

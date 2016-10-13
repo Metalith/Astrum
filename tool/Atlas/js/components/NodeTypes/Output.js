@@ -14,7 +14,10 @@ class OutputNode extends Node {
         this.props.dispatch(Actions.setProgram(inputs.Height, inputs.R, inputs.G, inputs.B))
     }
     getHeight(heights) {
-        return heights.Height;
+        let height = heights.Height;
+        if (!height)
+            height = [0,0]
+        return height;
     }
     center() {}
     static get input() {return {

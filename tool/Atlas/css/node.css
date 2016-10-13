@@ -284,44 +284,6 @@ input.ColorInput {
     box-sizing: border-box;
 }
 
-/*.Values {
-    position: relative;
-    margin: 10px;
-    margin-left: 316px;
-}
-
-.Values > .Preview {
-    position: static;
-    width: 64px;
-    height: 32px;
-}
-
-.Value {
-    position: relative;;
-    margin: 10px;
-    font-weight: bold;
-    text-align: left;
-    margin-left: 0px;
-    width: 16px;
-    height: 16px;
-    padding: 4px;
-    line-height: 20px;
-}
-
-.Value > input {
-    position: absolute;
-    top: 0px;
-    left: 100%;
-    width: 28px;
-    height: 100%;
-    font-family: "Lato";
-    border: 1px solid gray;
-    background: #ccaaaa;
-    color: white;
-    padding-left: 10px;
-    box-sizing: content-box;
-}*/
-
 ::-webkit-input-placeholder { /* Chrome */
   color: lightgray;
 }
@@ -378,3 +340,58 @@ select {
   background-repeat: no-repeat;
   box-sizing:border-box;
  }
+
+input[type=checkbox] {
+	visibility: hidden;
+}
+
+.roundedCheck {
+    position:relative;
+    width: 16px;
+    height: 16px;
+    background: #C99;
+    border-radius: 50%;
+    margin: 2px 0px 2px 4px;
+    float: right;
+    box-sizing: border-box;
+}
+
+.roundedCheck label {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 0px;
+    top: 0px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 1px solid white;
+}
+
+.roundedCheck label::after {
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+    filter: alpha(opacity=0);
+    opacity: 0;
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: white;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    border-radius: 50%;
+    top: 0px;
+    left: 0px;
+    /*border: 2px solid white;*/
+}
+
+.roundedCheck label:hover::after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+	filter: alpha(opacity=30);
+	opacity: 0.3;
+}
+
+.roundedCheck input[type=checkbox]:checked + label::after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+	filter: alpha(opacity=100);
+	opacity: 1;
+}

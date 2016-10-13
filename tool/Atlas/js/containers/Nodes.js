@@ -42,8 +42,9 @@ class Nodes extends React.Component {
         let Heights = [];
         nodes.forEach((node, i) => {
             for (let input in node.input) {
-                if (node.input[input] == '')
+                if (node.input[input] == '\0') {
                     node.input[input] = this.nodeTypes[node.nodeType].input[input]
+                }
             }
             Inputs[node.id] = node.input;
             Dirty[node.id] = node.dirty;

@@ -75,13 +75,22 @@ const Node = (state = initialNodeState, action) => {
                 });
             break;
         case 'REMOVE_CONNECTIONS':
-            let match = state.Connections.findIndex(con => ConnectionsToRemove.includes(con.id))
-            if (match != -1) {
-                if (state.Connections[match].Input.Node == state.id) {
+            // let match = state.Connections.findIndex(con => ConnectionsToRemove.includes(con.id))
+            let match = ConnectionsToRemove.filter(id => state.Connections.some(con => con.id == id))
+            if (match.length != -1) {
+                if (state.Connections.some(con => match.includes(con.id) && con.Input.Node == state.id)) {
                     let input = Object.assign({}, state.input);
-                    input[action.Field] = '';
+                    let heights = Object.assign({}, state.heights);
+                    state.Connections.forEach((con) => {
+                        if (match.includes(con.id)) {
+                            input[con.Input.Field] = '\0';
+                            heights[con.Input.Field] = '';
+                        }
+
+                    })
                     return Object.assign({}, state, {
                         input: input,
+                        heights: heights,
                         dirty: true,
                         Connections:  state.Connections.filter(con => !ConnectionsToRemove.includes(con.id))
                     });

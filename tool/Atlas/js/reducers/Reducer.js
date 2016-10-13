@@ -75,7 +75,6 @@ const Node = (state = initialNodeState, action) => {
                 });
             break;
         case 'REMOVE_CONNECTIONS':
-            // let match = state.Connections.findIndex(con => ConnectionsToRemove.includes(con.id))
             let match = ConnectionsToRemove.filter(id => state.Connections.some(con => con.id == id))
             if (match.length != -1) {
                 if (state.Connections.some(con => match.includes(con.id) && con.Input.Node == state.id)) {
@@ -116,7 +115,6 @@ const Node = (state = initialNodeState, action) => {
             break;
         case 'UPDATE_NODE':
             if (state.id === action.node) {
-                console.log(action.height)
                 return Object.assign({}, state, {
                     input: Object.assign({}, state.input, action.inputs),
                     output: Object.assign({}, state.output, action.outputs),

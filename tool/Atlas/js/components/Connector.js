@@ -25,7 +25,6 @@ class Connector extends React.Component {
     }
     componentDidMount() { this.updateD() }
     updateD() {
-        console.log(this.Connection);
         let InHandleRect = document.querySelector('#Node'+this.Connection.Input.Node+'>.Input>#'+this.Connection.Input.Field+'>.Handle').getBoundingClientRect()
         let OutHandleRect = document.querySelector('#Node'+this.Connection.Output.Node+'>.Output>#'+this.Connection.Output.Field+'>.Handle').getBoundingClientRect()
         let InHandle = {

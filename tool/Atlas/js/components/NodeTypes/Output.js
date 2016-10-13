@@ -11,6 +11,7 @@ class OutputNode extends Node {
         Object.assign(this.state, {showFilter: false, showCamera: false})
     }
     getOutputs(inputs) {
+        console.log(inputs.Height)
         this.props.dispatch(Actions.setProgram(inputs.Height, inputs.R, inputs.G, inputs.B))
     }
     getHeight(heights) {

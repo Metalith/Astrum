@@ -268,7 +268,6 @@ class Background extends React.Component {
         requestAnimationFrame(this.renderScene); // See http://stackoverflow.com/questions/6065169/requestanimationframe-with-this-keyword // Swithed to fat arrow
         this.renderer.clear();
         if (this.drawScene) {
-            console.log("draw");
             this.screenRTT.material.uniforms.view.value = this.view;
             this.renderer.render(this.sceneRTT, this.camera, this.rtTexture, true );
             this.drawScene = false;

@@ -111,8 +111,8 @@ RenderSystem::RenderSystem() {
 	mode = SHADED;
 	bounds = false;
 
-	//glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
-	glClearColor(0,0,0,0);
+	glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
+	// glClearColor(0,0,0,0);
 	// Enable GL Flags
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_PROGRAM_POINT_SIZE);
@@ -124,7 +124,7 @@ RenderSystem::RenderSystem() {
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glCullFace(GL_BACK);
 
-	shadeProgramID = LoadShaders( "GasGiant.vp", "GasGiant.fp" );
+	shadeProgramID = LoadShaders( "GasGiant.vp", "NewGasGiantNT.frag" );
 	wireProgramID = LoadShaders( "Wireframe.vs", "Wireframe.fs" );
 
 	texID = glGetUniformLocation(shadeProgramID, "renderedTexture");
@@ -195,7 +195,7 @@ RenderSystem::RenderSystem() {
 			glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
 
-	GLuint simpleProgramID = LoadShaders( "GasTexture.vp", "GasTexture.fp" );
+	GLuint simpleProgramID = LoadShaders( "GasTexture.vp", "NewGasGiant.frag" );
 
 	GLuint tProjMatrixID = glGetUniformLocation(simpleProgramID, "projection");
 	GLuint tViewMatrixID = glGetUniformLocation(simpleProgramID, "view");
@@ -254,7 +254,7 @@ RenderSystem::RenderSystem() {
 	// Generate Sky Box
 	//----------------------------------------------------------------------------------------------------------------------
 
-	genSkyBox();
+	// genSkyBox();
 
 
 	// Render to our framebuffer
@@ -295,32 +295,32 @@ void RenderSystem::update() {
 	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	switch(mode) {
-	case SHADED:
-		glEnable(GL_CULL_FACE);
+    	case SHADED:
+    		glEnable(GL_CULL_FACE);
 
-		glCullFace(GL_BACK);
-		glUseProgram(shadeProgramID);
-		// Set our "renderedTexture" sampler to user Texture Unit 0
-		// Bind our texture in Texture Unit 0
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+    		glCullFace(GL_BACK);
+    		glUseProgram(shadeProgramID);
+    		// Set our "renderedTexture" sampler to user Texture Unit 0
+    		// Bind our texture in Texture Unit 0
+    		glActiveTexture(GL_TEXTURE0);
+    		glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
-		glUniform1i(texID, 0);
-		glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-		break;
-	case POINTS:
-	case WIREFRAME:
-		glDisable(GL_CULL_FACE);
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		glCullFace(GL_BACK);
-		glUseProgram(wireProgramID);
-		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-		glUniform4f(wireColorLoc, 0.2f, 1.0f, 0.3f, 1.0f);
-		break;
+    		glUniform1i(texID, 0);
+    		glUniformMatrix4fv(sProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+    		glUniformMatrix4fv(sModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+    		glUniformMatrix4fv(sViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+    		break;
+    	case POINTS:
+    	case WIREFRAME:
+    		glDisable(GL_CULL_FACE);
+    		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    		glCullFace(GL_BACK);
+    		glUseProgram(wireProgramID);
+    		glUniformMatrix4fv(wProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+    		glUniformMatrix4fv(wModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+    		glUniformMatrix4fv(wViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+    		glUniform4f(wireColorLoc, 0.2f, 1.0f, 0.3f, 1.0f);
+    		break;
 	}
 
 	for (int i = 0; i < vertexArrays.size(); i++) {
@@ -351,21 +351,21 @@ void RenderSystem::update() {
 	}
 
 	// --------- Sky -------------------------------------------------------------------------------------------------------
-		glBindVertexArray(cube_VertexArrayID);
-		glUseProgram(skyProgramID);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texSkyBox);
-		//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_CULL_FACE);
-		glUniform1i(skyTexID, 0);
-		glUniform3fv(camPosLoc, 1, &tPlayer->position[0]);
-		glUniform3fv(camDirLoc, 1, &direction[0]);
-		glUniformMatrix4fv(skyProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
-		glm::mat4 skyModelMatrix = translate(tPlayer->position); //= glTranslate()
-		glUniformMatrix4fv(skyModelMatrixID, 1, GL_FALSE, &skyModelMatrix[0][0]);
-		glUniformMatrix4fv(skyViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-		glEnableVertexAttribArray(0);
-		glDrawArrays(GL_TRIANGLES, 0, 12*3);
+		// glBindVertexArray(cube_VertexArrayID);
+		// glUseProgram(skyProgramID);
+		// glActiveTexture(GL_TEXTURE0);
+		// glBindTexture(GL_TEXTURE_2D, texSkyBox);
+		// //glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		// glDisable(GL_CULL_FACE);
+		// glUniform1i(skyTexID, 0);
+		// glUniform3fv(camPosLoc, 1, &tPlayer->position[0]);
+		// glUniform3fv(camDirLoc, 1, &direction[0]);
+		// glUniformMatrix4fv(skyProjMatrixID, 1, GL_FALSE, &ProjectionMatrix[0][0]);
+		// glm::mat4 skyModelMatrix = translate(tPlayer->position); //= glTranslate()
+		// glUniformMatrix4fv(skyModelMatrixID, 1, GL_FALSE, &skyModelMatrix[0][0]);
+		// glUniformMatrix4fv(skyViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+		// glEnableVertexAttribArray(0);
+		// glDrawArrays(GL_TRIANGLES, 0, 12*3);
 
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	TwDraw();
@@ -404,7 +404,7 @@ void RenderSystem::addEntity(int e) {
 			0,                  // stride
 			(void*)0            // array buffer offset
 	);
-
+    
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);

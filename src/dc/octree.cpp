@@ -204,11 +204,16 @@ bool Octree::GenerateVertex(DensityField* d) {
 		vertex->position = vec3(mp.x, mp.y, mp.z);
 	}
 	//vertex->position = position; //Minecraft-like style
-	vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
+	// vertex->averageNormal = glm::normalize(averageNormal / (float)edgeCount);
+	// vertex->averageNormal = glm::normalize(averageNormal);
+	vertex->averageNormal = CalculateSurfaceNormal(vertex->position, d); //TODO: Fix this. Something is off with calculating the normals. Meaning all the vertices are actually off
+	// if (vertex->averageNormal.x != glm::normalize(vertex->position).x)
+	// 	std::cout << vertex->position.x << " " << vertex->position.y << " " << vertex->position.z << std::endl;
+	// std::cout << vertex->averageNormal.x;
 }
 
 vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
-	const float H = 0.0001f;
+	const float H = 0.001f;
 	const float dx = d->SDF(p + vec3(H, 0.f, 0.f)) - d->SDF(p - vec3(H, 0.f, 0.f));
 	const float dy = d->SDF(p + vec3(0.f, H, 0.f)) - d->SDF(p - vec3(0.f, H, 0.f));
 	const float dz = d->SDF(p + vec3(0.f, 0.f, H)) - d->SDF(p - vec3(0.f, 0.f, H));
@@ -218,7 +223,7 @@ vec3 CalculateSurfaceNormal(const vec3& p, DensityField* d) {
 
 vec3 ApproximateZeroCrossingPosition(const vec3& p0, const vec3& p1, DensityField* d) {
 	// approximate the zero crossing by finding the min value along the edge
-	float minValue = 100000.f;
+	float minValue = 10000.f;
 	float t = 0.f;
 	float currentT = 0.f;
 	const int steps = 8;

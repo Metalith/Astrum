@@ -21,4 +21,7 @@ class TerrainSystem: public System {
 		Octree* generateSeam(Octree* oct); //TODO: Maybe combine octree generation with seam generation
 		Octree* getOctree(vec3 pos);
 };
+
+vec3 CSN(const vec3& p);
+float d(const vec3& p);
 #endif

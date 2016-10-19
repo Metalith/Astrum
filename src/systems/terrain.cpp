@@ -11,7 +11,7 @@
 Engine* System::engine;
 
 const int TerrainSystem::CHUNK_SIZE = 32;
-const float LOD = 0.5f;
+const float LOD = 1.0f;
 
 TerrainSystem::TerrainSystem() {
 	std::cout << "New System :: Terrain!" << std::endl;
@@ -39,12 +39,31 @@ TerrainSystem::TerrainSystem() {
 			}
 		}
 	}
-	std::cout << glfwGetTime() - lastTime << " Seconds to generate 9 Chunks"  << std::endl;
+	// 24.35 16.55 12.525
+	// std::cout << CSN(vec3(24.35, 16.55, 12.525)).x << " ";
+	// std::cout << ( vec3(24.35, 16.55, 12.525) / vec3(32.0) ).x;
+	// std::cout << glfwGetTime() - lastTime << " Seconds to generate 9 Chunks"  << std::endl;
 	loadedChunks = octreeList.size();
 	RenderSystem::showDebug(CHUNK_SIZE, "Chunk Size");
 	RenderSystem::showDebug(loadedChunks, "Loaded Chunks");
 }
 
+vec3 CSN(const vec3& p) {
+	module::Perlin module;
+	module.SetSeed(0);
+	module.SetFrequency (0.5);
+	module.SetPersistence (0.25);
+	const float H = 0.001f;
+	const float dx = d(p + vec3(H, 0.f, 0.f)) - d(p - vec3(H, 0.f, 0.f));
+	const float dy = d(p + vec3(0.f, H, 0.f)) - d(p - vec3(0.f, H, 0.f));
+	const float dz = d(p + vec3(0.f, 0.f, H)) - d(p - vec3(0.f, 0.f, H));
+
+	return glm::normalize(vec3(dx, dy, dz));
+}
+
+float d(const vec3& p) {
+	return length(p) - 32;
+}
 void TerrainSystem::update() {
 }
 

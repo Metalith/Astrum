@@ -114,7 +114,7 @@ float ridgedNoise(vec3 position, int octaves, float frequency, float persistence
 	float maxAmplitude = 0.0; // Accumulates highest theoretical amplitude
 	float amplitude = 1.0;
 	for (int i = 0; i < octaves; i++) { // Get the noise sample
-		total += ((1.0 - abs(snoise(position * frequency))) * 2.0 - 1.0) * amplitude;
+		total += abs(snoise(position * frequency)) * amplitude;
 		frequency *= 2.0; // Add to our maximum possible amplitude
 		maxAmplitude += amplitude; // Reduce amplitude according to persistence for the next octave
 		amplitude *= persistence;
@@ -124,25 +124,23 @@ float ridgedNoise(vec3 position, int octaves, float frequency, float persistence
 
 void main() {
 	// Equirectangular Coordinate Conversion
-	vec2 modCoord = (pos.xy - vec2(1024, 512)) / 1024.0;
-	float horizontalAngle = modCoord.x * 3.1415926535897;
-	float verticalAngle = modCoord.y * 1.570796326794896;
-	vec3 tPos = vec3(
-		cos(verticalAngle) * sin(horizontalAngle),
-		sin(verticalAngle),
-		cos(verticalAngle) * cos(horizontalAngle)
-	);
+	vec3 modCoord = vec3((pos.xy - vec2(1024, 512)) / 1024.0, 0.0);
+	// float horizontalAngle = modCoord.x * 3.1415926535897;
+	// float verticalAngle = modCoord.y * 1.570796326794896;
+	// vec3 tPos = vec3(
+	// 	cos(verticalAngle) * sin(horizontalAngle),
+	// 	sin(verticalAngle),
+	// 	cos(verticalAngle) * cos(horizontalAngle)
+	// );
+	for (int x = 0; x < 1; x++) {
+		float px = noise(modCoord + vec3(0.001, 0.0, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.001, 0.0, 0.0), 8, 5, 0.5);
+		float py = noise(modCoord + vec3(0.0, 0.001, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.0, 0.001, 0.0), 8, 5, 0.5);
+		// color = vec4((py + 1.0) / 2.0, 0.0, (px + 1.0) / 2.0, 1.0);
 
-	float s = 0.7;
-	float t1 = snoise(tPos * 0.8) - s;
-	float t2 = snoise((tPos + 800.0) * 0.8) - s;
-	float t3 = snoise((tPos + 1600.0) * 0.8) - s; // Intersect them and get rid of negatives
-	float threshold = max(t1 * t2 * t3, 0.0); // Add to red color channel for debugging
-	float n1 = noise(tPos, 6, 7, 0.8) * 0.04;
-	float n2 = ridgedNoise(tPos, 8, 4.0, 0.75) * 0.06 - 0.04;
-	float n3 = snoise(tPos * 0.1) * threshold * 1.5;
-	float n = n1 + n2 + n3;
+		modCoord += vec3(py, -px, 0.0) * 0.01;
+	}
+	modCoord = mod(modCoord, 1.0);
+	float c = ridgedNoise(vec3((modCoord.y) / 1.3), 8, 5, 0.5);
 
-	float c = (noise(vec3((tPos.y + n) / 1.3, 0, 0), 4, 5, 0.5) + 0.5);
-	color = vec4(vec3(160 / 256.0, 60 / 256.0, 0 / 256.0)+c,1);
+	color = vec4(vec3(0.5, 0.2, 0.0) + vec3(smoothstep(0.0, 1.0, c)) + vec3(0.1,0.2,0.6) * clamp(ridgedNoise(vec3((modCoord.y) / 1.3), 4, 7.5, 0.5),0,1),1);
 }

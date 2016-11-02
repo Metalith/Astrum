@@ -8,10 +8,8 @@ class OutputNode extends Node {
     get name() { return 'Output'; }
     constructor(props) {
         super(props);
-        Object.assign(this.state, {showFilter: false, showCamera: false})
     }
     getOutputs(inputs) {
-        console.log(inputs.Height)
         this.props.dispatch(Actions.setProgram(inputs.Height, inputs.R, inputs.G, inputs.B))
     }
     getHeight(heights) {
@@ -22,9 +20,9 @@ class OutputNode extends Node {
     }
     center() {}
     static get input() {return {
-        Height: "0.0",
-        R: "0.4",
-        G: "0.6",
+        Height: [0.0, 0.0],
+        R: "1.0",
+        G: "1.0",
         B: "1.0"
     }}
     get show() {
@@ -38,7 +36,7 @@ class OutputNode extends Node {
             outputs: {}
         }
     }
-    static get height() { return [0, 0] } ;
+    static get height() { return [0.0, 0.0] } ;
     static get output() { return {} }
     render() {
         return <div
@@ -56,28 +54,7 @@ class OutputNode extends Node {
                 type={"Input"}
                 cons={this.props.cons.filter(con => {return (con.Input.Node == this.props.id) ? true : false })}
             />
-            <div className="Values"><div className="Value">[ { this.props.height[0].toFixed(2) } | {this.props.height[1].toFixed(2) } ]</div></div>
-            <div className="OutputSection">
-                <div className="Seperator" onMouseDown={() => this.setState({showFilter: !this.state.showFilter})}>Filter</div>
-                <div className={(this.state.showFilter ? "" : "Hidden")}>
-                    <div className="Value"><select>
-                        <option>Shaded</option>
-                        <option>Topographic</option>
-                        <option>Combined</option>
-                    </select></div>
-                    <div className="Value">
-                        Width
-                        <input
-                            type="Number"
-                            onChange={(e) => this.props.dispatch(Actions.setTopoWidth(e.target.value))}
-                            placeholder="0.2" step="any"/>
-                    </div>
-                </div>
-                <div className="Seperator" onMouseDown={() => this.setState({showCamera: !this.state.showCamera})}>Camera</div>
-                <div className={(this.state.showCamera ? "" : "Hidden")}>
-                    <div className="Value">Scale<input type="Number" placeholder="0.2"/></div>
-                </div>
-            </div>
+            {/* <div className="Values"><div className="Value">[ { this.props.height[0].toFixed(2) } | {this.props.height[1].toFixed(2) } ]</div></div> */}
         </div>
     }
 }

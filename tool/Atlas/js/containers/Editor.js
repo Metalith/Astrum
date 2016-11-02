@@ -80,7 +80,6 @@ class Editor extends React.Component {
             <Nodes globalOffset={this.state.pos}/>
             <Connectors />
             <ViewToggle />
-            <Code    />
             <NodeMenu
                 hide={this.hideContextMenu}
                 show={this.state.showContextMenu}

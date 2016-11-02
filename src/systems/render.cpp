@@ -59,6 +59,16 @@ GLuint skyTexID;
 GLuint camPosLoc;
 GLuint camDirLoc;
 
+GLuint GasFBuffers[4];
+GLuint GasTextures[4];
+GLuint GasPrograms[3];
+int t = 1;
+GLuint screenVAO;
+GLuint screenVBO;
+GLuint flowTextureID;
+GLuint colorTextureID;
+GLuint flowTimeID;
+
 const GLfloat g_cube_buffer_data[] = {
     -1.0f,-1.0f,-1.0f, // triangle 1 : begin
     -1.0f,-1.0f, 1.0f,
@@ -111,7 +121,8 @@ RenderSystem::RenderSystem() {
 	mode = SHADED;
 	bounds = false;
 
-	glClearColor(0.1f, 0.2f, 0.3f, 0.0f);
+	glClearColor(0.1f, 0.6f, 0.3f, 0.0f);
+
 	// glClearColor(0,0,0,0);
 	// Enable GL Flags
 	glDepthFunc(GL_LEQUAL);
@@ -148,108 +159,10 @@ RenderSystem::RenderSystem() {
 	TwAddVarRO(DebugGUI, "Display", TW_TYPE_DISPLAY_MODE, &mode, NULL);
 	TwAddVarRO(DebugGUI, "Octree", TW_TYPE_BOOLCPP, &bounds," true='SHOW' false='HIDDEN' ");
 
-	//----------------------------------------------------------------------------------------------------------------------
-	// Gas FrameBuffer Code
-	//----------------------------------------------------------------------------------------------------------------------
-
-	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-	GLuint FramebufferName = 0;
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-
-	// The texture we're going to render to
-	glGenTextures(1, &renderedTexture);
-
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, renderedTexture);
-
-	// Give an empty image to OpenGL ( the last "0" )
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 2048, 1024, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-	// Poor filtering. Needed !
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-	// Set "renderedTexture" as our colour attachement #0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
-
-	// Set the list of draw buffers.
-	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-
-	// Always check that our framebuffer is ok
-	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "Framebuffer error" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-
-	// Render to our framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-	glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-
-	glm::mat4 tProj = glm::ortho(0.0f,2048.0f,0.0f,1024.0f,0.0f,100.0f);
-	glm::mat4 tMod = glm::mat4(1.0);
-	glm::mat4 tView = glm::lookAt(
-			glm::vec3(0,0,1), // Camera is at (4,3,3), in World Space
-			glm::vec3(0,0,0), // and looks at the origin
-			glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
-
-	GLuint simpleProgramID = LoadShaders( "GasTexture.vp", "NewGasGiant.frag" );
-
-	GLuint tProjMatrixID = glGetUniformLocation(simpleProgramID, "projection");
-	GLuint tViewMatrixID = glGetUniformLocation(simpleProgramID, "view");
-	GLuint tModelMatrixID = glGetUniformLocation(simpleProgramID, "model");
-
-
-	// The fullscreen quad's FBO
-	GLuint quad_VertexArrayID;
-	glGenVertexArrays(1, &quad_VertexArrayID);
-	glBindVertexArray(quad_VertexArrayID);
-
-	static const GLfloat g_quad_vertex_buffer_data[] = {
-			0.0f, 0.0f, 0.0f,
-			2048.0f,0.0f, 0.0f,
-			0.0f,  1024.0f, 0.0f,
-			0.0f,  1024.0f, 0.0f,
-			2048.0f, 0.0f, 0.0f,
-			2048.0f, 1024.0f, 0.0f
-	};
-
-	GLuint quad_vertexbuffer;
-	glGenBuffers(1, &quad_vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-	//// Dark blue background
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	glUseProgram(simpleProgramID);
-
-	glUniformMatrix4fv(tProjMatrixID, 1, GL_FALSE, &tProj[0][0]);
-	glUniformMatrix4fv(tModelMatrixID, 1, GL_FALSE, &tMod[0][0]);
-	glUniformMatrix4fv(tViewMatrixID, 1, GL_FALSE, &tView[0][0]);
-
-	// 1rst attribute buffer : vertices
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
-	);
-
-	// Draw the triangles !
-	glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
-
-	glDisableVertexAttribArray(0);
-
-	saveBMP("GasGiant Texture.bmp", 2048, 1024);
-	// Swap buffers
-	glfwSwapBuffers(window);
-
+    //----------------------------------------------------------------------------------------------------------------------
+    // Generate Gas Giant
+    //----------------------------------------------------------------------------------------------------------------------
+    genGasGiant(); //TODO: Needs to be seed based, and parameterized, maybe moved to a seperate system? Render&Update loops?
 	//----------------------------------------------------------------------------------------------------------------------
 	// Generate Sky Box
 	//----------------------------------------------------------------------------------------------------------------------
@@ -263,6 +176,7 @@ RenderSystem::RenderSystem() {
 }
 
 bool save = false;
+int f = 0;
 void RenderSystem::update() {
 	// Measure speed
 	double currentTime = glfwGetTime();
@@ -275,7 +189,7 @@ void RenderSystem::update() {
 		lastTime += 1.0;
 	}
 	//// Dark blue background
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 
 	glm::vec3 direction(0,0,1);
 	glm::vec3 right(1,0,0);
@@ -292,9 +206,90 @@ void RenderSystem::update() {
 			up // Head is up : cross of direction and right
 	);
 
-	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glm::mat4 tProj = glm::ortho(0.0f,2048.0f,0.0f,1024.0f,0.0f,100.0f);
+	glm::mat4 tMod = glm::mat4(1.0);
+	glm::mat4 tView = glm::lookAt(
+			glm::vec3(0,0,1), // Camera is at (4,3,3), in World Space
+			glm::vec3(0,0,0), // and looks at the origin
+			glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+    if (++f == 20) {
+        f = 0;
+        glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[0]);
+    	glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    	//// Dark blue background
+    	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	switch(mode) {
+    	glUseProgram(GasPrograms[0]);
+        glUniform1f(flowTimeID, glfwGetTime());
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "projection"), 1, GL_FALSE, &tProj[0][0]);
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "model"), 1, GL_FALSE, &tMod[0][0]);
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "view"), 1, GL_FALSE, &tView[0][0]);
+
+    	// 1rst attribute buffer : vertices
+        glBindVertexArray(screenVAO);
+    	glEnableVertexAttribArray(0);
+    	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    	glVertexAttribPointer(
+    			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    			3,                  // size
+    			GL_FLOAT,           // type
+    			GL_FALSE,           // normalized?
+    			0,                  // stride
+    			(void*)0            // array buffer offset
+    	);
+
+    	// Draw the triangles !
+    	glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+    	glDisableVertexAttribArray(0);
+    	// Swap buffers
+    	glfwSwapBuffers(window);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[(t % 2) + 2]);
+    glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    //// Dark blue background
+    glUseProgram(GasPrograms[2]);
+    //
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, GasTextures[0]);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, GasTextures[2 + ((t + 1) % 2)]);
+    t = (t + 1) % 2;
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "projection"), 1, GL_FALSE, &tProj[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "model"), 1, GL_FALSE, &tMod[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "view"), 1, GL_FALSE, &tView[0][0]);
+    //
+    glUniform1i(flowTextureID, 0);
+    glUniform1i(colorTextureID, 1);
+
+    // 1rst attribute buffer : vertices
+    glBindVertexArray(screenVAO);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+    );
+    // Draw the triangles !
+    glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+    glDisableVertexAttribArray(0);
+    glBindVertexArray(0);
+    // // Swap buffers
+    glfwSwapBuffers(this->window);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    //
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    switch(mode) {
     	case SHADED:
     		glEnable(GL_CULL_FACE);
 
@@ -404,7 +399,7 @@ void RenderSystem::addEntity(int e) {
 			0,                  // stride
 			(void*)0            // array buffer offset
 	);
-    
+
 	GLuint normalbuffer;
 	glGenBuffers(1, &normalbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
@@ -450,6 +445,223 @@ void RenderSystem::addEntity(int e) {
 	glDisableVertexAttribArray(2);
 }
 
+
+void RenderSystem::genGasGiant() {
+	//----------------------------------------------------------------------------------------------------------------------
+	// Gas FrameBuffer Code
+	//----------------------------------------------------------------------------------------------------------------------
+
+
+    glGenFramebuffers(4, GasFBuffers);
+    glGenTextures(4, GasTextures);
+
+    for (int i = 0; i < 4; i++) {
+        glBindTexture(GL_TEXTURE_2D, GasTextures[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 2048, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GasFBuffers[i]);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, GasTextures[i], 0);
+    }
+
+	// Always check that our framebuffer is ok
+	if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "Framebuffer error" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+
+
+	glm::mat4 tProj = glm::ortho(0.0f,2048.0f,0.0f,1024.0f,0.0f,100.0f);
+	glm::mat4 tMod = glm::mat4(1.0);
+	glm::mat4 tView = glm::lookAt(
+			glm::vec3(0,0,1), // Camera is at (4,3,3), in World Space
+			glm::vec3(0,0,0), // and looks at the origin
+			glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+
+	// GLuint flowProgram = LoadShaders( "GasTexture.vp", "GasGiantFlow.frag" );
+    // Gluint bandProgram = LoadShaders( "GasTexture.vp", "GasGiantBand.frag" );
+    // Gluint animProgram = LoadShaders( "GasTexture.vp", "GasGiant.frag" );
+    GasPrograms[0] = LoadShaders( "GasTexture.vp", "GasGiantFlow.frag" );
+    GasPrograms[1] = LoadShaders( "GasTexture.vp", "GasGiantBands.frag" );
+    GasPrograms[2] = LoadShaders( "GasTexture.vp", "GasGiantTexture.frag" );
+	// GLuint tProjMatrixID = glGetUniformLocation(GasPrograms[0], "projection");
+	// GLuint tViewMatrixID = glGetUniformLocation(GasPrograms[0], "view");
+	// GLuint tModelMatrixID = glGetUniformLocation(GasPrograms[0], "model");
+    flowTimeID = glGetUniformLocation(GasPrograms[0], "time");
+    flowTextureID = glGetUniformLocation(GasPrograms[2], "flowTexture");
+	colorTextureID = glGetUniformLocation(GasPrograms[2], "colorTexture");
+
+	// The fullscreen quad's FBO
+	glGenVertexArrays(1, &screenVAO);
+	glBindVertexArray(screenVAO);
+
+	static const GLfloat screenVertexData[] = {
+			0.0f, 0.0f, 0.0f,
+			2048.0f,0.0f, 0.0f,
+			0.0f,  1024.0f, 0.0f,
+			0.0f,  1024.0f, 0.0f,
+			2048.0f, 0.0f, 0.0f,
+			2048.0f, 1024.0f, 0.0f
+	};
+
+	glGenBuffers(1, &screenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(screenVertexData), screenVertexData, GL_STATIC_DRAW);
+
+    for (int i = 0; i < 2; i++)  {
+        // Render to our framebuffer
+    	glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[i]);
+    	glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    	//// Dark blue background
+    	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    	glUseProgram(GasPrograms[i]);
+        if (i == 0) glUniform1f(flowTimeID, glfwGetTime());
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[i], "projection"), 1, GL_FALSE, &tProj[0][0]);
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[i], "model"), 1, GL_FALSE, &tMod[0][0]);
+    	glUniformMatrix4fv(glGetUniformLocation(GasPrograms[i], "view"), 1, GL_FALSE, &tView[0][0]);
+
+    	// 1rst attribute buffer : vertices
+    	glEnableVertexAttribArray(0);
+    	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    	glVertexAttribPointer(
+    			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    			3,                  // size
+    			GL_FLOAT,           // type
+    			GL_FALSE,           // normalized?
+    			0,                  // stride
+    			(void*)0            // array buffer offset
+    	);
+
+    	// Draw the triangles !
+    	glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+    	glDisableVertexAttribArray(0);
+
+    	saveBMP("GasGiant Texture" + std::to_string(i) + ".bmp", 2048, 1024);
+    	// Swap buffers
+    	glfwSwapBuffers(window);
+
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[2]);
+    glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    //// Dark blue background
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glUseProgram(GasPrograms[2]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, GasTextures[0]);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, GasTextures[1]);
+
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "projection"), 1, GL_FALSE, &tProj[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "model"), 1, GL_FALSE, &tMod[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "view"), 1, GL_FALSE, &tView[0][0]);
+
+    glUniform1i(flowTextureID, 0);
+    glUniform1i(colorTextureID, 1);
+
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+    );
+
+    // Draw the triangles !
+    glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+    glDisableVertexAttribArray(0);
+
+    saveBMP("GasGiant Texture2.bmp", 2048, 1024);
+    // Swap buffers
+    glfwSwapBuffers(window);
+	//  for (int i = 1; i < 100; i++) {
+    //      if (i % 5 == 0) {
+    //          glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[0]);
+    //          glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+    //          //// Dark blue background
+    //          glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+     //
+    //          glUseProgram(GasPrograms[0]);
+    //          glUniform1f(flowTimeID, glfwGetTime());
+    //          glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "projection"), 1, GL_FALSE, &tProj[0][0]);
+    //          glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "model"), 1, GL_FALSE, &tMod[0][0]);
+    //          glUniformMatrix4fv(glGetUniformLocation(GasPrograms[0], "view"), 1, GL_FALSE, &tView[0][0]);
+     //
+    //          // 1rst attribute buffer : vertices
+    //          glBindVertexArray(screenVAO);
+    //          glEnableVertexAttribArray(0);
+    //          glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+    //          glVertexAttribPointer(
+    //              0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    //              3,                  // size
+    //              GL_FLOAT,           // type
+    //              GL_FALSE,           // normalized?
+    //              0,                  // stride
+    //              (void*)0            // array buffer offset
+    //          );
+    //          // Draw the triangles !
+    //          glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+     //
+    //          glDisableVertexAttribArray(0);
+    //          // Swap buffers
+    //          glfwSwapBuffers(window);
+    //      }
+	// 	 glBindFramebuffer(GL_FRAMEBUFFER, GasFBuffers[(i % 2) + 2]);
+	// 	 glViewport(0,0,2048,1024); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+	// 	 glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	// 	 //// Dark blue background
+	// 	 glUseProgram(GasPrograms[2]);
+	// 	 //
+	// 	 glActiveTexture(GL_TEXTURE0);
+	// 	 glBindTexture(GL_TEXTURE_2D, GasTextures[0]);
+     //
+	// 	 glActiveTexture(GL_TEXTURE1);
+	// 	 glBindTexture(GL_TEXTURE_2D, GasTextures[2 + (i + 1) % 2]);
+	// 	 //
+	// 	 glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "projection"), 1, GL_FALSE, &tProj[0][0]);
+	// 	 glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "model"), 1, GL_FALSE, &tMod[0][0]);
+	// 	 glUniformMatrix4fv(glGetUniformLocation(GasPrograms[2], "view"), 1, GL_FALSE, &tView[0][0]);
+	// 	 //
+	// 	 glUniform1i(flowTextureID, 0);
+	// 	 glUniform1i(colorTextureID, 1);
+     //
+	// 	 // 1rst attribute buffer : vertices
+	// 	 glEnableVertexAttribArray(0);
+	// 	 glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+	// 	 glVertexAttribPointer(
+	// 			 0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+	// 			 3,                  // size
+	// 			 GL_FLOAT,           // type
+	// 			 GL_FALSE,           // normalized?
+	// 			 0,                  // stride
+	// 			 (void*)0            // array buffer offset
+	// 	 );
+	// 	 // Draw the triangles !
+	// 	 glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+     //
+	// 	 glDisableVertexAttribArray(0);
+	// 	 // // Swap buffers
+	// 	 glfwSwapBuffers(window);
+	// 	 //
+	//  }
+    std::cout << glGetError() << std::endl;
+    renderedTexture = GasTextures[2];
+}
+
+
 //--------------------------------------------------------------------------------------------------------------------------
 // Generates SkyBox
 // 100u^3
@@ -492,11 +704,10 @@ void RenderSystem::genSkyBox() {
 
 	GLuint testLoc = glGetUniformLocation(starProgramID, "test");
 	// The fullscreen quad's FBO
-	GLuint quad_VertexArrayID;
-	glGenVertexArrays(1, &quad_VertexArrayID);
-	glBindVertexArray(quad_VertexArrayID);
+	glGenVertexArrays(1, &screenVAO);
+	glBindVertexArray(screenVAO);
 
-	static const GLfloat g_quad_vertex_buffer_data[] = {
+	static const GLfloat screenVertexData[] = {
 			0.0f, 	0.0f, 	0.0f,
 			1024.f,	0.0f, 	0.0f,
 			0.0f,  	1024.f, 0.0f,
@@ -505,10 +716,10 @@ void RenderSystem::genSkyBox() {
 			1024.f,	1024.f, 0.0f
 	};
 
-	GLuint quad_vertexbuffer;
-	glGenBuffers(1, &quad_vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+	GLuint screenVBO;
+	glGenBuffers(1, &screenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(screenVertexData), screenVertexData, GL_STATIC_DRAW);
 
 	// Render to our framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, fbSkyBox);
@@ -539,7 +750,7 @@ void RenderSystem::genSkyBox() {
 		glUniform1i(testLoc, face);
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, screenVBO);
 		glVertexAttribPointer(
 				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 				3,                  // size

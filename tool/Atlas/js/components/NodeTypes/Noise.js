@@ -32,7 +32,7 @@ class PerlinNode extends Node {
         this.props.dispatch(Actions.updateNode(
             this.props.id,
             inputs,
-            { Value: `fBM(vec3(${inputs.X}, ${inputs.Y}, ${inputs.Z}), ${inputs.Octaves}, ${inputs.Frequency}, ${inputs.Lacunarity}, ${inputs.Amplitude}, ${inputs.Gain})` },
+            { Value: `${inputs.Ridged ? "r" : ""}fBM(vec3(${inputs.X}, ${inputs.Y}, ${inputs.Z}), ${inputs.Octaves}, ${inputs.Frequency}, ${inputs.Lacunarity}, ${inputs.Amplitude}, ${inputs.Gain})` },
             height,
             this.props.cons))
     }
@@ -40,8 +40,8 @@ class PerlinNode extends Node {
         <div className="Value">
             Ridged:
             <div className="roundedCheck">
-            	<input type="checkbox" id="roundedCheck" onClick={(e) => this.updateInput("Ridged", e.target.checked)} checked={this.props.inputs.Ridged}/>
-            	<label htmlFor="roundedCheck"></label>
+            	<input type="checkbox" id={"roundedCheck" + this.props.id} onClick={(e) => this.updateInput("Ridged", e.target.checked)} checked={this.props.inputs.Ridged}/>
+            	<label htmlFor={"roundedCheck" + this.props.id}></label>
             </div>
         </div>
         <div className="Value">

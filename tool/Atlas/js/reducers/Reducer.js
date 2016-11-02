@@ -246,7 +246,7 @@ const Editor = (state = { dragging: false }, action) => {
 }
 
 const initialProgram = {
-    Height: `0.0`,
+    Height: [0, 0],
     R: `1.0`,
     G: `1.0`,
     B: `1.0`,

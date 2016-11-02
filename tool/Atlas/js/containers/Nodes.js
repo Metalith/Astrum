@@ -26,7 +26,7 @@ class Nodes extends React.Component {
             "Output",
             {x: 0.0, y: 0.0},
             {
-                Height: '0.0',
+                Height: [0.0, 0.0],
                 R: "1.0",
                 G: "1.0",
                 B: "1.0"
@@ -43,6 +43,7 @@ class Nodes extends React.Component {
         nodes.forEach((node, i) => {
             for (let input in node.input) {
                 if (node.input[input] == '\0') {
+                    console.log("beep")
                     node.input[input] = this.nodeTypes[node.nodeType].input[input]
                 }
             }

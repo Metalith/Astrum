@@ -46,8 +46,7 @@ int main() {
 	e.addSystem(new ControlSystem());
 	e.addSystem(new RenderSystem());
 	window = glfwGetCurrentContext();
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-			glfwWindowShouldClose(window) == 0 ) e.update();
+	while ( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS && glfwWindowShouldClose(window) == 0 ) e.update();
 	//std::cout << "THE END" << std::endl;
 
 	// Close OpenGL window and terminate GLFW
@@ -74,6 +73,8 @@ bool CreateWindow(GLFWwindow* window) {
 	glfwWindowHint(GLFW_GREEN_BITS, 8);
 	glfwWindowHint(GLFW_BLUE_BITS, 8);
 	glfwWindowHint(GLFW_ALPHA_BITS, 8);
+
+	                            std::cout << "Line 460: "<< glGetError() << std::endl;
 	int count;
 	const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -95,6 +96,8 @@ bool CreateWindow(GLFWwindow* window) {
 		glfwTerminate();
 		return -1;
 	}
+	glGetError();
+
 	glfwSwapInterval(0);
 	// Initialize AntTweakBar
 	RenderSystem::initTw();

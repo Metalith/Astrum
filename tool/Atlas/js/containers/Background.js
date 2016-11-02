@@ -167,7 +167,19 @@ class Background extends React.Component {
                 float fBM(vec3 p, int octaves, float frequency, float lacunarity, float amplitude, float gain) {
                     float total = 0.0;
                     for (int i = 0; i < 8; i++) {
+                        if (i == octaves) return total;
                         total += snoise(p * frequency) * amplitude;
+                        frequency *= lacunarity;
+                        amplitude *= gain;
+                    }
+                    return total;
+                }
+
+                float rfBM(vec3 p, int octaves, float frequency, float lacunarity, float amplitude, float gain) {
+                    float total = 0.0;
+                    for (int i = 0; i < 8; i++) {
+                        if (i == octaves) return total;
+                        total += abs(snoise(p * frequency)) * amplitude;
                         frequency *= lacunarity;
                         amplitude *= gain;
                     }
@@ -232,14 +244,12 @@ class Background extends React.Component {
                         vec3 right = vec3(1, 0, 0);
                         vec3 position = vec3(0,10,0)  + screenCoords.x*right + screenCoords.y*up;
                         float height = density(position);
-                        height += 1.0;
-                        height /= 2.0;
                         float f  = fract (height * 20.0);
                         float df = fwidth(height * 25.0);
                         float g = smoothstep(df * 0.5, df * 1.0, f);
                         float c = g;
                         vec3 Color = vec3(${nextProps.Program.R}, ${nextProps.Program.G}, ${nextProps.Program.B});
-                        gl_FragColor = vec4(Color * c * floor(height * 20.0) / 20.0, 1.0);
+                        gl_FragColor = vec4(Color * c, 1.0);
                     }
                 }`;
             this.screenRTT.material.needsUpdate = true;

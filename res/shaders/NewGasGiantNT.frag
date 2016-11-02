@@ -127,28 +127,44 @@ float ridgedNoise(vec3 position, int octaves, float frequency, float persistence
 
 void main() {
 	// Equirectangular Coordinate Conversion
-	vec3 modCoord = pos;
-    vec3 lightDir = -normalize(vec3(64, 64, 0));
-	float d = dot(vertexNormal, -lightDir);
-	d = max(0.1, d);
-	// float horizontalAngle = modCoord.x * 3.1415926535897;
-	// float verticalAngle = modCoord.y * 1.570796326794896;
-	// vec3 tPos = vec3(
-	// 	cos(verticalAngle) * sin(horizontalAngle),
-	// 	sin(verticalAngle),
-	// 	cos(verticalAngle) * cos(horizontalAngle)
-	// );
-	// for (int x = 0; x < 40; x++) {
-	// 	float px = noise(modCoord + vec3(0.001, 0.0, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.001, 0.0, 0.0), 8, 5, 0.5);
-	// 	float py = noise(modCoord + vec3(0.0, 0.001, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.0, 0.001, 0.0), 8, 5, 0.5);
-	// 	// color = vec4((py + 1.0) / 2.0, 0.0, (px + 1.0) / 2.0, 1.0);
-    //
-	// 	modCoord += vec3(py, -px, 0.0) * 0.01;
-	// }
-	// modCoord = mod(modCoord, 1.0);
-    float c = ridgedNoise(vec3((modCoord.y) / 1.3), 8, 5, 0.5);
+	// vec3 modCoord = pos;
+    // vec3 lightDir = -normalize(vec3(64, 64, 0));
+	// float d = dot(vertexNormal, -lightDir);
+	// d = max(0.1, d);
+	// // float horizontalAngle = modCoord.x * 3.1415926535897;
+	// // float verticalAngle = modCoord.y * 1.570796326794896;
+	// // vec3 tPos = vec3(
+	// // 	cos(verticalAngle) * sin(horizontalAngle),
+	// // 	sin(verticalAngle),
+	// // 	cos(verticalAngle) * cos(horizontalAngle)
+	// // );
+	// // for (int x = 0; x < 40; x++) {
+	// // 	float px = noise(modCoord + vec3(0.001, 0.0, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.001, 0.0, 0.0), 8, 5, 0.5);
+	// // 	float py = noise(modCoord + vec3(0.0, 0.001, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.0, 0.001, 0.0), 8, 5, 0.5);
+	// // 	// color = vec4((py + 1.0) / 2.0, 0.0, (px + 1.0) / 2.0, 1.0);
+    // //
+	// // 	modCoord += vec3(py, -px, 0.0) * 0.01;
+	// // }
+	// // modCoord = mod(modCoord, 1.0);
+    // float c = ridgedNoise(vec3((modCoord.y) / 1.3), 8, 5, 0.5);
+	//
+    // vec3 gasColor = vec3(0.5, 0.2, 0.0) + vec3(smoothstep(0.0, 1.0, c)) + vec3(0.1,0.2,0.6) * clamp(ridgedNoise(vec3((modCoord.y) / 1.3), 4, 7.5, 0.5),0,1);
+    // color = vec4(gasColor * d, 1.0);
+		vec3 lightDir = -normalize(vec3(1, 5, -5));
+		float d = dot(vertexNormal, -lightDir);
+		d = max(0.1, d);
 
-    vec3 gasColor = vec3(0.5, 0.2, 0.0) + vec3(smoothstep(0.0, 1.0, c)) + vec3(0.1,0.2,0.6) * clamp(ridgedNoise(vec3((modCoord.y) / 1.3), 4, 7.5, 0.5),0,1);
-    // color = vec4(gasColor*d, 1.0);
-    color = vec4(vec3(gasColor * d), 1.0);
+		// Equirectangular Project Coordinate Conversion
+		// float lat = (asin(pos.y / 32.0) / 1.57 + 1.0) / 2.0; // Generates the Latitude via arcsin of up / radius. Divide by 1.57 to normalize to [-1,1] then add 1 / 2 to reduce range to [0..1]
+	    // float lon = ((atan(pos.x, pos.z) / 3.14) + 1.0) / 2.0; // Generates the Longitude via arcsin of up / radius. Divide by 3.14 to normalize to [-1,1] then add 1 / 2 to reduce range to [0..1]
+		vec2 texCoord = vec2((atan(pos.z, pos.x) / 3.1415926 + 1.0) * 0.5,
+                                  (asin(pos.y) / 3.1415926 + 0.5));
+        // processing of the texture coordinates;
+        // this is unnecessary if correct texture coordinates are specified by the application
+
+    // gl_FragColor = texture2D(mytexture, longitudeLatitude);
+	    // vec2 texCoord = vec2(lon, lat);
+		vec3 c = texture2D( renderedTexture, texCoord).xyz;
+		color = vec4(c*d,1);
+
 }

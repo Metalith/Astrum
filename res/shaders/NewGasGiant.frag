@@ -125,22 +125,22 @@ float ridgedNoise(vec3 position, int octaves, float frequency, float persistence
 void main() {
 	// Equirectangular Coordinate Conversion
 	vec3 modCoord = vec3((pos.xy - vec2(1024, 512)) / 1024.0, 0.0);
-	// float horizontalAngle = modCoord.x * 3.1415926535897;
-	// float verticalAngle = modCoord.y * 1.570796326794896;
-	// vec3 tPos = vec3(
-	// 	cos(verticalAngle) * sin(horizontalAngle),
-	// 	sin(verticalAngle),
-	// 	cos(verticalAngle) * cos(horizontalAngle)
-	// );
+	float horizontalAngle = modCoord.x * 3.1415926535897;
+	float verticalAngle = modCoord.y * 1.570796326794896;
+	vec3 tPos = vec3(
+		cos(verticalAngle) * sin(horizontalAngle),
+		sin(verticalAngle),
+		cos(verticalAngle) * cos(horizontalAngle)
+	);
 	for (int x = 0; x < 1; x++) {
-		float px = noise(modCoord + vec3(0.001, 0.0, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.001, 0.0, 0.0), 8, 5, 0.5);
-		float py = noise(modCoord + vec3(0.0, 0.001, 0.0), 8, 5, 0.5) - noise(modCoord - vec3(0.0, 0.001, 0.0), 8, 5, 0.5);
+		float px = noise(tPos + vec3(0.001, 0.0, 0.0), 8, 5, 0.5) - noise(tPos - vec3(0.001, 0.0, 0.0), 8, 5, 0.5);
+		float py = noise(tPos + vec3(0.0, 0.001, 0.0), 8, 5, 0.5) - noise(tPos - vec3(0.0, 0.001, 0.0), 8, 5, 0.5);
 		// color = vec4((py + 1.0) / 2.0, 0.0, (px + 1.0) / 2.0, 1.0);
 
-		modCoord += vec3(py, -px, 0.0) * 0.01;
+		tPos += vec3(py, -px, 0.0) * 0.01;
 	}
-	modCoord = mod(modCoord, 1.0);
-	float c = ridgedNoise(vec3((modCoord.y) / 1.3), 8, 5, 0.5);
+	tPos = mod(tPos, 1.0);
+	float c = ridgedNoise(vec3((tPos.y) / 1.3), 8, 5, 0.5);
 
-	color = vec4(vec3(0.5, 0.2, 0.0) + vec3(smoothstep(0.0, 1.0, c)) + vec3(0.1,0.2,0.6) * clamp(ridgedNoise(vec3((modCoord.y) / 1.3), 4, 7.5, 0.5),0,1),1);
+	color = vec4(vec3(0.5, 0.2, 0.0) + vec3(smoothstep(0.0, 1.0, c)) + vec3(0.1,0.2,0.6) * clamp(ridgedNoise(vec3((tPos.y) / 1.3), 4, 7.5, 0.5),0,1),1);
 }

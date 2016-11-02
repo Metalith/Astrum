@@ -27,6 +27,7 @@ class RenderSystem: public System {
 		int totalVerts = 0;
 		Transform* tPlayer;
 
+		void genGasGiant();
 		void genSkyBox();
 		void drawSkyBox();
 		GLuint LoadShaders(const std::string& vertex_file_path,const std::string& fragment_file_path);
